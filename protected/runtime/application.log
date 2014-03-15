@@ -1,0 +1,396 @@
+2013/01/03 09:05:30 [error] [exception.CHttpException.404] exception 'CHttpException' with message 'Unable to resolve the request "favicon.ico".' in /home7/ppropert/public_html/new/framework/web/CWebApplication.php:287
+Stack trace:
+#0 /home7/ppropert/public_html/new/framework/web/CWebApplication.php(142): CWebApplication->runController('favicon.ico')
+#1 /home7/ppropert/public_html/new/framework/base/CApplication.php(162): CWebApplication->processRequest()
+#2 /home7/ppropert/public_html/new/index.php(13): CApplication->run()
+#3 {main}
+REQUEST_URI=/favicon.ico
+---
+2013/01/03 09:05:31 [error] [exception.CHttpException.404] exception 'CHttpException' with message 'Unable to resolve the request "favicon.ico".' in /home7/ppropert/public_html/new/framework/web/CWebApplication.php:287
+Stack trace:
+#0 /home7/ppropert/public_html/new/framework/web/CWebApplication.php(142): CWebApplication->runController('favicon.ico')
+#1 /home7/ppropert/public_html/new/framework/base/CApplication.php(162): CWebApplication->processRequest()
+#2 /home7/ppropert/public_html/new/index.php(13): CApplication->run()
+#3 {main}
+REQUEST_URI=/favicon.ico
+---
+2013/01/03 09:06:10 [error] [exception.CHttpException.404] exception 'CHttpException' with message 'Unable to resolve the request "javascript/jquery/plugins/jCarousel/jCarousel.js".' in /home7/ppropert/public_html/new/framework/web/CWebApplication.php:287
+Stack trace:
+#0 /home7/ppropert/public_html/new/framework/web/CWebApplication.php(142): CWebApplication->runController('javascript/jque...')
+#1 /home7/ppropert/public_html/new/framework/base/CApplication.php(162): CWebApplication->processRequest()
+#2 /home7/ppropert/public_html/new/index.php(13): CApplication->run()
+#3 {main}
+REQUEST_URI=/javascript/jquery/plugins/jCarousel/jCarousel.js?1
+HTTP_REFERER=http://testsite.pproperty.eu/complex/Royal-Sun/
+---
+2013/01/03 09:06:10 [error] [exception.CHttpException.404] exception 'CHttpException' with message 'Unable to resolve the request "Beauty/images/turquoise/SearchBg.gif".' in /home7/ppropert/public_html/new/framework/web/CWebApplication.php:287
+Stack trace:
+#0 /home7/ppropert/public_html/new/framework/web/CWebApplication.php(142): CWebApplication->runController('Beauty/images/t...')
+#1 /home7/ppropert/public_html/new/framework/base/CApplication.php(162): CWebApplication->processRequest()
+#2 /home7/ppropert/public_html/new/index.php(13): CApplication->run()
+#3 {main}
+REQUEST_URI=/Beauty/images/turquoise/SearchBg.gif
+HTTP_REFERER=http://testsite.pproperty.eu/complex/Royal-Sun/
+---
+2013/01/03 09:06:10 [error] [exception.CHttpException.404] exception 'CHttpException' with message 'Unable to resolve the request "Beauty/images/turquoise/MenuBgBtn.gif".' in /home7/ppropert/public_html/new/framework/web/CWebApplication.php:287
+Stack trace:
+#0 /home7/ppropert/public_html/new/framework/web/CWebApplication.php(142): CWebApplication->runController('Beauty/images/t...')
+#1 /home7/ppropert/public_html/new/framework/base/CApplication.php(162): CWebApplication->processRequest()
+#2 /home7/ppropert/public_html/new/index.php(13): CApplication->run()
+#3 {main}
+REQUEST_URI=/Beauty/images/turquoise/MenuBgBtn.gif
+HTTP_REFERER=http://testsite.pproperty.eu/complex/Royal-Sun/
+---
+2013/01/03 09:06:11 [error] [exception.CHttpException.404] exception 'CHttpException' with message 'Unable to resolve the request "favicon.ico".' in /home7/ppropert/public_html/new/framework/web/CWebApplication.php:287
+Stack trace:
+#0 /home7/ppropert/public_html/new/framework/web/CWebApplication.php(142): CWebApplication->runController('favicon.ico')
+#1 /home7/ppropert/public_html/new/framework/base/CApplication.php(162): CWebApplication->processRequest()
+#2 /home7/ppropert/public_html/new/index.php(13): CApplication->run()
+#3 {main}
+REQUEST_URI=/favicon.ico
+---
+2013/01/03 09:06:11 [error] [exception.CHttpException.404] exception 'CHttpException' with message 'Unable to resolve the request "favicon.ico".' in /home7/ppropert/public_html/new/framework/web/CWebApplication.php:287
+Stack trace:
+#0 /home7/ppropert/public_html/new/framework/web/CWebApplication.php(142): CWebApplication->runController('favicon.ico')
+#1 /home7/ppropert/public_html/new/framework/base/CApplication.php(162): CWebApplication->processRequest()
+#2 /home7/ppropert/public_html/new/index.php(13): CApplication->run()
+#3 {main}
+REQUEST_URI=/favicon.ico
+---
+2013/01/03 09:06:13 [error] [exception.CHttpException.404] exception 'CHttpException' with message 'Unable to resolve the request "javascript/jquery/plugins/jCarousel/jCarousel.js".' in /home7/ppropert/public_html/new/framework/web/CWebApplication.php:287
+Stack trace:
+#0 /home7/ppropert/public_html/new/framework/web/CWebApplication.php(142): CWebApplication->runController('javascript/jque...')
+#1 /home7/ppropert/public_html/new/framework/base/CApplication.php(162): CWebApplication->processRequest()
+#2 /home7/ppropert/public_html/new/index.php(13): CApplication->run()
+#3 {main}
+REQUEST_URI=/javascript/jquery/plugins/jCarousel/jCarousel.js?1
+HTTP_REFERER=http://testsite.pproperty.eu/complex/Royal-Sun/
+---
+2013/01/03 09:06:13 [error] [exception.CHttpException.404] exception 'CHttpException' with message 'Unable to resolve the request "Beauty/images/turquoise/SearchBg.gif".' in /home7/ppropert/public_html/new/framework/web/CWebApplication.php:287
+Stack trace:
+#0 /home7/ppropert/public_html/new/framework/web/CWebApplication.php(142): CWebApplication->runController('Beauty/images/t...')
+#1 /home7/ppropert/public_html/new/framework/base/CApplication.php(162): CWebApplication->processRequest()
+#2 /home7/ppropert/public_html/new/index.php(13): CApplication->run()
+#3 {main}
+REQUEST_URI=/Beauty/images/turquoise/SearchBg.gif
+HTTP_REFERER=http://testsite.pproperty.eu/complex/Royal-Sun/
+---
+2013/01/03 09:06:13 [error] [exception.CHttpException.404] exception 'CHttpException' with message 'Unable to resolve the request "Beauty/images/turquoise/MenuBgBtn.gif".' in /home7/ppropert/public_html/new/framework/web/CWebApplication.php:287
+Stack trace:
+#0 /home7/ppropert/public_html/new/framework/web/CWebApplication.php(142): CWebApplication->runController('Beauty/images/t...')
+#1 /home7/ppropert/public_html/new/framework/base/CApplication.php(162): CWebApplication->processRequest()
+#2 /home7/ppropert/public_html/new/index.php(13): CApplication->run()
+#3 {main}
+REQUEST_URI=/Beauty/images/turquoise/MenuBgBtn.gif
+HTTP_REFERER=http://testsite.pproperty.eu/complex/Royal-Sun/
+---
+2013/01/03 09:06:14 [error] [exception.CHttpException.404] exception 'CHttpException' with message 'Unable to resolve the request "favicon.ico".' in /home7/ppropert/public_html/new/framework/web/CWebApplication.php:287
+Stack trace:
+#0 /home7/ppropert/public_html/new/framework/web/CWebApplication.php(142): CWebApplication->runController('favicon.ico')
+#1 /home7/ppropert/public_html/new/framework/base/CApplication.php(162): CWebApplication->processRequest()
+#2 /home7/ppropert/public_html/new/index.php(13): CApplication->run()
+#3 {main}
+REQUEST_URI=/favicon.ico
+---
+2013/01/03 09:06:14 [error] [exception.CHttpException.404] exception 'CHttpException' with message 'Unable to resolve the request "favicon.ico".' in /home7/ppropert/public_html/new/framework/web/CWebApplication.php:287
+Stack trace:
+#0 /home7/ppropert/public_html/new/framework/web/CWebApplication.php(142): CWebApplication->runController('favicon.ico')
+#1 /home7/ppropert/public_html/new/framework/base/CApplication.php(162): CWebApplication->processRequest()
+#2 /home7/ppropert/public_html/new/index.php(13): CApplication->run()
+#3 {main}
+REQUEST_URI=/favicon.ico
+---
+2013/01/03 10:25:53 [error] [exception.CHttpException.404] exception 'CHttpException' with message 'Unable to resolve the request "Beauty/images/turquoise/SearchBg.gif".' in /home7/ppropert/public_html/new/framework/web/CWebApplication.php:287
+Stack trace:
+#0 /home7/ppropert/public_html/new/framework/web/CWebApplication.php(142): CWebApplication->runController('Beauty/images/t...')
+#1 /home7/ppropert/public_html/new/framework/base/CApplication.php(162): CWebApplication->processRequest()
+#2 /home7/ppropert/public_html/new/index.php(13): CApplication->run()
+#3 {main}
+REQUEST_URI=/Beauty/images/turquoise/SearchBg.gif
+HTTP_REFERER=http://testsite.pproperty.eu/complex/Royal-Sun/
+---
+2013/01/03 10:25:53 [error] [exception.CHttpException.404] exception 'CHttpException' with message 'Unable to resolve the request "javascript/jquery/plugins/jCarousel/jCarousel.js".' in /home7/ppropert/public_html/new/framework/web/CWebApplication.php:287
+Stack trace:
+#0 /home7/ppropert/public_html/new/framework/web/CWebApplication.php(142): CWebApplication->runController('javascript/jque...')
+#1 /home7/ppropert/public_html/new/framework/base/CApplication.php(162): CWebApplication->processRequest()
+#2 /home7/ppropert/public_html/new/index.php(13): CApplication->run()
+#3 {main}
+REQUEST_URI=/javascript/jquery/plugins/jCarousel/jCarousel.js?1
+HTTP_REFERER=http://testsite.pproperty.eu/complex/Royal-Sun/
+---
+2013/01/03 10:25:54 [error] [exception.CHttpException.404] exception 'CHttpException' with message 'Unable to resolve the request "Beauty/images/turquoise/MenuBgBtn.gif".' in /home7/ppropert/public_html/new/framework/web/CWebApplication.php:287
+Stack trace:
+#0 /home7/ppropert/public_html/new/framework/web/CWebApplication.php(142): CWebApplication->runController('Beauty/images/t...')
+#1 /home7/ppropert/public_html/new/framework/base/CApplication.php(162): CWebApplication->processRequest()
+#2 /home7/ppropert/public_html/new/index.php(13): CApplication->run()
+#3 {main}
+REQUEST_URI=/Beauty/images/turquoise/MenuBgBtn.gif
+HTTP_REFERER=http://testsite.pproperty.eu/complex/Royal-Sun/
+---
+2013/01/03 10:25:58 [error] [exception.CHttpException.404] exception 'CHttpException' with message 'Unable to resolve the request "favicon.ico".' in /home7/ppropert/public_html/new/framework/web/CWebApplication.php:287
+Stack trace:
+#0 /home7/ppropert/public_html/new/framework/web/CWebApplication.php(142): CWebApplication->runController('favicon.ico')
+#1 /home7/ppropert/public_html/new/framework/base/CApplication.php(162): CWebApplication->processRequest()
+#2 /home7/ppropert/public_html/new/index.php(13): CApplication->run()
+#3 {main}
+REQUEST_URI=/favicon.ico
+---
+2013/01/03 10:54:47 [error] [exception.CHttpException.404] exception 'CHttpException' with message 'Unable to resolve the request "rss.php".' in /home7/ppropert/public_html/new/framework/web/CWebApplication.php:287
+Stack trace:
+#0 /home7/ppropert/public_html/new/framework/web/CWebApplication.php(142): CWebApplication->runController('rss.php')
+#1 /home7/ppropert/public_html/new/framework/base/CApplication.php(162): CWebApplication->processRequest()
+#2 /home7/ppropert/public_html/new/index.php(13): CApplication->run()
+#3 {main}
+REQUEST_URI=/rss.php?action=newblogs&type=rss
+HTTP_REFERER=http://testsite.pproperty.eu/complex/Royal-Sun/
+---
+2013/01/03 10:54:48 [error] [exception.CHttpException.404] exception 'CHttpException' with message 'Unable to resolve the request "images/btn-up.gif".' in /home7/ppropert/public_html/new/framework/web/CWebApplication.php:287
+Stack trace:
+#0 /home7/ppropert/public_html/new/framework/web/CWebApplication.php(142): CWebApplication->runController('images/btn-up.g...')
+#1 /home7/ppropert/public_html/new/framework/base/CApplication.php(162): CWebApplication->processRequest()
+#2 /home7/ppropert/public_html/new/index.php(13): CApplication->run()
+#3 {main}
+REQUEST_URI=/images/btn-up.gif
+HTTP_REFERER=http://testsite.pproperty.eu/rss.php?action=newblogs&type=rss
+---
+2013/01/03 10:54:48 [error] [exception.CHttpException.404] exception 'CHttpException' with message 'Unable to resolve the request "images/btn-dn.gif".' in /home7/ppropert/public_html/new/framework/web/CWebApplication.php:287
+Stack trace:
+#0 /home7/ppropert/public_html/new/framework/web/CWebApplication.php(142): CWebApplication->runController('images/btn-dn.g...')
+#1 /home7/ppropert/public_html/new/framework/base/CApplication.php(162): CWebApplication->processRequest()
+#2 /home7/ppropert/public_html/new/index.php(13): CApplication->run()
+#3 {main}
+REQUEST_URI=/images/btn-dn.gif
+HTTP_REFERER=http://testsite.pproperty.eu/rss.php?action=newblogs&type=rss
+---
+2013/01/03 10:54:48 [error] [exception.CHttpException.404] exception 'CHttpException' with message 'Unable to resolve the request "favicon.ico".' in /home7/ppropert/public_html/new/framework/web/CWebApplication.php:287
+Stack trace:
+#0 /home7/ppropert/public_html/new/framework/web/CWebApplication.php(142): CWebApplication->runController('favicon.ico')
+#1 /home7/ppropert/public_html/new/framework/base/CApplication.php(162): CWebApplication->processRequest()
+#2 /home7/ppropert/public_html/new/index.php(13): CApplication->run()
+#3 {main}
+REQUEST_URI=/favicon.ico
+---
+2013/01/03 10:55:46 [error] [exception.CHttpException.404] exception 'CHttpException' with message 'Unable to resolve the request "favicon.ico".' in /home7/ppropert/public_html/new/framework/web/CWebApplication.php:287
+Stack trace:
+#0 /home7/ppropert/public_html/new/framework/web/CWebApplication.php(142): CWebApplication->runController('favicon.ico')
+#1 /home7/ppropert/public_html/new/framework/base/CApplication.php(162): CWebApplication->processRequest()
+#2 /home7/ppropert/public_html/new/index.php(13): CApplication->run()
+#3 {main}
+REQUEST_URI=/favicon.ico
+---
+2013/01/03 10:55:46 [error] [exception.CHttpException.404] exception 'CHttpException' with message 'Unable to resolve the request "favicon.ico".' in /home7/ppropert/public_html/new/framework/web/CWebApplication.php:287
+Stack trace:
+#0 /home7/ppropert/public_html/new/framework/web/CWebApplication.php(142): CWebApplication->runController('favicon.ico')
+#1 /home7/ppropert/public_html/new/framework/base/CApplication.php(162): CWebApplication->processRequest()
+#2 /home7/ppropert/public_html/new/index.php(13): CApplication->run()
+#3 {main}
+REQUEST_URI=/favicon.ico
+---
+2013/01/03 11:02:03 [error] [exception.CHttpException.404] exception 'CHttpException' with message 'Unable to resolve the request "javascript/jquery/plugins/jCarousel/jCarousel.js".' in /home7/ppropert/public_html/new/framework/web/CWebApplication.php:287
+Stack trace:
+#0 /home7/ppropert/public_html/new/framework/web/CWebApplication.php(142): CWebApplication->runController('javascript/jque...')
+#1 /home7/ppropert/public_html/new/framework/base/CApplication.php(162): CWebApplication->processRequest()
+#2 /home7/ppropert/public_html/new/index.php(13): CApplication->run()
+#3 {main}
+REQUEST_URI=/javascript/jquery/plugins/jCarousel/jCarousel.js?1
+HTTP_REFERER=http://testsite.pproperty.eu/complex/Royal-Sun/
+---
+2013/01/03 11:02:04 [error] [exception.CHttpException.404] exception 'CHttpException' with message 'Unable to resolve the request "Beauty/images/turquoise/SearchBg.gif".' in /home7/ppropert/public_html/new/framework/web/CWebApplication.php:287
+Stack trace:
+#0 /home7/ppropert/public_html/new/framework/web/CWebApplication.php(142): CWebApplication->runController('Beauty/images/t...')
+#1 /home7/ppropert/public_html/new/framework/base/CApplication.php(162): CWebApplication->processRequest()
+#2 /home7/ppropert/public_html/new/index.php(13): CApplication->run()
+#3 {main}
+REQUEST_URI=/Beauty/images/turquoise/SearchBg.gif
+HTTP_REFERER=http://testsite.pproperty.eu/complex/Royal-Sun/
+---
+2013/01/03 11:02:04 [error] [exception.CHttpException.404] exception 'CHttpException' with message 'Unable to resolve the request "Beauty/images/turquoise/MenuBgBtn.gif".' in /home7/ppropert/public_html/new/framework/web/CWebApplication.php:287
+Stack trace:
+#0 /home7/ppropert/public_html/new/framework/web/CWebApplication.php(142): CWebApplication->runController('Beauty/images/t...')
+#1 /home7/ppropert/public_html/new/framework/base/CApplication.php(162): CWebApplication->processRequest()
+#2 /home7/ppropert/public_html/new/index.php(13): CApplication->run()
+#3 {main}
+REQUEST_URI=/Beauty/images/turquoise/MenuBgBtn.gif
+HTTP_REFERER=http://testsite.pproperty.eu/complex/Royal-Sun/
+---
+2013/01/03 11:02:04 [error] [exception.CHttpException.404] exception 'CHttpException' with message 'Unable to resolve the request "favicon.ico".' in /home7/ppropert/public_html/new/framework/web/CWebApplication.php:287
+Stack trace:
+#0 /home7/ppropert/public_html/new/framework/web/CWebApplication.php(142): CWebApplication->runController('favicon.ico')
+#1 /home7/ppropert/public_html/new/framework/base/CApplication.php(162): CWebApplication->processRequest()
+#2 /home7/ppropert/public_html/new/index.php(13): CApplication->run()
+#3 {main}
+REQUEST_URI=/favicon.ico
+---
+2013/01/03 11:02:05 [error] [exception.CHttpException.404] exception 'CHttpException' with message 'Unable to resolve the request "favicon.ico".' in /home7/ppropert/public_html/new/framework/web/CWebApplication.php:287
+Stack trace:
+#0 /home7/ppropert/public_html/new/framework/web/CWebApplication.php(142): CWebApplication->runController('favicon.ico')
+#1 /home7/ppropert/public_html/new/framework/base/CApplication.php(162): CWebApplication->processRequest()
+#2 /home7/ppropert/public_html/new/index.php(13): CApplication->run()
+#3 {main}
+REQUEST_URI=/favicon.ico
+---
+2013/01/03 13:20:14 [error] [exception.CHttpException.404] exception 'CHttpException' with message 'Unable to resolve the request "javascript/jquery/plugins/jCarousel/jCarousel.js".' in /home7/ppropert/public_html/new/framework/web/CWebApplication.php:287
+Stack trace:
+#0 /home7/ppropert/public_html/new/framework/web/CWebApplication.php(142): CWebApplication->runController('javascript/jque...')
+#1 /home7/ppropert/public_html/new/framework/base/CApplication.php(162): CWebApplication->processRequest()
+#2 /home7/ppropert/public_html/new/index.php(13): CApplication->run()
+#3 {main}
+REQUEST_URI=/javascript/jquery/plugins/jCarousel/jCarousel.js?1
+HTTP_REFERER=http://testsite.pproperty.eu/complex/Royal-Sun/
+---
+2013/01/03 13:20:14 [error] [exception.CHttpException.404] exception 'CHttpException' with message 'Unable to resolve the request "Beauty/images/turquoise/SearchBg.gif".' in /home7/ppropert/public_html/new/framework/web/CWebApplication.php:287
+Stack trace:
+#0 /home7/ppropert/public_html/new/framework/web/CWebApplication.php(142): CWebApplication->runController('Beauty/images/t...')
+#1 /home7/ppropert/public_html/new/framework/base/CApplication.php(162): CWebApplication->processRequest()
+#2 /home7/ppropert/public_html/new/index.php(13): CApplication->run()
+#3 {main}
+REQUEST_URI=/Beauty/images/turquoise/SearchBg.gif
+HTTP_REFERER=http://testsite.pproperty.eu/complex/Royal-Sun/
+---
+2013/01/03 13:20:14 [error] [exception.CHttpException.404] exception 'CHttpException' with message 'Unable to resolve the request "Beauty/images/turquoise/MenuBgBtn.gif".' in /home7/ppropert/public_html/new/framework/web/CWebApplication.php:287
+Stack trace:
+#0 /home7/ppropert/public_html/new/framework/web/CWebApplication.php(142): CWebApplication->runController('Beauty/images/t...')
+#1 /home7/ppropert/public_html/new/framework/base/CApplication.php(162): CWebApplication->processRequest()
+#2 /home7/ppropert/public_html/new/index.php(13): CApplication->run()
+#3 {main}
+REQUEST_URI=/Beauty/images/turquoise/MenuBgBtn.gif
+HTTP_REFERER=http://testsite.pproperty.eu/complex/Royal-Sun/
+---
+2013/01/03 13:20:14 [error] [exception.CHttpException.404] exception 'CHttpException' with message 'Unable to resolve the request "Beauty/images/turquoise/SearchBg.gif".' in /home7/ppropert/public_html/new/framework/web/CWebApplication.php:287
+Stack trace:
+#0 /home7/ppropert/public_html/new/framework/web/CWebApplication.php(142): CWebApplication->runController('Beauty/images/t...')
+#1 /home7/ppropert/public_html/new/framework/base/CApplication.php(162): CWebApplication->processRequest()
+#2 /home7/ppropert/public_html/new/index.php(13): CApplication->run()
+#3 {main}
+REQUEST_URI=/Beauty/images/turquoise/SearchBg.gif
+HTTP_REFERER=http://testsite.pproperty.eu/
+---
+2013/01/03 13:20:14 [error] [exception.CHttpException.404] exception 'CHttpException' with message 'Unable to resolve the request "Beauty/images/turquoise/MenuBgBtn.gif".' in /home7/ppropert/public_html/new/framework/web/CWebApplication.php:287
+Stack trace:
+#0 /home7/ppropert/public_html/new/framework/web/CWebApplication.php(142): CWebApplication->runController('Beauty/images/t...')
+#1 /home7/ppropert/public_html/new/framework/base/CApplication.php(162): CWebApplication->processRequest()
+#2 /home7/ppropert/public_html/new/index.php(13): CApplication->run()
+#3 {main}
+REQUEST_URI=/Beauty/images/turquoise/MenuBgBtn.gif
+HTTP_REFERER=http://testsite.pproperty.eu/
+---
+2013/01/03 13:20:15 [error] [exception.CHttpException.404] exception 'CHttpException' with message 'Unable to resolve the request "favicon.ico".' in /home7/ppropert/public_html/new/framework/web/CWebApplication.php:287
+Stack trace:
+#0 /home7/ppropert/public_html/new/framework/web/CWebApplication.php(142): CWebApplication->runController('favicon.ico')
+#1 /home7/ppropert/public_html/new/framework/base/CApplication.php(162): CWebApplication->processRequest()
+#2 /home7/ppropert/public_html/new/index.php(13): CApplication->run()
+#3 {main}
+REQUEST_URI=/favicon.ico
+---
+2013/01/03 13:20:16 [error] [exception.CHttpException.404] exception 'CHttpException' with message 'Unable to resolve the request "favicon.ico".' in /home7/ppropert/public_html/new/framework/web/CWebApplication.php:287
+Stack trace:
+#0 /home7/ppropert/public_html/new/framework/web/CWebApplication.php(142): CWebApplication->runController('favicon.ico')
+#1 /home7/ppropert/public_html/new/framework/base/CApplication.php(162): CWebApplication->processRequest()
+#2 /home7/ppropert/public_html/new/index.php(13): CApplication->run()
+#3 {main}
+REQUEST_URI=/favicon.ico
+---
+2013/01/04 00:20:39 [error] [exception.CHttpException.404] exception 'CHttpException' with message 'Unable to resolve the request "Beauty/images/turquoise/MenuBgBtn.gif".' in /home7/ppropert/public_html/new/framework/web/CWebApplication.php:287
+Stack trace:
+#0 /home7/ppropert/public_html/new/framework/web/CWebApplication.php(142): CWebApplication->runController('Beauty/images/t...')
+#1 /home7/ppropert/public_html/new/framework/base/CApplication.php(162): CWebApplication->processRequest()
+#2 /home7/ppropert/public_html/new/index.php(13): CApplication->run()
+#3 {main}
+REQUEST_URI=/Beauty/images/turquoise/MenuBgBtn.gif
+HTTP_REFERER=http://testsite.pproperty.eu/
+---
+2013/01/04 00:20:39 [error] [exception.CHttpException.404] exception 'CHttpException' with message 'Unable to resolve the request "Beauty/images/turquoise/SearchBg.gif".' in /home7/ppropert/public_html/new/framework/web/CWebApplication.php:287
+Stack trace:
+#0 /home7/ppropert/public_html/new/framework/web/CWebApplication.php(142): CWebApplication->runController('Beauty/images/t...')
+#1 /home7/ppropert/public_html/new/framework/base/CApplication.php(162): CWebApplication->processRequest()
+#2 /home7/ppropert/public_html/new/index.php(13): CApplication->run()
+#3 {main}
+REQUEST_URI=/Beauty/images/turquoise/SearchBg.gif
+HTTP_REFERER=http://testsite.pproperty.eu/
+---
+2013/01/04 00:20:40 [error] [exception.CHttpException.404] exception 'CHttpException' with message 'Unable to resolve the request "favicon.ico".' in /home7/ppropert/public_html/new/framework/web/CWebApplication.php:287
+Stack trace:
+#0 /home7/ppropert/public_html/new/framework/web/CWebApplication.php(142): CWebApplication->runController('favicon.ico')
+#1 /home7/ppropert/public_html/new/framework/base/CApplication.php(162): CWebApplication->processRequest()
+#2 /home7/ppropert/public_html/new/index.php(13): CApplication->run()
+#3 {main}
+REQUEST_URI=/favicon.ico
+---
+2013/01/04 00:20:50 [error] [exception.CHttpException.404] exception 'CHttpException' with message 'Unable to resolve the request "Beauty/images/turquoise/SearchBg.gif".' in /home7/ppropert/public_html/new/framework/web/CWebApplication.php:287
+Stack trace:
+#0 /home7/ppropert/public_html/new/framework/web/CWebApplication.php(142): CWebApplication->runController('Beauty/images/t...')
+#1 /home7/ppropert/public_html/new/framework/base/CApplication.php(162): CWebApplication->processRequest()
+#2 /home7/ppropert/public_html/new/index.php(13): CApplication->run()
+#3 {main}
+REQUEST_URI=/Beauty/images/turquoise/SearchBg.gif
+HTTP_REFERER=http://testsite.pproperty.eu/
+---
+2013/01/04 00:20:50 [error] [exception.CHttpException.404] exception 'CHttpException' with message 'Unable to resolve the request "Beauty/images/turquoise/MenuBgBtn.gif".' in /home7/ppropert/public_html/new/framework/web/CWebApplication.php:287
+Stack trace:
+#0 /home7/ppropert/public_html/new/framework/web/CWebApplication.php(142): CWebApplication->runController('Beauty/images/t...')
+#1 /home7/ppropert/public_html/new/framework/base/CApplication.php(162): CWebApplication->processRequest()
+#2 /home7/ppropert/public_html/new/index.php(13): CApplication->run()
+#3 {main}
+REQUEST_URI=/Beauty/images/turquoise/MenuBgBtn.gif
+HTTP_REFERER=http://testsite.pproperty.eu/
+---
+2013/01/04 00:20:50 [error] [exception.CHttpException.404] exception 'CHttpException' with message 'Unable to resolve the request "favicon.ico".' in /home7/ppropert/public_html/new/framework/web/CWebApplication.php:287
+Stack trace:
+#0 /home7/ppropert/public_html/new/framework/web/CWebApplication.php(142): CWebApplication->runController('favicon.ico')
+#1 /home7/ppropert/public_html/new/framework/base/CApplication.php(162): CWebApplication->processRequest()
+#2 /home7/ppropert/public_html/new/index.php(13): CApplication->run()
+#3 {main}
+REQUEST_URI=/favicon.ico
+---
+2013/01/04 02:25:41 [error] [exception.CHttpException.404] exception 'CHttpException' with message 'Unable to resolve the request "Beauty/images/turquoise/SearchBg.gif".' in /home7/ppropert/public_html/new/framework/web/CWebApplication.php:287
+Stack trace:
+#0 /home7/ppropert/public_html/new/framework/web/CWebApplication.php(142): CWebApplication->runController('Beauty/images/t...')
+#1 /home7/ppropert/public_html/new/framework/base/CApplication.php(162): CWebApplication->processRequest()
+#2 /home7/ppropert/public_html/new/index.php(13): CApplication->run()
+#3 {main}
+REQUEST_URI=/Beauty/images/turquoise/SearchBg.gif
+HTTP_REFERER=http://testsite.pproperty.eu/
+---
+2013/01/04 02:25:41 [error] [exception.CHttpException.404] exception 'CHttpException' with message 'Unable to resolve the request "Beauty/images/turquoise/MenuBgBtn.gif".' in /home7/ppropert/public_html/new/framework/web/CWebApplication.php:287
+Stack trace:
+#0 /home7/ppropert/public_html/new/framework/web/CWebApplication.php(142): CWebApplication->runController('Beauty/images/t...')
+#1 /home7/ppropert/public_html/new/framework/base/CApplication.php(162): CWebApplication->processRequest()
+#2 /home7/ppropert/public_html/new/index.php(13): CApplication->run()
+#3 {main}
+REQUEST_URI=/Beauty/images/turquoise/MenuBgBtn.gif
+HTTP_REFERER=http://testsite.pproperty.eu/
+---
+2013/01/04 02:25:41 [error] [exception.CHttpException.404] exception 'CHttpException' with message 'Unable to resolve the request "favicon.ico".' in /home7/ppropert/public_html/new/framework/web/CWebApplication.php:287
+Stack trace:
+#0 /home7/ppropert/public_html/new/framework/web/CWebApplication.php(142): CWebApplication->runController('favicon.ico')
+#1 /home7/ppropert/public_html/new/framework/base/CApplication.php(162): CWebApplication->processRequest()
+#2 /home7/ppropert/public_html/new/index.php(13): CApplication->run()
+#3 {main}
+REQUEST_URI=/favicon.ico
+---
+2013/01/04 21:10:21 [error] [exception.CHttpException.404] exception 'CHttpException' with message 'Unable to resolve the request "Beauty/images/turquoise/SearchBg.gif".' in /home7/ppropert/public_html/new/framework/web/CWebApplication.php:287
+Stack trace:
+#0 /home7/ppropert/public_html/new/framework/web/CWebApplication.php(142): CWebApplication->runController('Beauty/images/t...')
+#1 /home7/ppropert/public_html/new/framework/base/CApplication.php(162): CWebApplication->processRequest()
+#2 /home7/ppropert/public_html/new/index.php(13): CApplication->run()
+#3 {main}
+REQUEST_URI=/Beauty/images/turquoise/SearchBg.gif
+HTTP_REFERER=http://testsite.pproperty.eu/
+---
+2013/01/04 21:10:21 [error] [exception.CHttpException.404] exception 'CHttpException' with message 'Unable to resolve the request "Beauty/images/turquoise/MenuBgBtn.gif".' in /home7/ppropert/public_html/new/framework/web/CWebApplication.php:287
+Stack trace:
+#0 /home7/ppropert/public_html/new/framework/web/CWebApplication.php(142): CWebApplication->runController('Beauty/images/t...')
+#1 /home7/ppropert/public_html/new/framework/base/CApplication.php(162): CWebApplication->processRequest()
+#2 /home7/ppropert/public_html/new/index.php(13): CApplication->run()
+#3 {main}
+REQUEST_URI=/Beauty/images/turquoise/MenuBgBtn.gif
+HTTP_REFERER=http://testsite.pproperty.eu/
+---
+2013/01/04 21:10:21 [error] [exception.CHttpException.404] exception 'CHttpException' with message 'Unable to resolve the request "favicon.ico".' in /home7/ppropert/public_html/new/framework/web/CWebApplication.php:287
+Stack trace:
+#0 /home7/ppropert/public_html/new/framework/web/CWebApplication.php(142): CWebApplication->runController('favicon.ico')
+#1 /home7/ppropert/public_html/new/framework/base/CApplication.php(162): CWebApplication->processRequest()
+#2 /home7/ppropert/public_html/new/index.php(13): CApplication->run()
+#3 {main}
+REQUEST_URI=/favicon.ico
+---

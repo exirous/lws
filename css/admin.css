@@ -1,0 +1,429 @@
+.adminTable {
+    width: 100%;
+    font-size: 14px;
+}
+
+.adminTable th {
+    background: #999;
+    color: #fff;
+    padding: 5px;
+}
+
+.adminTable td {
+    padding: 5px;
+}
+
+.adminTable tr:nth-child(odd) {
+    background-color: #ddddff;
+}
+
+.adminTable tr:hover {
+    background-color: #dddddd;
+}
+
+.adminTable tr:first-child, .adminTable tr:last-child {
+    background-color: #ffcccc;
+}
+
+.adminForm {
+    font-size: 14px;
+}
+
+.adminForm input[type=text], .adminForm select, .adminForm textarea {
+    font-size: 14px;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    width: 100%;
+    padding: 5px;
+    font-family: verdana;
+}
+
+.adminForm textarea {
+    resize: vertical;
+    height: 200px
+}
+
+.adminForm .buttonPanel {
+    background: #ccffcc;
+}
+
+.adminForm .row {
+    padding: 13px;
+}
+
+.adminForm .row.apartmentParam {
+    background: #aacFFF;
+}
+
+.adminForm .row.complexParam {
+    background: #fffaac;
+}
+
+.adminForm .row label {
+    display: block;
+    margin-bottom: 3px;
+}
+
+.adminForm .message {
+    color: #fff;
+    padding: 20px 30px;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.adminForm input[type=submit] {
+    padding: 10px 20px;
+    font-size: 20px;
+}
+
+.adminForm #imageList label {
+    margin-bottom: 5px;
+}
+
+.adminForm .imageItem {
+    display: inline-block;
+    width: 145px;
+    height: 125px;
+    vertical-align: middle;
+    border: 2px solid #666;
+    margin: 0 9px 5px 0;
+    background: #eeeeee;
+    position: relative;
+}
+
+.adminForm .imageItem.primary {
+    border-color: #0000ff;
+}
+
+.adminForm .imageItem img {
+    width: 145px;
+    height: 125px;
+    vertical-align: middle;
+    cursor: pointer;
+}
+
+.adminForm .imageItem a {
+    display: block;
+    position: absolute;
+    width: 20px;
+    height: 18px;
+    text-align: center;
+    color: #ff0000;
+    right: -2px;
+    top: -2px;
+    font-weight: bold;
+    background: #fff;
+    border: 1px solid black;
+    text-decoration: none;
+}
+
+.adminForm .imageItem a:hover {
+    color: #fff;
+    background: #ff0000;
+    text-decoration: none;
+}
+
+.adminForm .imageItem a.primary {
+    color: #00aa00;
+    background: #fff;
+    right: 19px;
+}
+
+.adminForm .imageItem a.primary:hover {
+    color: #fff;
+    background: #00aa00;
+}
+
+.adminForm .imageItem.primary a.primary {
+    background: #0000ff;
+    color: #fff;
+}
+
+.adminForm .imageItem.placeHolder {
+    background: #fcefa1;
+    border-color: #FFe354;
+}
+
+.adminForm .imageItem span {
+    display: block;
+    text-align: center;
+    font-weight: bold;
+    font-size: 16px;
+    margin-top: 55px;
+}
+
+.adminForm .imageItem.error {
+    background: #ff0000;
+    border-color: #aa0000;
+    color: #fff;
+}
+
+.adminForm .addImage {
+    display: inline-block;
+    width: 145px;
+    height: 125px;
+    text-align: center;
+    border: 2px solid #00dd00;
+    background: #aaffaa;
+    vertical-align: middle;
+    font-weight: bold;
+    color: #000;
+    margin: 0 0 5px 0;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.adminForm .addImage div {
+    color: #00aa00;
+    font-size: 70px;
+    margin-top: 0px;
+}
+
+.adminForm .addImage:hover {
+    opacity: 0.8;
+    text-decoration: none;
+}
+
+.adminCategories {
+    margin: 0px;
+    padding: 0px;
+    list-style-type: none;
+    width: 49%;
+    display: inline-block;
+    white-space: normal;
+    vertical-align: top;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+}
+
+.adminExtras .adminCategories {
+    padding: 10px;
+    border: 1px solid #aaa;
+    background: #fff;
+}
+
+.adminExtras form {
+    margin-top: 0;
+}
+
+.adminCategories li {
+    list-style: none;
+    margin: 5px 0 0 0;
+    padding: 0;
+}
+
+.adminCategories li div {
+    border: 1px solid #d4d4d4;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+    border-color: #D4D4D4 #D4D4D4 #BCBCBC;
+    padding: 6px;
+    margin: 0;
+    cursor: move;
+    background: #e0e0ff;
+}
+
+.adminCategories li div a {
+    float: right;
+    display: block;
+    width: 16px;
+    height: 15px;
+    text-align: center;
+    color: #ff0000;
+    font-weight: bold;
+    background: #fff;
+    border: 1px solid #ddd;
+    text-decoration: none;
+    margin-top: -2px;
+    margin-right: -1px;
+}
+
+.adminCategories li div a:hover {
+    color: #fff;
+    background: #ff0000;
+    text-decoration: none;
+}
+
+.adminCategories li div a.edit {
+    color: orange;
+    background: #fff;
+}
+
+.adminCategories li div a.edit:hover {
+    color: #fff;
+    background: orange;
+}
+
+.adminCategories li ol a.add {
+    display: none;
+}
+
+.adminCategories li div a.add {
+    color: #00aa00;
+    background: #fff;
+}
+
+.adminCategories li div a.add:hover {
+    color: #fff;
+    background: #00aa00;
+}
+
+.adminCategories li ol {
+    padding: 10px;
+    background: #e0e0ff;
+    margin-top: -1px;
+    border: 1px solid #d4d4d4;
+    border-color: #D4D4D4 #D4D4D4 #BCBCBC;
+    border-top: 0;
+}
+
+.adminCategories li ol li div {
+    background: #fff;
+}
+
+.adminCategories li ol li ol {
+    background: #fff;
+}
+
+.adminCategories .placeholder {
+    min-height: 27px;
+    outline: 1px dashed #4183C4;
+}
+
+.adminCategories li.disabled div {
+    background: #FBC2C4;
+}
+
+.adminCategories li.disabled a.add, .adminCategories li.disabled a.edit {
+    display: none;
+}
+
+.adminCategories li.editing div, .adminCategories li.editing ol {
+    background: #fcefa1;
+}
+
+.adminCategories li.editing ol div {
+    background: #fff;
+}
+
+.adminCategoryEdit {
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    width: 50%;
+    display: inline-block;
+    vertical-align: top;
+    background: #eeeeee;
+    margin-top: 5px;
+    border: 1px solid #aaa;
+}
+
+a#adminAddNewCat, a#adminSaveCatOrder, a.adminAddNewBtn  {
+    display: inline-block;
+    text-align: center;
+    color: #00aa00;
+    background: #fff;
+    font-size: 16px;
+    font-weight: bold;
+    border: 1px solid #aaa;
+    padding: 5px 10px;
+    text-decoration: none;
+    margin-bottom: -1px;
+}
+
+a#adminAddNewCat:hover,a.adminAddNewBtn:hover {
+    color: #fff;
+    background: #00aa00;
+    text-decoration: none !important;
+}
+
+a#adminSaveCatOrder {
+    color: #0000aa;
+    background: #fff;
+}
+
+a#adminSaveCatOrder:hover {
+    color: #fff;
+    background: #0000aa;
+}
+
+a#adminSaveCatOrder.disabled, a#adminAddNewCat.disabled, a#adminSaveCatOrder:hover.disabled, a#adminAddNewCat:hover.disabled {
+    color: #ccc;
+    background: #eee;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.adminTabs {
+    margin-top: 10px;
+}
+
+.adminTabs a {
+    display: inline-block;
+    padding: 5px 10px;
+    border: 1px solid #aaa;
+    background: #eee;
+    position: relative;
+    border-bottom: none;
+    color: #000;
+    margin-right: 5px;
+    text-decoration: none;
+}
+
+.adminTabs a.active {
+    margin-bottom: -1px;
+    padding-bottom: 6px;
+    background: #fff;
+}
+
+.adminForm .adminCategories li div a {
+    position: relative;
+    margin-top: 2px;
+    margin-right: 0px;
+    height: 29px;
+    width: 29px;
+    font-size: 25px;
+}
+
+.adminForm .adminCategories li div
+{
+    padding:0px 5px 0px 20px;
+}
+
+.adminForm .adminCategories input {
+    margin-right: -32px;
+}
+
+.adminTable a
+{
+    color:#666;
+    text-decoration: none;
+    font-weight: bold;
+    margin: 0px 5px;
+}
+
+.adminTable a:hover
+{
+    color:#f00;
+}
+
+.adminForm a.row
+{
+    display: block;
+    color:#666;
+    border:1px solid #ddd;
+    background:#eee;
+    font-weight: bold;
+    padding:10px 15px;
+    margin:15px 10px;
+    text-decoration: none;
+    border-radius: 5px;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+}
+
+.adminForm a.row:hover
+{
+    color:#fff;
+    background: #9fb7c3;
+}

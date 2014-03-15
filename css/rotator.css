@@ -1,0 +1,68 @@
+/************************Стили для banner rotate******************************/
+
+div.main_rotator
+{
+    overflow: hidden;
+    position: relative;
+    margin: 0 auto;
+    padding: 0;
+}
+
+div.main_rotator ul
+{
+    margin: 0;
+    padding: 0;
+}
+
+div.main_rotator li
+{
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+a.rotator-nav
+{
+    position: absolute;
+    top: 50%;
+    margin-top: -20px;
+    z-index: 3;
+    cursor: pointer;
+}
+
+a.rotator-nav div
+{
+    height: 41px;
+    width: 41px;
+    background: url(/img/design/bullets/rotator_nav.png) no-repeat;
+}
+
+#rotator-left
+{
+    left: -1px;
+}
+
+#rotator-left div
+{
+    background-position: 0 0;
+}
+
+#rotator-left:hover div
+{
+    background-position: 0 -41px;
+}
+
+#rotator-right
+{
+    right: -1px;
+}
+
+#rotator-right div
+{
+    background-position: -41px 0;
+}
+
+#rotator-right:hover div
+{
+    background-position: -41px -41px;
+}
