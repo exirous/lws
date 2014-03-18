@@ -546,7 +546,7 @@ abstract class GxActiveRecord extends CActiveRecord {
 	 * @see CActiveRecord::save
 	 * @see saveWithRelated
 	 */
-	public static function saveMultiple($models, $runValidation = true, $options = array()) {
+	public function saveMultiple($models, $runValidation = true, $options = array()) {
 		// Merge the specified options with the default options.
 		$options = array_merge(
 						// The default options.

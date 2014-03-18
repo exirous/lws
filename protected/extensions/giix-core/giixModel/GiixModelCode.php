@@ -21,7 +21,7 @@ class GiixModelCode extends ModelCode {
 	/**
 	 * @var string The (base) model base class name.
 	 */
-	public $baseClass = 'GxActiveRecord';
+	public $baseClass = 'AActiveRecord';
 	/**
 	 * @var string The path of the base model.
 	 */
@@ -29,7 +29,7 @@ class GiixModelCode extends ModelCode {
 	/**
 	 * @var string The base model class name.
 	 */
-	public $baseModelClass;
+	public $baseModelClass = 'AActiveRecord';
 
 	/**
 	 * Prepares the code files to be generated.
@@ -371,6 +371,21 @@ class GiixModelCode extends ModelCode {
 </ul>
 <p style="margin: 2px 0; position: relative; text-align: right; top: -15px; color: #668866;">icons by <a href="http://www.famfamfam.com/lab/icons/silk/" style="color: #668866;">famfamfam.com</a></p>
 EOM;
+	}
+	
+	/**
+	 * #MethodTracker
+	 * This method overrides {@link CCodeModel::confirmed}, from version 1.1.13. Changes:
+	 * <ul>
+	 * <li>Support for {@link http://www.yiiframework.com/extension/giic/ giic} out-of-the-box.</li>
+	 * </ul>
+	 */
+	public function confirmed($file) {
+		if (defined('GIIC_ALL_CONFIRMED') && (GIIC_ALL_CONFIRMED === true)) {
+			return true;
+		} else {
+			return parent::confirmed($file);
+		}
 	}
 
 }

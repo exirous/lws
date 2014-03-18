@@ -18,7 +18,7 @@
  */
 
 
-abstract class BActiveRecord extends GxActiveRecord
+abstract class AActiveRecord extends GxActiveRecord
 {
     protected abstract function getTextColumns();
 
