@@ -5,7 +5,6 @@ class SiteController extends Controller
     /**
      * Declares class-based actions.
      */
-    var $activeMenu = 'home';
 
     public function actions()
     {
@@ -31,20 +30,7 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
-        /*$ops = Offer::model()->withAddTable(1)->findAll();
-        foreach ($ops as $op)
-        {
-            //echo nl2br(print_r($op->getMetaData()->columns,true));
-            //echo $op->var2;
-        }*/
-        $this->render('index');
-    }
-
-    public function actionRedirectById()
-    {
-        $id = Yii::app()->getRequest()->getQuery('id');
-        $property = Property::model()->findByPk($id);
-        echo $property->short_description;
+        $this->renderText('');
     }
 
     /**
@@ -61,33 +47,7 @@ class SiteController extends Controller
         }
     }
 
-    /**
-     * Displays the contact page
-     */
-    public function actionContact()
-    {
-        $model = new ContactForm;
-        if (isset($_POST['ContactForm']))
-        {
-            $model->attributes = $_POST['ContactForm'];
-            if ($model->validate())
-            {
-                $name = '=?UTF-8?B?' . base64_encode($model->name) . '?=';
-                $subject = '=?UTF-8?B?' . base64_encode($model->subject) . '?=';
-                $headers = "From: $name <{$model->email}>\r\n" .
-                    "Reply-To: {$model->email}\r\n" .
-                    "MIME-Version: 1.0\r\n" .
-                    "Content-type: text/plain; charset=UTF-8";
-
-                mail(Yii::app()->params['adminEmail'], $subject, $model->body, $headers);
-                Yii::app()->user->setFlash('contact', 'Thank you for contacting us. We will respond to you as soon as possible.');
-                $this->refresh();
-            }
-        }
-        $this->render('contact', array('model' => $model));
-    }
-
-    /**
+      /**
      * Displays the login page
      */
     public function actionLogin()

@@ -60,6 +60,7 @@ img
     z-index: 1;
     background: #eee;
 }
+
 .contentTable
 {
     width: 1200px;
@@ -134,24 +135,61 @@ img
     background: url(/img/design/menustripe.png) repeat-x;
     margin: 0 -21px 0 -12px;
     position: relative;
+    padding-left: 230px;
+    margin-bottom: 10px;
+}
+
+.main_menu a
+{
+    padding: 5px;
+    display: inline-block;
+    text-decoration: none;
+    color: #000;
+    font-weight: bold;
+}
+
+.main_menu a:hover
+{
+    color: #fff;
 }
 
 .content
 {
     display: table-row;
+    min-height: 200px;
 }
 
 .left_content
 {
-    width:230px;
-    padding-right:20px;
+    width: 210px;
+    max-width: 210px;
+    padding-right: 20px;
     min-height: 200px;
     display: table-cell;
+    border-right: 1px dashed #000020;
+    vertical-align: top;
+    overflow: hidden;
 }
 
 .center_content
 {
-    width:902px;
+    width: 902px;
     min-height: 200px;
     display: table-cell;
+    padding-left: 20px;
+    vertical-align: top;
+}
+
+ul
+{
+    list-style: none;
+    margin: 0;
+    padding: 0 0 0 8px;
+}
+
+li
+{
+    white-space: nowrap;
+    margin: 0;
+    padding: 0;
 }

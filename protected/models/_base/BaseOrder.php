@@ -11,10 +11,10 @@
  *
  * @property string $id
  * @property string $text
- * @property string $issuer
+ * @property string $issuer_id
  * @property string $time
  *
- * @property User $issuer0
+ * @property User $issuer
  * @property User[] $users
  */
 abstract class BaseOrder extends AActiveRecord
@@ -44,17 +44,17 @@ abstract class BaseOrder extends AActiveRecord
     {
         return array(
             array('time', 'required'),
-            array('issuer', 'length', 'max'=>10),
+            array('issuer_id', 'length', 'max'=>10),
             array('text', 'safe'),
-            array('text, issuer', 'default', 'setOnEmpty' => true, 'value' => null),
-            array('id, text, issuer, time', 'safe', 'on' => 'search'),
+            array('text, issuer_id', 'default', 'setOnEmpty' => true, 'value' => null),
+            array('id, text, issuer_id, time', 'safe', 'on' => 'search'),
         );
     }
 
     public function relations()
     {
         return array(
-            'issuer0' => array(self::BELONGS_TO, 'User', 'issuer'),
+            'issuer' => array(self::BELONGS_TO, 'User', 'issuer_id'),
             'users' => array(self::MANY_MANY, 'User', 'order_participants(order_id, user_id)'),
         );
     }
@@ -71,9 +71,9 @@ abstract class BaseOrder extends AActiveRecord
         return array(
             'id' => Yii::t('app', 'ID'),
             'text' => Yii::t('app', 'Text'),
-            'issuer' => null,
+            'issuer_id' => null,
             'time' => Yii::t('app', 'Time'),
-            'issuer0' => null,
+            'issuer' => null,
             'users' => null,
         );
     }
@@ -84,7 +84,7 @@ abstract class BaseOrder extends AActiveRecord
 
         $criteria->compare('id', $this->id, true);
         $criteria->compare('text', $this->text, true);
-        $criteria->compare('issuer', $this->issuer);
+        $criteria->compare('issuer_id', $this->issuer_id);
         $criteria->compare('time', $this->time, true);
 
         return new CActiveDataProvider($this, array(

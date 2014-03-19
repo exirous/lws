@@ -78,6 +78,8 @@
  * @property string $baseUrl The relative URL for the application.
  * @property string $homeUrl The homepage URL.
  *
+ * @property TeamSpeak $ts The database connection.
+ *
  * @author Qiang Xue <qiang.xue@gmail.com>
  * @package system.base
  * @since 1.0

@@ -21,8 +21,6 @@ return array(
     ),
 
     'modules'    => array(
-        // uncomment the following to enable the Gii tool
-
         'gii' => array(
             'class'          => 'system.gii.GiiModule',
             'generatorPaths' => array(
@@ -36,6 +34,9 @@ return array(
     ),
     // application components
     'components' => array(
+        'ts'=>[
+            'class'  => 'application.components.TeamSpeak',
+        ],
         'user'         => array(
             // enable cookie-based authentication
             'allowAutoLogin' => true,
