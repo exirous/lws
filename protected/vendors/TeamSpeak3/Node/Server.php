@@ -1218,7 +1218,6 @@ class TeamSpeak3_Node_Server extends TeamSpeak3_Node_Abstract
   public function serverGroupClientAdd($sgid, $cldbid)
   {
     $this->clientListReset();
-
     $this->execute("servergroupaddclient", array("sgid" => $sgid, "cldbid" => $cldbid));
   }
 

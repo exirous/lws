@@ -37,6 +37,9 @@
                             <ul ng-controller="TSViewCtrl">
                                 <li ng-repeat="channel in tree" ng-include="'TreeItemTmpl'">
                                 </li>
+                                <li ng-show="!tree.length">
+                                    Никого нету :)
+                                </li>
                             </ul>
                         </div>
                         <div class="center_content" ui-view>
