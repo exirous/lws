@@ -33,7 +33,7 @@
                     <div class="main_menu"><a ui-sref="news">Главная</a></div>
                     <div class="content" style="min-height:200px">
                         <div class="left_content">
-                            <h2>Онлайн</h2>
+                            <h2>Онлайн в ТС</h2>
                             <ul ng-controller="TSViewCtrl">
                                 <li ng-repeat="channel in tree" ng-include="'TreeItemTmpl'">
                                 </li>
@@ -55,16 +55,29 @@
 </div>
 
 <script type="text/ng-template" id="NewsTmpl">
-    <h1>Новости</h1>
+    <h1>Приказы и объявления</h1>
     <div ng-repeat="newsRec in news" class="news_record {{newsRecord.type}}">
-        <div>{{newsRec.issuer.name}}</div><div>{{newsRec.text}}</div>
+        <div><a href="#/user/view/{{newsRec.issuer.id}}">{{newsRec.issuer.name}}</a></div>
+        <div>{{newsRec.text}}</div>
     </div>
 </script>
+
+<script type="text/ng-template" id="UserTmpl">
+    <div ng-show="user">
+        <h1>Пилот "{{user.nickname}}" {{user.name}}</h1>
+        <div><img ng-src="/img/users/{{user.id}}.jpg"></div>
+    </div>
+</script>
+
+
 <script type="text/ng-template" id="TreeItemTmpl">
-    {{channel.name}}
+    <img src="/img/design/bullets/channel_icon.png"><span> {{channel.name}}</span>
     <ul>
         <li ng-repeat="channel in channel.channels" ng-include="'TreeItemTmpl'"></li>
-        <li ng-repeat="client in channel.clients"><img class="ts_group_icon" ng-repeat="group in client.groups" ng-src="/img/groups/{{group.id}}.png" title="{{group.name}}"> {{client.name}}
+        <li ng-repeat="client in channel.clients"><img class="ts_group_icon" ng-repeat="group in client.groups"
+                                                       ng-src="/img/groups/{{group.id}}.png" title="{{group.name}}"/><a
+                ng-if="client.id" href="#/user/view/{{client.id}}"> {{client.name | clearNickname}}</a><span
+                ng-if="!client.id"> {{client.name | clearNickname}}</span>
         </li>
     </ul>
 </script>

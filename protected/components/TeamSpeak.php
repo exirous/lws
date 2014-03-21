@@ -21,8 +21,7 @@ class TeamSpeak extends CApplicationComponent
         {
             Yii::registerAutoloader(array('TeamSpeak3', 'autoload'));
             $this->ts3Server = TeamSpeak3::factory($this->connectionString);
-        }
-        catch (TeamSpeak3_Adapter_ServerQuery_Exception $e)
+        } catch (TeamSpeak3_Adapter_ServerQuery_Exception $e)
         {
             $this->ts3Server = false;
         }
@@ -39,11 +38,66 @@ class TeamSpeak extends CApplicationComponent
     }
 
     /**
-     * @return TeamSpeak3_Node_Channel[]
-    */
-    public function channelList()
+     * @return Array[]
+     */
+    public function channelTree()
     {
-        return $this->ts3Server->channelList();
+        /**
+         * @param $channels TeamSpeak3_Node_Channel[]
+         */
+        function getRecursiveList($channels, $isTop, &$knownGroups)
+        {
+            $tree = [];
+            foreach ($channels as $channel)
+            {
+                if ($isTop && $channel->getLevel() > 0)
+                    continue;
+                /**
+                 * @var $client TeamSpeak3_Node_Client
+                 */
+                $clients = [];
+                foreach ($channel->clientList() as $client)
+                {
+                    if (strpos($client['client_nickname']->toString(), 'serveradmin') !== false)
+                        continue;
+
+                    $user = User::model()->find(['condition' => 'ts_id=:id', 'params' => [':id' => $client->getUniqueId()]]);
+
+                    $clientNode = ['name' => $client['client_nickname']->toString(), 'groups' => []];
+                    if ($user)
+                        $clientNode['id'] = $user->id;
+                    /**
+                     * @var $group TeamSpeak3_Node_Servergroup
+                     */
+                    foreach (explode(",", $client["client_servergroups"]) as $sgid)
+                    {
+                        if (!isset($knownGroups[$sgid]))
+                            $knownGroups[$sgid] = $client->getParent()->serverGroupGetById($sgid);
+                        $group = $knownGroups[$sgid];
+                        if ($group["iconid"])
+                        {
+                            if (!file_exists(dirname(Yii::app()->basePath) . '/img/groups/' . $sgid . '.png'))
+                                file_put_contents(dirname(Yii::app()->basePath) . '/img/groups/' . $sgid . '.png', $group->iconDownload()->toString());
+                            $clientNode['groups'][] = ['name' => $group->toString(), 'id' => $sgid];
+                        }
+                    }
+                    $clients[] = $clientNode;
+                }
+
+                $channelNode = [
+                    'name' => $channel->toString(),
+                    'channels' => getRecursiveList($channel->subChannelList(), false, $knownGroups),
+                    'clients' => $clients
+                ];
+
+                if (count($channelNode['clients']) || count($channelNode['channels']))
+                    $tree[] = $channelNode;
+            }
+            return $tree;
+        }
+
+        $knownGroups = [];
+        return getRecursiveList($this->ts3Server->channelList(), true, $knownGroups);
     }
 
     public function maintance()
@@ -54,11 +108,10 @@ class TeamSpeak extends CApplicationComponent
             try
             {
                 $serverGroup = $this->ts3Server->serverGroupGetByName($warcraftClass->name);
-            }
-            catch (TeamSpeak3_Adapter_ServerQuery_Exception $e)
+            } catch (TeamSpeak3_Adapter_ServerQuery_Exception $e)
             {
                 $serverGroupId = $this->ts3Server->serverGroupCreate($warcraftClass->name);
-                $serverGroup   = $this->ts3Server->serverGroupGetById($serverGroupId);
+                $serverGroup = $this->ts3Server->serverGroupGetById($serverGroupId);
             }
         }
 
@@ -74,8 +127,7 @@ class TeamSpeak extends CApplicationComponent
                 try
                 {
                     $this->ts3Server->serverGroupClientAdd($this->getServerGroupIdByName($serverGroupName), $client_id);
-                }
-                catch (TeamSpeak3_Adapter_ServerQuery_Exception $e)
+                } catch (TeamSpeak3_Adapter_ServerQuery_Exception $e)
                 {
                 }
 
@@ -89,8 +141,7 @@ class TeamSpeak extends CApplicationComponent
         try
         {
             $tokenList = array_keys($this->ts3Server->tokenList());
-        }
-        catch (TeamSpeak3_Adapter_ServerQuery_Exception $e)
+        } catch (TeamSpeak3_Adapter_ServerQuery_Exception $e)
         {
             return false;
         }
