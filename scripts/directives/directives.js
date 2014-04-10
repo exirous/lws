@@ -1,0 +1,1 @@
+var lwsDirectives = angular.module('app.directives',[]);

@@ -2,8 +2,6 @@
 
 class NewsController extends Controller
 {
-    var $layout = "json";
-
     public function actions()
     {
         Yii::t('forms', 'cate');
@@ -21,39 +19,22 @@ class NewsController extends Controller
         );
     }
 
+
+
     public function actionLast()
     {
-        $content = ['news' => []];
-        foreach (News::model()->findAll(['order' => 'id desc', 'limit' => 8]) as $news)
+        $request = Yii::app()->request;
+        //$action = $request->getRequiredParam('action', 'none', AHttpRequest::PARAM_TYPE_STRING);
+        switch ($request->method)
         {
-            $content['news'][] = [
-                'time'    => $news->time,
-                'timepar' => strtotime($news->time),
-                'type'    => 'news',
-                'id'      => $news->id,
-                'text'    => $news->text,
-                'issuer'  => ['id' => $news->issuer_id, 'name' => $news->issuer->nickname]
-            ];
+            case AHttpRequest::METHOD_GET:
+                $this->returnSuccess(News::getLast());
+                break;
+            default:
+                $this->returnError();
         }
-        foreach (Order::model()->findAll(['order' => 'id desc', 'limit' => 8]) as $order)
-        {
-            $content['news'][] = [
-                'time'    => $order->time,
-                'timepar' => strtotime($order->time),
-                'type'    => 'order',
-                'id'      => $order->id,
-                'text'    => $order->text,
-                'issuer'  => ['id' => $order->issuer_id, 'name' => $order->issuer->nickname]
-            ];
-        }
-
-        usort($content['news'], function ($a, $b)
-        {
-            return $a['timepar'] > $b['timepar'] ? -1 : 1;
-        });
-
-        $this->render('//common/json', compact('content'));
     }
+
 
     /**
      * This is the action to handle external exceptions.

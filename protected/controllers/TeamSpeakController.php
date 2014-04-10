@@ -2,8 +2,6 @@
 
 class TeamSpeakController extends Controller
 {
-    var $layout = "json";
-
     public function actions()
     {
         Yii::t('forms', 'cate');
@@ -23,8 +21,15 @@ class TeamSpeakController extends Controller
 
     public function actionViewTree()
     {
-        $content = ['tree' => Yii::app()->ts->channelTree()];
-        $this->render('//common/json', compact('content'));
+        $request = Yii::app()->request;
+        switch ($request->method)
+        {
+            case AHttpRequest::METHOD_GET:
+                $this->returnSuccess(Yii::app()->ts->channelTree());
+                break;
+            default:
+                $this->returnError();
+        }
     }
 
     public function actionTest()
@@ -72,10 +77,6 @@ class TeamSpeakController extends Controller
         //Yii::app()->ts->ts3Server->clientGetById(20)->message("[COLOR=red]your client is [B]outdated[/B]... update to [U]ASD[/U] now![/COLOR]");
     }
 
-    public function actionViewHtmlTree()
-    {
-        echo Yii::app()->ts->ts3Server->getViewer(new TeamSpeak3_Viewer_Html("images/viewericons/", "images/countryflags/", "data:image"));
-    }
 
     /**
      * This is the action to handle external exceptions.

@@ -52,6 +52,7 @@ class DaemonCommand extends CConsoleCommand
                 if ($client)
                 {
                     sleep(1);
+                    Yii::app()->ts->notifyInstructors();
                     $client->message("[COLOR=red][B]Спасибо![/B][/COLOR] [COLOR=blue]Все инструктора были информированны о вашем прибытии, возможно вам прийдётся подождать! :)[/COLOR]");
                 }
             }

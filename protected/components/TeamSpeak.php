@@ -39,6 +39,11 @@ class TeamSpeak extends CApplicationComponent
         }
     }
 
+
+
+    /**
+     * @return TeamSpeak3_Node_Client[]
+     * */
     public function clientList()
     {
         return $this->ts3Server->clientList();
@@ -128,6 +133,24 @@ class TeamSpeak extends CApplicationComponent
             return false;
         }
         return in_array($token, $tokenList);
+    }
+
+    public function notifyInstructors()
+    {
+        $clients = $this->clientList();
+        foreach ($clients as $client)
+        {
+            $isInstructor = false;
+            $groups = explode(',',$client["client_servergroups"]);
+            foreach (['9','27','28'] as $group)
+                if (in_array($group,$groups))
+                {
+                    $isInstructor = true;
+                    break;
+                }
+            if ($isInstructor)
+                $client->poke("Уважаемый инструктор! вас ожидают в приёмной!");
+        }
     }
 
     public function generateNormalToken($forName = "")

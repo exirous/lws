@@ -11,10 +11,13 @@
  *
  * @property string $id
  * @property string $nickname
- * @property string $fistname
+ * @property string $firstname
  * @property string $email
  * @property string $password
  * @property string $ts_id
+ * @property string $join_date
+ * @property string $birth_date
+ * @property string $roster
  *
  * @property BattleEvent[] $battleEvents
  * @property News[] $news
@@ -50,10 +53,12 @@ abstract class BaseUser extends AActiveRecord
     public function rules()
     {
         return array(
-            array('nickname, fistname, email, password', 'length', 'max'=>32),
-            array('ts_id', 'length', 'max'=>64),
-            array('nickname, fistname, email, password, ts_id', 'default', 'setOnEmpty' => true, 'value' => null),
-            array('id, nickname, fistname, email, password, ts_id', 'safe', 'on' => 'search'),
+            array('nickname, password', 'length', 'max'=>32),
+            array('firstname', 'length', 'max'=>128),
+            array('email, ts_id', 'length', 'max'=>64),
+            array('join_date, birth_date, roster', 'safe'),
+            array('nickname, firstname, email, password, ts_id, join_date, birth_date, roster', 'default', 'setOnEmpty' => true, 'value' => null),
+            array('id, nickname, firstname, email, password, ts_id, join_date, birth_date, roster', 'safe', 'on' => 'search'),
         );
     }
 
@@ -84,10 +89,13 @@ abstract class BaseUser extends AActiveRecord
         return array(
             'id' => Yii::t('app', 'ID'),
             'nickname' => Yii::t('app', 'Nickname'),
-            'fistname' => Yii::t('app', 'Fistname'),
+            'firstname' => Yii::t('app', 'Firstname'),
             'email' => Yii::t('app', 'Email'),
             'password' => Yii::t('app', 'Password'),
             'ts_id' => Yii::t('app', 'Ts'),
+            'join_date' => Yii::t('app', 'Join Date'),
+            'birth_date' => Yii::t('app', 'Birth Date'),
+            'roster' => Yii::t('app', 'Roster'),
             'battleEvents' => null,
             'news' => null,
             'notifications' => null,
@@ -104,10 +112,13 @@ abstract class BaseUser extends AActiveRecord
 
         $criteria->compare('id', $this->id, true);
         $criteria->compare('nickname', $this->nickname, true);
-        $criteria->compare('fistname', $this->fistname, true);
+        $criteria->compare('firstname', $this->firstname, true);
         $criteria->compare('email', $this->email, true);
         $criteria->compare('password', $this->password, true);
         $criteria->compare('ts_id', $this->ts_id, true);
+        $criteria->compare('join_date', $this->join_date, true);
+        $criteria->compare('birth_date', $this->birth_date, true);
+        $criteria->compare('roster', $this->roster, true);
 
         return new CActiveDataProvider($this, array(
             'criteria' => $criteria,

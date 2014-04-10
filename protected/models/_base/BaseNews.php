@@ -13,6 +13,7 @@
  * @property string $text
  * @property string $issuer_id
  * @property string $time
+ * @property string $title
  *
  * @property User $issuer
  */
@@ -44,9 +45,10 @@ abstract class BaseNews extends AActiveRecord
         return array(
             array('time', 'required'),
             array('issuer_id', 'length', 'max'=>10),
+            array('title', 'length', 'max'=>256),
             array('text', 'safe'),
-            array('text, issuer_id', 'default', 'setOnEmpty' => true, 'value' => null),
-            array('id, text, issuer_id, time', 'safe', 'on' => 'search'),
+            array('text, issuer_id, title', 'default', 'setOnEmpty' => true, 'value' => null),
+            array('id, text, issuer_id, time, title', 'safe', 'on' => 'search'),
         );
     }
 
@@ -70,6 +72,7 @@ abstract class BaseNews extends AActiveRecord
             'text' => Yii::t('app', 'Text'),
             'issuer_id' => null,
             'time' => Yii::t('app', 'Time'),
+            'title' => Yii::t('app', 'Title'),
             'issuer' => null,
         );
     }
@@ -82,6 +85,7 @@ abstract class BaseNews extends AActiveRecord
         $criteria->compare('text', $this->text, true);
         $criteria->compare('issuer_id', $this->issuer_id);
         $criteria->compare('time', $this->time, true);
+        $criteria->compare('title', $this->title, true);
 
         return new CActiveDataProvider($this, array(
             'criteria' => $criteria,

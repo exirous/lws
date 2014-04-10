@@ -13,16 +13,197 @@ class UserController extends Controller
         );
     }
 
-    public function actionView()
+
+    public function actionLogin()
     {
-        $user = User::model()->findByPk(Yii::app()->request->getQuery('id'));
-        $content['user'] = [];
-        if ($user)
+        $request = Yii::app()->request;
+        $email = $request->getRequiredRawBodyParam('email', null, AHttpRequest::PARAM_TYPE_STRING);
+        $password = $request->getRequiredRawBodyParam('password', null, AHttpRequest::PARAM_TYPE_STRING);
+        switch ($request->method)
         {
-            $content['user'] = ['nickname' => $user->nickname, 'name' => $user->fistname, 'id' => $user->id];
+            case AHttpRequest::METHOD_POST:
+                $this->returnSuccess($this->_loginUser($email, $password));
+                break;
+            default:
+                $this->returnError();
         }
-        $this->render('//common/json', compact('content'));
     }
+
+    public function actionLogout()
+    {
+        try
+        {
+            $request = Yii::app()->request;
+            switch ($request->method)
+            {
+                case AHttpRequest::METHOD_POST:
+                    $this->returnSuccess($this->_logoutUser());
+                    break;
+                default:
+                    $this->returnError();
+            }
+        } catch (Exception $e)
+        {
+            $this->returnError($e->getMessage());
+        }
+    }
+
+
+    public function actionItem()
+    {
+        //$transaction = Yii::app()->db->beginTransaction();
+        try
+        {
+            $request = Yii::app()->request;
+            $id = $request->getRequiredParam('id', 0, AHttpRequest::PARAM_TYPE_NUMERIC);
+            switch ($request->method)
+            {
+                case AHttpRequest::METHOD_GET:
+                    $this->returnSuccess($this->_renderUser($id));
+                    break;
+                default:
+                    $this->returnError();
+            }
+            //  $transaction->commit();
+        } catch (Exception $e)
+        {
+            //$transaction->rollback();
+            $this->returnError($e->getMessage());
+        }
+    }
+
+    public function actionRoster()
+    {
+        $request = Yii::app()->request;
+        $user = $request->getRequiredRawBodyParam('user', [], AHttpRequest::PARAM_TYPE_ARRAY);
+        switch ($request->method)
+        {
+            case AHttpRequest::METHOD_POST:
+                $this->returnSuccess($this->_rosterUser($user));
+                break;
+            default:
+                $this->returnError();
+        }
+    }
+
+    public function actionRecover()
+    {
+        $request = Yii::app()->request;
+        $email = $request->getRequiredRawBodyParam('email', [], AHttpRequest::PARAM_TYPE_STRING);
+        switch ($request->method)
+        {
+            case AHttpRequest::METHOD_POST:
+                $this->returnSuccess($this->_recoverUser($email));
+                break;
+            default:
+                $this->returnError();
+        }
+    }
+
+    private function _renderUser($id)
+    {
+        $user = User::model()->findByPk($id);
+        if (!$user)
+            throw new Exception("User not found!");
+        return $user->publicAttributes;
+    }
+
+    private function _loginUser($username, $password)
+    {
+        $userModel = null;
+        try
+        {
+            $identity = new UserIdentity($username, $password);
+            if ($identity->authenticate())
+                Yii::app()->user->login($identity, 3600 * 24 * 365);
+            else
+                throw new Exception("Не правильный логин или пароль!");
+
+            return $identity->_model->privateAttributes;
+        } catch (Exception $e)
+        {
+            $this->returnError($e->getMessage());
+        }
+        return [];
+    }
+
+    private function _logoutUser()
+    {
+        Yii::app()->user->logout();
+        return [];
+    }
+
+    private function _rosterUser($user)
+    {
+        $transaction = Yii::app()->db->beginTransaction();
+        $userModel = null;
+        try
+        {
+            $userModel = User::roster($user);
+            if (!$userModel)
+                throw new Exception("Что-то пошло не так... Администратор оповещён");
+
+            $identity = new UserIdentity($userModel->email, '');
+            if ($identity->forceAuthenticate($userModel))
+                Yii::app()->user->login($identity, 3600 * 24 * 365);
+            else
+                throw new Exception("Что-то пошло не так... Администратор оповещён");
+
+            $transaction->commit();
+        } catch (Exception $e)
+        {
+            $transaction->rollback();
+            $this->returnError($e->getMessage());
+        }
+        return Yii::app()->user->privateAttributes;
+    }
+
+
+    private function _recoverUser($email)
+    {
+        $transaction = Yii::app()->db->beginTransaction();
+        try
+        {
+            ////User::recover($email);
+            $transaction->commit();
+        } catch (Exception $e)
+        {
+            $transaction->rollback();
+            $this->returnError($e->getMessage());
+        }
+        return [];//Yii::app()->user->privateAttributes;
+    }
+
+    /*
+        $transaction = Yii::app()->db->beginTransaction();
+        try
+        {
+            $string = null;
+            $value = isset($translation['value']) ? $translation['value'] : '';
+            switch ($type)
+            {
+                case 'string':
+                    $string = StringTranslation::saveTranslation($stringId, $languageId, $value);
+                    break;
+                case 'plural':
+                    //Here we use plural_string_id
+                    $string = PluralStringTranslation::saveTranslation($stringId, $languageId, $value);
+                    break;
+                default:
+                    throw  new Exception('Failed to save string translation. Reason: Input Data Error');
+            }
+
+            $transaction->commit();
+            $this->returnSuccess(['string' => $string], Yii::t('app', 'String translation successfully updated'));
+        }
+        catch (Exception $e)
+        {
+            $transaction->rollback();
+            $this->returnError($e->getMessage());
+        }
+
+     * */
+
 
     /**
      * This is the action to handle external exceptions.

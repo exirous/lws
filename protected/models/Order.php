@@ -33,4 +33,18 @@ class Order extends BaseOrder
     {
         return parent::model($className);
     }
+
+    public function renderAttributes()
+    {
+        $time = strtotime($this->time);
+        return [
+            'title'=>'Выдан Приказ',
+            'time' => date('d.m.Y',$time),
+            'timepar' => $time,
+            'type' => 'order',
+            'id' => $this->id,
+            'text' => $this->text,
+            'issuer' => ['id' => $this->issuer_id, 'name' => $this->issuer->nickname]
+        ];
+    }
 }

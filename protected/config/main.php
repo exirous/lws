@@ -38,11 +38,12 @@ return array(
             'class'  => 'application.components.TeamSpeak',
         ],
         'user'         => array(
+            'class'=>'application.components.AWebUser',
             // enable cookie-based authentication
             'allowAutoLogin' => true,
-            'session'        => array(
+            /*'session'        => array(
                 'autoStart' => true,
-            ),
+            ),*/
         ),
 
         'image'        => array(
@@ -52,7 +53,9 @@ return array(
             // ImageMagick setup path
             'params' => array('directory' => '/opt/local/bin'),
         ),
-
+        'request' => [
+            'class' => 'AHttpRequest'
+        ],
         'urlManager'   => array(
             'urlFormat'      => 'path',
             'showScriptName' => false,

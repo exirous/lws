@@ -9,8 +9,6 @@ class Controller extends CController
     {
         if (Yii::app()->getRequest()->getQuery('lang'))
             Yii::app()->params['language'] = Yii::app()->getRequest()->getQuery('lang');
-
-        //Yii::app()->getClientScript()->registerScript('',CClientScript::POS_READY);
         return parent::__construct($id, $module);
     }
 
@@ -26,6 +24,25 @@ class Controller extends CController
         {
             die(file_get_contents('workinprogress.html'));
         }
+    }
+
+    public function returnSuccess($data = [])
+    {
+        $this->layout = '//layouts/json';
+        $text = CJSON::encode(['data'=>$data]);
+        $this->renderText($text);
+    }
+
+    public function returnError($message = null, $errors = [])
+    {
+        $this->layout = '//layouts/json';
+        $text = CJSON::encode([
+            'message' => $message,
+            'errors' => $errors
+        ]);
+        header('HTTP/1.0 403 Forbidden');
+        $this->renderText($text);
+        Yii::app()->end();
     }
 
 

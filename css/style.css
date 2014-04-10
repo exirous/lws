@@ -1,8 +1,16 @@
+html
+{
+    height:99%;
+    margin: 0;
+    padding: 0;
+}
+
 body
 {
     margin: 0;
     padding: 0;
     background: #e0e9ee url(/img/design/cloud_background.jpg) 60% 0 fixed no-repeat;
+    height:100%;
 }
 
 .main_wrapper
@@ -39,11 +47,12 @@ img
 {
     display: block;
     background: url(/img/design/logo.png) no-repeat;
-    width: 212px;
+    width: 194px;
     height: 165px;
-    margin: -110px 0 0 30px;
+    margin: -120px 0 0 40px;
     position: relative;
     z-index: 10;
+    pointer-events:none;
 }
 
 .photostack
@@ -64,13 +73,15 @@ img
 .contentTable
 {
     width: 1200px;
-    margin-top: -60px;
+    margin-top: -50px;
+    margin-left: -5px;
 }
 
 .contentTable tr, .contentTable td
 {
     padding: 0;
     margin: 0;
+    vertical-align: top;
 }
 
 .contentTable .tr, .contentTable .tl, .contentTable .br, .contentTable .bl
@@ -83,47 +94,47 @@ img
     max-width: 14px;
 }
 
-.contentTable .tr
+.contentTable > tbody > tr > .tr
 {
     background: url(/img/design/contentbg_tr.png) no-repeat;
 }
 
-.contentTable .tl
+.contentTable > tbody > tr > .tl
 {
     background: url(/img/design/contentbg_tl.png) no-repeat;
 }
 
-.contentTable .br
+.contentTable > tbody > tr > .br
 {
     background: url(/img/design/contentbg_br.png) no-repeat;
 }
 
-.contentTable .bl
+.contentTable > tbody > tr > .bl
 {
     background: url(/img/design/contentbg_bl.png) no-repeat;
 }
 
-.contentTable .tm
+.contentTable > tbody > tr > .tm
 {
     background: url(/img/design/contentbg_tm.png) repeat-x;
 }
 
-.contentTable .bm
+.contentTable > tbody > tr > .bm
 {
     background: url(/img/design/contentbg_bm.png) repeat-x;
 }
 
-.contentTable .ml
+.contentTable > tbody > tr > .ml
 {
     background: url(/img/design/contentbg_ml.png) repeat-y;
 }
 
-.contentTable .mr
+.contentTable > tbody > tr > .mr
 {
     background: url(/img/design/contentbg_mr.png) repeat-y;
 }
 
-.contentTable .mm
+.contentTable > tbody > tr > .mm
 {
     padding: 25px 10px 10px 10px;
     background: #fbf9f8;
@@ -135,17 +146,18 @@ img
     background: url(/img/design/menustripe.png) repeat-x;
     margin: 0 -21px 0 -12px;
     position: relative;
-    padding-left: 230px;
+    padding-left: 0px;
     margin-bottom: 10px;
 }
 
 .main_menu a
 {
-    padding: 5px;
+    padding: 5px 10px;
     display: inline-block;
     text-decoration: none;
     color: #000;
     font-weight: bold;
+    border-right: 1px dotted #555;
 }
 
 .main_menu a:hover
@@ -163,10 +175,10 @@ img
 {
     width: 210px;
     max-width: 210px;
-    padding-right: 20px;
+    padding: 10px 0;
     min-height: 200px;
     display: table-cell;
-    border-right: 1px dashed #000020;
+    /*border-right: 1px dashed #000020;*/
     vertical-align: top;
     overflow: hidden;
 }
@@ -176,7 +188,7 @@ img
     width: 902px;
     min-height: 200px;
     display: table-cell;
-    padding-left: 20px;
+    padding-left: 10px;
     vertical-align: top;
 }
 
@@ -218,3 +230,23 @@ img
 {
     color:#999;
 }
+
+/* Fix for Bootstrap 3 with Angular UI Bootstrap */
+
+.modal {
+    display: block;
+}
+
+/* Custom dialog/modal headers */
+
+.dialog-header-error { background-color: #d2322d; }
+.dialog-header-wait { background-color: #428bca; }
+.dialog-header-notify { background-color: #eeeeee; }
+.dialog-header-confirm { background-color: #333333; }
+.dialog-header-error span, .dialog-header-error h4,
+.dialog-header-wait span, .dialog-header-wait h4,
+.dialog-header-confirm span, .dialog-header-confirm h4 { color: #ffffff; }
+
+/* Ease Display */
+
+.pad { padding: 25px; }
