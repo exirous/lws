@@ -40,7 +40,16 @@ function mainRouteConfig($stateProvider, $urlRouterProvider)
             templateUrl: 'AfterRosterTmpl',
             controller: "AfterRosterCtrl"
         })
-
+        .state('makeorder', {
+            url: "/makeorder",
+            templateUrl: 'OrderCreatorTmpl',
+            controller: "OrderCreatorCtrl"
+        })
+        .state('makenews', {
+            url: "/makenews",
+            templateUrl: 'NewsCreatorTmpl',
+            controller: "NewsCreatorCtrl"
+        })
 }
 lwsApp.config(mainRouteConfig);
 lwsApp.config( [

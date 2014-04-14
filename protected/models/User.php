@@ -41,7 +41,7 @@ class User extends BaseUser
     {
         return [
             'nickname' => $this->nickname,
-            'firstname' => $this->fistname,
+            'firstname' => $this->firstname,
             'id' => $this->id
         ];
     }
@@ -51,6 +51,8 @@ class User extends BaseUser
         return [
             'nickname' => $this->nickname,
             'firstname' => $this->firstname,
+            'canMakeOrders'=>true,
+            'canMakeNews'=>true,
             'fullname' => $this->nickname . ' (' . $this->firstname . ')',
             'id' => $this->id
         ];

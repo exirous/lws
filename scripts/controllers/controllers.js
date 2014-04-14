@@ -168,6 +168,14 @@ lwsControllers.controller('RosterCtrl',
 
         }]);
 
+lwsControllers.controller('OrderCreatorCtrl',
+    ['$scope', 'User', '$stateParams',
+        function ($scope, User, $stateParams)
+        {
+
+        }]);
+
+
 lwsControllers.controller("TSViewCtrl", ['$scope', 'TeamSpeak', '$timeout', function ($scope, TeamSpeak, $timeout)
 {
     var refreshTsView = function ()

@@ -58,6 +58,8 @@
                     <div class="main_menu">
                         <a ui-sref="news">Главная</a>
                         <a ui-sref="roster" ng-if="UserIdentity.isGuest">Вступить в школу</a>
+                        <a ui-sref="makeorder" ng-if="UserIdentity.canMakeOrders">Выдать приказ</a>
+                        <a ui-sref="makenews" ng-if="UserIdentity.canMakeOrders">Добавить новость</a>
                         <a href="" style="float:right" ng-click="login()" ng-if="UserIdentity.isGuest">Вход</a>
                         <a href="" style="float:right" ng-click="logout()" ng-if="!UserIdentity.isGuest">Выход</a>
                     </div>
@@ -327,5 +329,10 @@
         </div>
     </div>
 </script>
+
+<script  type="text/ng-template" id="OrderCreatorTmpl">
+
+</script>
+
 </body>
 </html>
