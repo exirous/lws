@@ -700,6 +700,7 @@ class TeamSpeak3_Node_Server extends TeamSpeak3_Node_Abstract
     return $this->execute("clientdbinfo", array("cldbid" => $cldbid))->toList();
   }
 
+
   /**
    * Returns a list of client database IDs matching a given pattern. You can either search for a clients
    * last known nickname or his unique identity by using the $uid option.

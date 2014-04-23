@@ -49,7 +49,7 @@ class User extends BaseUser
 
     public function getShortAttributes()
     {
-        $awards=  [];
+        $awards = [];
         foreach ($this->awards as $award)
             $awards[] = $award->id;
 
@@ -59,9 +59,9 @@ class User extends BaseUser
             'rank' => $this->rank_id,
             'old_rank' => $this->rank_id,
             'old_instructor' => $this->instructor_id,
-            'rank_name'=>$this->rank->name,
-            'instructor'=>$this->instructor_id,
-            'awards'=>$awards
+            'rank_name' => $this->rank->name,
+            'instructor' => $this->instructor_id,
+            'awards' => $awards
         ];
     }
 
@@ -97,4 +97,41 @@ class User extends BaseUser
         return $newUser;
     }
 
+    public function syncWithTeamSpeak()
+    {
+        $dbId = Yii::app()->ts->ts3Server->clientFindDb(Yii::app()->user->model->ts_id, true);
+        if (count($dbId))
+        {
+            $dbId = $dbId[0];
+            $groups = Yii::app()->ts->ts3Server->clientGetServerGroupsByDbid($dbId);
+            $ignoreRank = false;
+            $ignoreInstructor = false;
+            foreach ($groups as $groupId => $dummy)
+            {
+                if ($groupId == 8 || $groupId == 6)
+                    continue;
+                if ($groupId == $this->rank_id)
+                {
+                    $ignoreRank = true;
+                    continue;
+                }
+                if ($groupId == $this->instructor_id)
+                {
+                    $ignoreInstructor = true;
+                    continue;
+                }
+
+                Yii::app()->ts->ts3Server->serverGroupClientDel($groupId, $dbId);
+            }
+            if (!$ignoreRank)
+                Yii::app()->ts->ts3Server->serverGroupClientAdd($this->rank_id, $dbId);
+
+            if (!$ignoreInstructor && $this->instructor_id)
+                Yii::app()->ts->ts3Server->serverGroupClientAdd($this->instructor_id, $dbId);
+        }
+        else
+        {
+            throw new Exception('Пользователь не прикреплён к TeamSpeak');
+        }
+    }
 }

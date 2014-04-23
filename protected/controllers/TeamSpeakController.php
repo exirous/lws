@@ -49,12 +49,25 @@ class TeamSpeakController extends Controller
 
         //mb_send_mail("exirous@gmail.com","test","test");
 
-        $db = Yii::app()->ts->getDb();
+        //$db = Yii::app()->ts->getDb();
+
+
+
+        //echo Yii::app()->user->model->ts_id;
+
+
+        //$db = Yii::app()->ts->ts3Server->clientFindDb(Yii::app()->user->model->ts_id,true);
+        //echo nl2br(print_r(Yii::app()->ts->ts3Server->clientInfoDb($db[0]), true));
+
+        /*$db = Yii::app()->ts->ts3Server->clientGetServerGroupsByDbid(2);
         foreach ($db as $key => $client)
         {
-            if (stripos($client['client_nickname']->toString(), 'exirous') === false) continue;
+            //if (stripos($client['client_nickname']->toString(), 'exirous') === false) continue;
             echo '!=' . $key . ':' . nl2br(print_r($client, true)) . '<br>';
-        }
+        }*/
+
+
+        Yii::app()->user->model->syncWithTeamSpeak();
 
         //die(var_dump($db[126]));
         //Yii::app()->ts->ts3Server->serverGroupClientDel(7,129);

@@ -51,13 +51,21 @@
                     <div class="main_menu"><a href="ts3server://lws.exirous.com/?nickname={{UserIdentity.fullname}}">TeamSpeak</a>
                     </div>
                     <div class="left_content">
-                        <ul ng-controller="TSViewCtrl">
-                            <li ng-repeat="channel in tree" ng-include="'TreeItemTmpl'">
-                            </li>
-                            <li ng-show="!tree.length">
-                                Никого нету :)
-                            </li>
-                        </ul>
+                        <accordion close-others="true">
+                            <accordion-group heading="TeamSpeak" is-open="true">
+                                <ul ng-controller="TSViewCtrl" style="padding:0">
+                                    <li ng-repeat="channel in tree" ng-include="'TreeItemTmpl'">
+                                    </li>
+                                    <li ng-show="!tree.length">
+                                        Никого нету :)
+                                    </li>
+                                </ul>
+                            </accordion-group>
+                            <accordion-group heading="Заявки">
+                                фывфыв
+                            </accordion-group>
+                        </accordion>
+
                     </div>
                 </td>
                 <td class="mr"></td>
@@ -95,8 +103,7 @@
     <h2>Приказы и объявления</h2>
     <div ng-repeat="newsRec in news" class="news_record {{newsRecord.type}}">
         <h4>{{newsRec.title}}</h4>
-
-        <div>{{newsRec.text}}</div>
+        <div ng-bind-html="newsRec.text"></div>
         <div><span>{{newsRec.time}}</span> <img ng-src="{{newsRec.issuer.id | avatarUrl}}"
                                                 style="max-width: 15px;max-height: 15px;"> <a
                 href="#/user/view/{{newsRec.issuer.id}}">{{newsRec.issuer.name}}</a></div>

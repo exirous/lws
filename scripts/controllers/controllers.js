@@ -1,4 +1,4 @@
-angular.module('app.controllers', ['ui.router', 'app.directives', 'ui.bootstrap.datepicker', 'ui.bootstrap.buttons', 'ui.bootstrap.timepicker', 'ui.select2']);
+angular.module('app.controllers', ['ui.router', 'app.directives', 'ui.bootstrap.datepicker', 'ui.bootstrap.buttons','ui.bootstrap.accordion', 'ui.bootstrap.timepicker', 'ui.select2']);
 var lwsControllers = angular.module('app.controllers');
 
 lwsControllers.controller('AppCtrl',
@@ -240,28 +240,37 @@ lwsControllers.controller('OrderCreatorCtrl',
                 formatSelection: formatAward
             };
 
-            OrderGenerator.get({}, function (resource)
+            function reloadData()
             {
-                angular.extend($scope.initialData, resource.data);
-                var rankArray = [];
-                angular.forEach($scope.initialData.ranks,function(value,key){
-                    rankArray.push(value);
-                })
-                $scope.initialData.rankArray = rankArray;
-                rankArray = [];
-                angular.forEach($scope.initialData.instructors,function(value,key){
-                    rankArray.push(value);
-                })
-                $scope.initialData.instructorsArray = rankArray;
-            });
+                $scope.initialData = {pilots: {}};
+                $scope.orderData = {pilots: []};
+                $scope.updatedData = {pilots: {}};
+
+                OrderGenerator.get({}, function (resource)
+                {
+                    angular.extend($scope.initialData, resource.data);
+                    var rankArray = [];
+                    angular.forEach($scope.initialData.ranks, function (value, key)
+                    {
+                        rankArray.push(value);
+                    })
+                    $scope.initialData.rankArray = rankArray;
+                    rankArray = [];
+                    angular.forEach($scope.initialData.instructors, function (value, key)
+                    {
+                        rankArray.push(value);
+                    })
+                    $scope.initialData.instructorsArray = rankArray;
+                });
+            }
+            reloadData();
 
             $scope.save = function ()
             {
                 $scope.orderData.isSubmitting = true;
-                OrderGenerator.save(angular.extend({complete: $scope.orderData.complete}, $scope.updatedData), function (resource)
+                OrderGenerator.save({data:angular.extend({complete: $scope.orderData.complete}, $scope.updatedData)}, function (resource)
                 {
-                    $scope.orderData = {pilots: []};
-                    $scope.updatedData = {pilots: {}};
+                    reloadData();
                 });
             };
 
@@ -281,22 +290,27 @@ lwsControllers.controller('OrderCreatorCtrl',
 
                     if (pilot.old_rank == 7 || pilot.old_rank == 11 || pilot.old_rank == 12)
                     {
-                        pilotname = 'Курсант ' + pilot.nickname;
+                        pilotname = '<a rank="'+pilot.old_rank+'">Курсант '+pilot.rank_name+'</a> <a pilot="' + pilot.id + '">' + pilot.nickname + '</a>';
                         afterranktext = 'В связи с успешной сдачей экзамена';
                     }
                     else
-                        pilotname = pilot.rank_name + ' ' + pilot.nickname;
+                        pilotname = '<a rank="'+pilot.old_rank+'">'+pilot.rank_name+'</a> <a pilot="' + pilot.id + '">' + pilot.nickname + '</a>';
 
-                    pilotname = '<a pilot="' + pilot.id + '">' + pilotname + '</a>';
+
 
                     if (pilot.old_rank != pilot.rank)
                     {
                         var oldOrder = $scope.initialData.ranks[pilot.old_rank].order;
                         var newOrder = $scope.initialData.ranks[pilot.rank].order;
-
-                        var rankuptext = ' присвоено '+(newOrder-oldOrder > 1 ? 'внеочередное' : 'очердное')+' звание ';
+                        var rankuptext = '';
                         if (oldOrder > newOrder)
                             rankuptext = ' понижен до ';
+                        else
+                            rankuptext = ' присвоено '+(newOrder-oldOrder > 1 ? 'внеочередное' : 'очердное')+' звание ';
+
+                        if (pilot.old_rank == 5)
+                            rankuptext = ' принят на';
+
                         if (pilot.rank == 7 || pilot.rank == 11 || pilot.rank == 12)
                             rankuptext = ' переведен на ';
                         if (pilot.old_rank == 12)
@@ -319,7 +333,6 @@ lwsControllers.controller('OrderCreatorCtrl',
                         });
                         awardtext = 'награждается ' + awards.join(', ');
                     }
-
 
                     if (ranktext || awardtext || instrtext)
                     {

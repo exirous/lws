@@ -13,42 +13,6 @@ class OrderController extends Controller
         );
     }
 
-
-    public function actionLogin()
-    {
-        $request = Yii::app()->request;
-        $email = $request->getRequiredRawBodyParam('email', null, AHttpRequest::PARAM_TYPE_STRING);
-        $password = $request->getRequiredRawBodyParam('password', null, AHttpRequest::PARAM_TYPE_STRING);
-        switch ($request->method)
-        {
-            case AHttpRequest::METHOD_POST:
-                $this->returnSuccess($this->_loginUser($email, $password));
-                break;
-            default:
-                $this->returnError();
-        }
-    }
-
-    public function actionLogout()
-    {
-        try
-        {
-            $request = Yii::app()->request;
-            switch ($request->method)
-            {
-                case AHttpRequest::METHOD_POST:
-                    $this->returnSuccess($this->_logoutUser());
-                    break;
-                default:
-                    $this->returnError();
-            }
-        } catch (Exception $e)
-        {
-            $this->returnError($e->getMessage());
-        }
-    }
-
-
     public function actionItem()
     {
         $request = Yii::app()->request;
@@ -59,41 +23,29 @@ class OrderController extends Controller
                 $this->returnSuccess($this->_renderOrder());
                 break;
             case AHttpRequest::METHOD_POST:
-
-                $this->returnSuccess($this->_renderOrder());
-                break;
-
-            default:
-                $this->returnError();
-        }
-    }
-
-    public function actionRoster()
-    {
-        $request = Yii::app()->request;
-        $user = $request->getRequiredRawBodyParam('user', [], AHttpRequest::PARAM_TYPE_ARRAY);
-        switch ($request->method)
-        {
-            case AHttpRequest::METHOD_POST:
-                $this->returnSuccess($this->_rosterUser($user));
+                $data = $request->getRequiredRawBodyParam('data');
+                $this->returnSuccess($this->_makeOrder($data));
                 break;
             default:
                 $this->returnError();
         }
     }
 
-    public function actionRecover()
+    private function _makeOrder($data)
     {
-        $request = Yii::app()->request;
-        $email = $request->getRequiredRawBodyParam('email', [], AHttpRequest::PARAM_TYPE_STRING);
-        switch ($request->method)
+        $orderId = null;
+        $transaction = Yii::app()->db->beginTransaction();
+        try
         {
-            case AHttpRequest::METHOD_POST:
-                $this->returnSuccess($this->_recoverUser($email));
-                break;
-            default:
-                $this->returnError();
+            $orderId = Order::issueOrder($data);
+            $transaction->commit();
         }
+        catch (Exception $e)
+        {
+            $transaction->rollback();
+            $this->returnError($e->getMessage());
+        }
+        return $orderId;
     }
 
     private function _renderOrder()

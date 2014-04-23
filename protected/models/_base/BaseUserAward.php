@@ -11,9 +11,7 @@
  *
  * @property string $user_id
  * @property string $award_id
- * @property string $time
- * @property string $event
- * @property string $issuer_id
+ * @property string $event_id
  *
  */
 abstract class BaseUserAward extends AActiveRecord
@@ -45,11 +43,10 @@ abstract class BaseUserAward extends AActiveRecord
     public function rules()
     {
         return array(
-            array('user_id, award_id, time, issuer_id', 'required'),
-            array('user_id, award_id, issuer_id', 'length', 'max'=>10),
-            array('event', 'safe'),
-            array('event', 'default', 'setOnEmpty' => true, 'value' => null),
-            array('user_id, award_id, time, event, issuer_id', 'safe', 'on' => 'search'),
+            array('user_id, award_id', 'required'),
+            array('user_id, award_id, event_id', 'length', 'max'=>10),
+            array('event_id', 'default', 'setOnEmpty' => true, 'value' => null),
+            array('user_id, award_id, event_id', 'safe', 'on' => 'search'),
         );
     }
 
@@ -70,9 +67,7 @@ abstract class BaseUserAward extends AActiveRecord
         return array(
             'user_id' => null,
             'award_id' => null,
-            'time' => Yii::t('app', 'Time'),
-            'event' => Yii::t('app', 'Event'),
-            'issuer_id' => Yii::t('app', 'Issuer'),
+            'event_id' => null,
         );
     }
 
@@ -82,9 +77,7 @@ abstract class BaseUserAward extends AActiveRecord
 
         $criteria->compare('user_id', $this->user_id);
         $criteria->compare('award_id', $this->award_id);
-        $criteria->compare('time', $this->time, true);
-        $criteria->compare('event', $this->event, true);
-        $criteria->compare('issuer_id', $this->issuer_id, true);
+        $criteria->compare('event_id', $this->event_id);
 
         return new CActiveDataProvider($this, array(
             'criteria' => $criteria,

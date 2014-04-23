@@ -16,6 +16,7 @@
  *
  * @property User $issuer
  * @property User[] $users
+ * @property UserEvent[] $userEvents
  */
 abstract class BaseOrder extends AActiveRecord
 {
@@ -56,6 +57,7 @@ abstract class BaseOrder extends AActiveRecord
         return array(
             'issuer' => array(self::BELONGS_TO, 'User', 'issuer_id'),
             'users' => array(self::MANY_MANY, 'User', 'order_participant(order_id, user_id)'),
+            'userEvents' => array(self::HAS_MANY, 'UserEvent', 'order_id'),
         );
     }
 
@@ -75,6 +77,7 @@ abstract class BaseOrder extends AActiveRecord
             'time' => Yii::t('app', 'Time'),
             'issuer' => null,
             'users' => null,
+            'userEvents' => null,
         );
     }
 
