@@ -55,14 +55,14 @@ abstract class BaseOrder extends AActiveRecord
     {
         return array(
             'issuer' => array(self::BELONGS_TO, 'User', 'issuer_id'),
-            'users' => array(self::MANY_MANY, 'User', 'order_participants(order_id, user_id)'),
+            'users' => array(self::MANY_MANY, 'User', 'order_participant(order_id, user_id)'),
         );
     }
 
     public function pivotModels()
     {
         return array(
-            'users' => 'OrderParticipants',
+            'users' => 'OrderParticipant',
         );
     }
 

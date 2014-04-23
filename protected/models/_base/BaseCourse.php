@@ -14,7 +14,7 @@
  * @property string $program_id
  * @property string $group_id
  *
- * @property Group $group
+ * @property Rank $group
  * @property Program $program
  * @property Subject[] $subjects
  */
@@ -55,7 +55,7 @@ abstract class BaseCourse extends AActiveRecord
     public function relations()
     {
         return array(
-            'group' => array(self::BELONGS_TO, 'Group', 'group_id'),
+            'group' => array(self::BELONGS_TO, 'Rank', 'group_id'),
             'program' => array(self::BELONGS_TO, 'Program', 'program_id'),
             'subjects' => array(self::HAS_MANY, 'Subject', 'course_id'),
         );

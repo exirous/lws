@@ -72,7 +72,7 @@ abstract class BaseUser extends AActiveRecord
             'battleEvents' => array(self::HAS_MANY, 'BattleEvent', 'user_id'),
             'news' => array(self::HAS_MANY, 'News', 'issuer_id'),
             'notifications' => array(self::HAS_MANY, 'Notification', 'user_id'),
-            'orders' => array(self::MANY_MANY, 'Order', 'order_participants(user_id, order_id)'),
+            'orders' => array(self::MANY_MANY, 'Order', 'order_participant(user_id, order_id)'),
             'instructor' => array(self::BELONGS_TO, 'Rank', 'instructor_id'),
             'rank' => array(self::BELONGS_TO, 'Rank', 'rank_id'),
             'awards' => array(self::MANY_MANY, 'Award', 'user_award(user_id, award_id)'),
@@ -83,7 +83,7 @@ abstract class BaseUser extends AActiveRecord
     public function pivotModels()
     {
         return array(
-            'orders' => 'OrderParticipants',
+            'orders' => 'OrderParticipant',
             'awards' => 'UserAward',
         );
     }
