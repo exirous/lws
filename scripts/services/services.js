@@ -51,3 +51,9 @@ lwsServices.factory('OrderGenerator', ['$resource', function ($resource)
 
     });
 }]);
+lwsServices.factory('Roster', ['$resource', function ($resource)
+{
+    return $resource('/user/getRoster', {}, {
+
+    });
+}]);

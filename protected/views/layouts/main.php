@@ -51,21 +51,16 @@
                     <div class="main_menu"><a href="ts3server://lws.exirous.com/?nickname={{UserIdentity.fullname}}">TeamSpeak</a>
                     </div>
                     <div class="left_content">
-                        <accordion close-others="true">
-                            <accordion-group heading="TeamSpeak" is-open="true">
-                                <ul ng-controller="TSViewCtrl" style="padding:0">
-                                    <li ng-repeat="channel in tree" ng-include="'TreeItemTmpl'">
-                                    </li>
-                                    <li ng-show="!tree.length">
-                                        Никого нету :)
-                                    </li>
-                                </ul>
-                            </accordion-group>
-                            <accordion-group heading="Заявки">
-                                фывфыв
-                            </accordion-group>
-                        </accordion>
-
+                        <div ng-controller="RosterViewCtrl" style="padding:0">
+                            <div ng-repeat="pilot in roster">{{pilot.name}}</div>
+                        </div>
+                        <ul ng-controller="TSViewCtrl" style="padding:0">
+                            <li ng-repeat="channel in tree" ng-include="'TreeItemTmpl'">
+                            </li>
+                            <li ng-show="!tree.length">
+                                Никого нету :)
+                            </li>
+                        </ul>
                     </div>
                 </td>
                 <td class="mr"></td>
