@@ -12,6 +12,8 @@
  * @property string $id
  * @property string $name
  * @property string $award_replace_id
+ * @property string $type
+ * @property integer $only_one_allowed
  *
  * @property Award $awardReplace
  * @property Award[] $awards
@@ -19,6 +21,23 @@
  */
 abstract class BaseAward extends AActiveRecord
 {
+    const TYPE_MEDAL = 'medal';
+    const TYPE_CROSS = 'cross';
+
+    public function getSetValueText($column, $value = null)
+    {
+        $texts = array(
+            'type' => array(
+                'medal' => Yii::t('app', 'Medal'),
+                'cross' => Yii::t('app', 'Cross'),
+            ),
+        );
+
+        if ($value)
+            return $texts[$column][$value];
+
+        return $texts[$column];
+    }
 
     public function getTextColumns()
     {
@@ -43,10 +62,13 @@ abstract class BaseAward extends AActiveRecord
     public function rules()
     {
         return array(
+            array('name', 'required'),
+            array('only_one_allowed', 'numerical', 'integerOnly'=>true),
             array('name', 'length', 'max'=>64),
             array('award_replace_id', 'length', 'max'=>10),
-            array('name, award_replace_id', 'default', 'setOnEmpty' => true, 'value' => null),
-            array('id, name, award_replace_id', 'safe', 'on' => 'search'),
+            array('type', 'length', 'max'=>5),
+            array('award_replace_id, type, only_one_allowed', 'default', 'setOnEmpty' => true, 'value' => null),
+            array('id, name, award_replace_id, type, only_one_allowed', 'safe', 'on' => 'search'),
         );
     }
 
@@ -72,6 +94,8 @@ abstract class BaseAward extends AActiveRecord
             'id' => Yii::t('app', 'ID'),
             'name' => Yii::t('app', 'Name'),
             'award_replace_id' => null,
+            'type' => Yii::t('app', 'Type'),
+            'only_one_allowed' => Yii::t('app', 'Only One Allowed'),
             'awardReplace' => null,
             'awards' => null,
             'users' => null,
@@ -85,6 +109,8 @@ abstract class BaseAward extends AActiveRecord
         $criteria->compare('id', $this->id, true);
         $criteria->compare('name', $this->name, true);
         $criteria->compare('award_replace_id', $this->award_replace_id);
+        $criteria->compare('type', $this->type, true);
+        $criteria->compare('only_one_allowed', $this->only_one_allowed);
 
         return new CActiveDataProvider($this, array(
             'criteria' => $criteria,

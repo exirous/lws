@@ -250,3 +250,14 @@ img
 /* Ease Display */
 
 .pad { padding: 25px; }
+
+.micro_award
+{
+    max-width: 32px;
+    max-height: 32px;
+}
+
+.select2-locked
+{
+    background: #c9f3ff !important;
+}

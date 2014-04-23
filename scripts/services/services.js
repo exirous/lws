@@ -23,6 +23,9 @@ lwsServices.factory('TeamSpeak', ['$resource', function ($resource)
 lwsServices.factory('User', ['$resource', function ($resource)
 {
     return $resource('/user/item', {}, {
+        query: {
+            method: 'get'
+        },
         login: {
             url: '/user/login',
             method: 'post'
@@ -39,5 +42,12 @@ lwsServices.factory('User', ['$resource', function ($resource)
             url: '/user/recover',
             method: 'post'
         }
+    });
+}]);
+
+lwsServices.factory('OrderGenerator', ['$resource', function ($resource)
+{
+    return $resource('/order/item', {}, {
+
     });
 }]);

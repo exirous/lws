@@ -33,4 +33,20 @@ class Award extends BaseAward
     {
         return parent::model($className);
     }
+
+    public function getShortAttributes()
+    {
+        return [
+            'name' => $this->name,
+            'id' => $this->id,
+            'only_one_allowed'=>$this->only_one_allowed
+        ];
+    }
+
+    public function defaultScope()
+    {
+        return array(
+            'order'=>'`name`',
+        );
+    }
 }

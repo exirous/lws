@@ -21,6 +21,7 @@ Yii::import('application.models._base.BaseGroup');
  * @method Group scopeAllColumns
  * @method Group scopeSelect
  * @method Group byName
+ * @property Array shortAttributes
  */
 class Group extends BaseGroup
 {
@@ -33,4 +34,7 @@ class Group extends BaseGroup
     {
         return parent::model($className);
     }
+
+
+
 }

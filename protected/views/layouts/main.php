@@ -9,10 +9,14 @@
     <title><?= $this->pageTitle ?></title>
     <!--<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.12/angular.min.js"></script>-->
     <script type="text/javascript">var UserLoginData = <?=json_encode(Yii::app()->user->privateAttributes)?>;</script>
+    <script src="/scripts/jquery.js"></script>
+    <!--<script src="/scripts/chosen.jquery.js"></script>-->
+    <script src="/scripts/lib/select2.min.js"></script>
     <script src="/scripts/lib/angular.js"></script>
     <script src="/scripts/lib/angular-ui-router.js"></script>
     <script src="/scripts/lib/angular-resource.js"></script>
     <script src="/scripts/lib/angular-sanitize.js"></script>
+    <script src="/scripts/lib/select2.js"></script>
     <script src="/scripts/lib/ui-bootstrap-tpls.js"></script>
     <script src="/scripts/lib/statehelper.js"></script>
     <script src="/scripts/lib/dialogs.js"></script>
@@ -22,7 +26,11 @@
     <script src="/scripts/directives/directives.js"></script>
     <script src="/scripts/controllers/controllers.js"></script>
     <link rel="stylesheet" href="/css/bootstrap/bootstrap.css" type="text/css">
+    <!--<link rel="stylesheet" href="/css/bootstrap.css" type="text/css">-->
     <link rel="stylesheet" href="/css/style.css" type="text/css">
+    <link rel="stylesheet" href="/css/select2.css" type="text/css">
+    <link rel="stylesheet" href="/css/select2-bootstrap.css" type="text/css">
+    <!--<link rel="stylesheet" href="/css/chosen.css" type="text/css">-->
     <!--[if lt IE 8]>
     <script type="text/javascript">
         alert('Ваш броузер не поддерживается, пожалуйста обновите! :)');
@@ -58,7 +66,7 @@
                     <div class="main_menu">
                         <a ui-sref="news">Главная</a>
                         <a ui-sref="roster" ng-if="UserIdentity.isGuest">Вступить в школу</a>
-                        <a ui-sref="makeorder" ng-if="UserIdentity.canMakeOrders">Выдать приказ</a>
+                        <a ui-sref="makeorder" ng-if="UserIdentity.canMakeOrders">Отдать приказ</a>
                         <a ui-sref="makenews" ng-if="UserIdentity.canMakeOrders">Добавить новость</a>
                         <a href="" style="float:right" ng-click="login()" ng-if="UserIdentity.isGuest">Вход</a>
                         <a href="" style="float:right" ng-click="logout()" ng-if="!UserIdentity.isGuest">Выход</a>
@@ -87,6 +95,7 @@
     <h2>Приказы и объявления</h2>
     <div ng-repeat="newsRec in news" class="news_record {{newsRecord.type}}">
         <h4>{{newsRec.title}}</h4>
+
         <div>{{newsRec.text}}</div>
         <div><span>{{newsRec.time}}</span> <img ng-src="{{newsRec.issuer.id | avatarUrl}}"
                                                 style="max-width: 15px;max-height: 15px;"> <a
@@ -249,7 +258,8 @@
     <div class="alert alert-danger" ng-show="userForm.error">{{userForm.error}}</div>
     <div>
         <p class="well">
-            <span class="help-block" ng-show="(rosterForm.$dirty && rosterForm.$invalid) || rosterForm.$pristine"><b>Пожалуйста, заполните все поля</b></span>
+            <span class="help-block" ng-show="(rosterForm.$dirty && rosterForm.$invalid) || rosterForm.$pristine"><b>Пожалуйста,
+                    заполните все поля</b></span>
             <button type="button" ng-click="send()"
                     ng-disabled="(rosterForm.$dirty && rosterForm.$invalid) || rosterForm.$pristine || userForm.isSubmitting"
                     class="btn btn-primary">Отправить
@@ -273,7 +283,9 @@
 
 <script type="text/ng-template" id="loginDialogTmpl">
     <div class="modal-content">
-        <div class="modal-header"><h4 class="modal-title"><span class="glyphicon glyphicon-user"></span><span ng-show="!userForm.forgotPass"> Вход</span><span ng-show="userForm.forgotPass"> Восстановить пароль</span></h4></div>
+        <div class="modal-header"><h4 class="modal-title"><span class="glyphicon glyphicon-user"></span><span
+                    ng-show="!userForm.forgotPass"> Вход</span><span
+                    ng-show="userForm.forgotPass"> Восстановить пароль</span></h4></div>
         <div class="modal-body">
             <ng-form name="nameDialog" novalidate role="form" ng-show="!userForm.forgotPass">
                 <div class="form-group input-group-lg"
@@ -296,7 +308,8 @@
                            ng-keyup="hitEnter($event)"
                            required>
                     <span class="help-block" ng-show="user.error">{{user.error}}</span>
-                    <span class="help-block"> <b><a href="" ng-click="userForm.forgotPass=true">Упс, я Забыл пароль :(</a></b></span>
+                    <span class="help-block"> <b><a href="" ng-click="userForm.forgotPass=true">Упс, я Забыл пароль
+                                :(</a></b></span>
                 </div>
             </ng-form>
             <ng-form name="forgotDialog" novalidate role="form" ng-show="userForm.forgotPass">
@@ -311,7 +324,8 @@
                            ng-keyup="hitEnterForgot($event)"
                            required>
                     <span class="help-block" ng-show="user.error">{{user.error}}</span>
-                    <span class="help-block"> <b><a href="" ng-click="userForm.forgotPass=false">О, я вспомнил пароль! :)</a></b></span>
+                    <span class="help-block"> <b><a href="" ng-click="userForm.forgotPass=false">О, я вспомнил пароль!
+                                :)</a></b></span>
                 </div>
             </ng-form>
         </div>
@@ -330,8 +344,70 @@
     </div>
 </script>
 
-<script  type="text/ng-template" id="OrderCreatorTmpl">
-
+<script type="text/ng-template" id="OrderCreatorTmpl">
+    <h2>Отдать приказ</h2>
+    <ng-form name="orderForm" novalidate role="form">
+        <div class="form-group">
+            <div style="display: inline-block;width: 435px;vertical-align: top;">
+            <select data-placeholder="Выберите пилотов"
+                    multiple
+                    ui-select2="pilotSelect2Options"
+                    style="width: 435px;margin-bottom: 6px"
+                    ng-model="orderData.pilots"
+                    required>
+                <option ng-repeat="pilot in initialData.pilots" value="{{pilot.id}}" data-rankid="{{pilot.rank}}">
+                    {{pilot.nickname}}
+                </option>
+            </select>
+            <textarea style="resize: none;width: 100%" rows="3" placeholder="Впишите Событие" ng-model="updatedData.event"></textarea>
+            </div>
+            <div style="resize: none;display:inline-block;width: 49%;padding:5px;border:1px solid #aaa;min-height:107px;background: #eee;color:#555" rows="5" id="completeData" data-ng-bind-html="updatedData.complete"></div>
+        </div>
+        <div class="form-group">
+        </div>
+        <div class="panel panel-primary" ng-repeat="pilot in updatedData.pilots">
+            <div class="panel-heading">{{pilot.nickname}}</div>
+            <div class="panel-body">
+                <div style="display: inline-block">
+                    <div style="padding-bottom: 10px; padding-right:10px;vertical-align: top">
+                        <select data-placeholder="Выберите Звание"
+                                ui-select2="rankSelect2Options"
+                                style="width: 300px"
+                                ng-model="pilot.rank">
+                            <option></option>
+                            <option ng-repeat="rank in initialData.rankArray | orderBy:'order'" value="{{rank.id}}">{{rank.name}}</option>
+                        </select>
+                    </div>
+                    <div>
+                        <select data-placeholder="Выберите Инструкторскую Категорию"
+                                ui-select2="instructorSelect2Options"
+                                style="width: 300px;"
+                                ng-model="pilot.instructor">
+                            <option></option>
+                            <option ng-repeat="rank in initialData.instructorsArray | orderBy:'order'" value="{{rank.id}}">{{rank.name}}</option>
+                        </select>
+                    </div>
+                </div>
+                <select data-placeholder="Выберите Награды"
+                        ui-select2="awardSelect2Options"
+                        style="width: 535px;vertical-align: top;"
+                        multiple
+                        ng-model="pilot.awards">
+                    <option ng-repeat="award in initialData.awards" value="{{award.id}}"
+                            ng-disabled="{{(initialData.pilots[pilot.id].awards.indexOf(award.id)>=0) && award.only_one_allowed ? true : false}}">{{award.name}}
+                    </option>
+                </select>
+            </div>
+        </div>
+        <div>
+            <p class="well">
+                <button type="button" ng-click="save()"
+                        ng-disabled="(orderForm.$dirty && orderForm.$invalid) || orderForm.$pristine || orderData.isSubmitting"
+                        class="btn btn-primary">Отдать
+                </button>
+            </p>
+        </div>
+    </ng-form>
 </script>
 
 </body>

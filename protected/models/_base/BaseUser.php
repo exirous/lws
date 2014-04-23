@@ -18,13 +18,16 @@
  * @property string $join_date
  * @property string $birth_date
  * @property string $roster
+ * @property string $rank_id
+ * @property string $instructor_id
  *
  * @property BattleEvent[] $battleEvents
  * @property News[] $news
  * @property Notification[] $notifications
  * @property Order[] $orders
+ * @property Rank $instructor
+ * @property Rank $rank
  * @property Award[] $awards
- * @property Group[] $groups
  * @property UserMark[] $userMarks
  */
 abstract class BaseUser extends AActiveRecord
@@ -56,9 +59,10 @@ abstract class BaseUser extends AActiveRecord
             array('nickname, password', 'length', 'max'=>32),
             array('firstname', 'length', 'max'=>128),
             array('email, ts_id', 'length', 'max'=>64),
+            array('rank_id, instructor_id', 'length', 'max'=>10),
             array('join_date, birth_date, roster', 'safe'),
-            array('nickname, firstname, email, password, ts_id, join_date, birth_date, roster', 'default', 'setOnEmpty' => true, 'value' => null),
-            array('id, nickname, firstname, email, password, ts_id, join_date, birth_date, roster', 'safe', 'on' => 'search'),
+            array('nickname, firstname, email, password, ts_id, join_date, birth_date, roster, rank_id, instructor_id', 'default', 'setOnEmpty' => true, 'value' => null),
+            array('id, nickname, firstname, email, password, ts_id, join_date, birth_date, roster, rank_id, instructor_id', 'safe', 'on' => 'search'),
         );
     }
 
@@ -69,8 +73,9 @@ abstract class BaseUser extends AActiveRecord
             'news' => array(self::HAS_MANY, 'News', 'issuer_id'),
             'notifications' => array(self::HAS_MANY, 'Notification', 'user_id'),
             'orders' => array(self::MANY_MANY, 'Order', 'order_participants(user_id, order_id)'),
+            'instructor' => array(self::BELONGS_TO, 'Rank', 'instructor_id'),
+            'rank' => array(self::BELONGS_TO, 'Rank', 'rank_id'),
             'awards' => array(self::MANY_MANY, 'Award', 'user_award(user_id, award_id)'),
-            'groups' => array(self::MANY_MANY, 'Group', 'user_group(user_id, group_id)'),
             'userMarks' => array(self::HAS_MANY, 'UserMark', 'user_id'),
         );
     }
@@ -80,7 +85,6 @@ abstract class BaseUser extends AActiveRecord
         return array(
             'orders' => 'OrderParticipants',
             'awards' => 'UserAward',
-            'groups' => 'UserGroup',
         );
     }
 
@@ -96,12 +100,15 @@ abstract class BaseUser extends AActiveRecord
             'join_date' => Yii::t('app', 'Join Date'),
             'birth_date' => Yii::t('app', 'Birth Date'),
             'roster' => Yii::t('app', 'Roster'),
+            'rank_id' => null,
+            'instructor_id' => null,
             'battleEvents' => null,
             'news' => null,
             'notifications' => null,
             'orders' => null,
+            'instructor' => null,
+            'rank' => null,
             'awards' => null,
-            'groups' => null,
             'userMarks' => null,
         );
     }
@@ -119,6 +126,8 @@ abstract class BaseUser extends AActiveRecord
         $criteria->compare('join_date', $this->join_date, true);
         $criteria->compare('birth_date', $this->birth_date, true);
         $criteria->compare('roster', $this->roster, true);
+        $criteria->compare('rank_id', $this->rank_id);
+        $criteria->compare('instructor_id', $this->instructor_id);
 
         return new CActiveDataProvider($this, array(
             'criteria' => $criteria,

@@ -51,24 +51,18 @@ class UserController extends Controller
 
     public function actionItem()
     {
-        //$transaction = Yii::app()->db->beginTransaction();
-        try
+        $request = Yii::app()->request;
+        $id = $request->getParam('id', 0, AHttpRequest::PARAM_TYPE_NUMERIC);
+        switch ($request->method)
         {
-            $request = Yii::app()->request;
-            $id = $request->getRequiredParam('id', 0, AHttpRequest::PARAM_TYPE_NUMERIC);
-            switch ($request->method)
-            {
-                case AHttpRequest::METHOD_GET:
+            case AHttpRequest::METHOD_GET:
+                if ($id)
                     $this->returnSuccess($this->_renderUser($id));
-                    break;
-                default:
-                    $this->returnError();
-            }
-            //  $transaction->commit();
-        } catch (Exception $e)
-        {
-            //$transaction->rollback();
-            $this->returnError($e->getMessage());
+                else
+                    $this->returnSuccess($this->_renderUserList());
+                break;
+            default:
+                $this->returnError();
         }
     }
 
@@ -102,10 +96,34 @@ class UserController extends Controller
 
     private function _renderUser($id)
     {
-        $user = User::model()->findByPk($id);
-        if (!$user)
-            throw new Exception("User not found!");
-        return $user->publicAttributes;
+        try
+        {
+            $user = User::model()->findByPk($id);
+            if (!$user)
+                throw new Exception("User not found!");
+            return $user->publicAttributes;
+        } catch (Exception $e)
+        {
+            $this->returnError($e->getMessage());
+        }
+    }
+
+    private function _renderUserList()
+    {
+        try
+        {
+            $usersOut = [];
+            $users = User::model()->findAll(['order'=>'nickname desc']);
+            if (!$users)
+                throw new Exception("Some error?");
+
+            foreach ($users as $user)
+                $usersOut[] = $user->shortAttributes;
+            return $usersOut;
+        } catch (Exception $e)
+        {
+            $this->returnError($e->getMessage());
+        }
     }
 
     private function _loginUser($username, $password)
@@ -171,7 +189,7 @@ class UserController extends Controller
             $transaction->rollback();
             $this->returnError($e->getMessage());
         }
-        return [];//Yii::app()->user->privateAttributes;
+        return []; //Yii::app()->user->privateAttributes;
     }
 
     /*

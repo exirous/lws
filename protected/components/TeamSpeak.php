@@ -54,6 +54,12 @@ class TeamSpeak extends CApplicationComponent
         return $this->ts3Server->clientListDb();
     }
 
+    public function groupList()
+    {
+        return $this->ts3Server->serverGroupList();
+    }
+
+
     public function setName($name)
     {
         $this->ts3Server->execute('clientupdate client_nickname=' . $name);

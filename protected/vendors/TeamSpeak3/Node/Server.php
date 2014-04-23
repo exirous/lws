@@ -1000,7 +1000,7 @@ class TeamSpeak3_Node_Server extends TeamSpeak3_Node_Abstract
    * Returns a list of server groups available.
    *
    * @param  filter $filter
-   * @return array
+   * @return TeamSpeak3_Node_Servergroup[]
    */
   public function serverGroupList(array $filter = array())
   {

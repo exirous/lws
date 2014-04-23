@@ -24,6 +24,7 @@ Yii::import('application.models._base.BaseUser');
  * @method User byName
  * @property Array publicAttributes
  * @property Array privateAttributes
+ * @property Array shortAttributes
  */
 class User extends BaseUser
 {
@@ -46,13 +47,31 @@ class User extends BaseUser
         ];
     }
 
+    public function getShortAttributes()
+    {
+        $awards=  [];
+        foreach ($this->awards as $award)
+            $awards[] = $award->id;
+
+        return [
+            'nickname' => $this->nickname,
+            'id' => $this->id,
+            'rank' => $this->rank_id,
+            'old_rank' => $this->rank_id,
+            'old_instructor' => $this->instructor_id,
+            'rank_name'=>$this->rank->name,
+            'instructor'=>$this->instructor_id,
+            'awards'=>$awards
+        ];
+    }
+
     public function getPrivateAttributes()
     {
         return [
             'nickname' => $this->nickname,
             'firstname' => $this->firstname,
-            'canMakeOrders'=>true,
-            'canMakeNews'=>true,
+            'canMakeOrders' => true,
+            'canMakeNews' => true,
             'fullname' => $this->nickname . ' (' . $this->firstname . ')',
             'id' => $this->id
         ];
@@ -60,7 +79,6 @@ class User extends BaseUser
 
     public static function roster($user)
     {
-        //die(var_dump($user));
         if (User::model()->exists(['condition' => 'email=:email', 'params' => [':email' => $user['private']['email']]]))
             throw new Exception('Пользователь с таким э-мэйлом уже существует!');
         if (!$user['private']['password'] || strlen($user['private']['password']) < 3)
