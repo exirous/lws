@@ -53,7 +53,7 @@ class OrderController extends Controller
         try
         {
             $data = ['pilots' => [], 'ranks' => [], 'instructors' => [], 'awards' => []];
-            $users = User::model()->findAll(['order' => 'nickname desc']);
+            $users = User::model()->scopeWithRank()->findAll(['order' => 'nickname desc']);
             if (!$users)
                 throw new Exception("Some error?");
             foreach ($users as $user)

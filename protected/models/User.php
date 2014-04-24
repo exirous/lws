@@ -38,12 +38,49 @@ class User extends BaseUser
         return parent::model($className);
     }
 
+    public function rules()
+    {
+        $defaults = [
+            ['join_date',
+                'default',
+                'value' => gmdate("Y-m-d H:i:s")
+            ]
+        ];
+        return CMap::mergeArray($defaults, parent::rules());
+    }
+
+    public function scopeJustRostered()
+    {
+        $this->dbCriteria->mergeWith([
+            'condition' => 'rank_id is NULL OR rank_id=8'
+        ]);
+        return $this;
+    }
+
+    public function  scopeWithRank()
+    {
+        $this->dbCriteria->mergeWith([
+            'condition' => 'rank_id is NOT NULL'
+        ]);
+        return $this;
+    }
+
     public function getPublicAttributes()
     {
         return [
             'nickname' => $this->nickname,
             'firstname' => $this->firstname,
             'id' => $this->id
+        ];
+    }
+
+    public function getRosterAttributes()
+    {
+        return [
+            'nickname' => $this->nickname,
+            'firstname' => $this->firstname,
+            'id' => $this->id,
+            'roster' => json_decode($this->roster)
         ];
     }
 
@@ -70,8 +107,9 @@ class User extends BaseUser
         return [
             'nickname' => $this->nickname,
             'firstname' => $this->firstname,
-            'canMakeOrders' => true,
-            'canMakeNews' => true,
+            'canMakeOrders' => ($this->rank_id && $this->rank->order > 6),
+            'canMakeNews' => ($this->rank_id && $this->rank->order > 6),
+            'isInstructor' => $this->instructor_id ? true : false,
             'fullname' => $this->nickname . ' (' . $this->firstname . ')',
             'id' => $this->id
         ];
@@ -85,6 +123,7 @@ class User extends BaseUser
             throw new Exception('Пароль должен быть длинее 3-х символов');
         $newUser = new User();
         $newUser->email = $user['private']['email'];
+        $newUser->birth_date = $user['birthdate'];
         $newUser->password = md5($user['private']['password']);
         unset($user['private']);
         $newUser->nickname = $user['nickname'];

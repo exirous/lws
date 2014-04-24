@@ -381,7 +381,7 @@ lwsControllers.controller("AfterRosterCtrl", ['$scope', function ($scope)
 
 }]);
 
-lwsControllers.controller("RosterViewCtrl", ['$scope', function ($scope)
+lwsControllers.controller("RosterViewCtrl", ['$scope','$timeout','Roster', function ($scope, $timeout, Roster)
 {
     var rosterTimeout = null;
     var refreshRosterView = function ()
@@ -390,6 +390,7 @@ lwsControllers.controller("RosterViewCtrl", ['$scope', function ($scope)
         Roster.get({}, function (res)
         {
             $scope.roster = res.data;
+            console.log($scope.roster);
             rosterTimeout = $timeout(refreshRosterView, 60 * 1000);
         });
     };

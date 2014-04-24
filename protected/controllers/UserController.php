@@ -13,7 +13,6 @@ class UserController extends Controller
         );
     }
 
-
     public function actionLogin()
     {
         $request = Yii::app()->request;
@@ -42,12 +41,12 @@ class UserController extends Controller
                 default:
                     $this->returnError();
             }
-        } catch (Exception $e)
+        }
+        catch (Exception $e)
         {
             $this->returnError($e->getMessage());
         }
     }
-
 
     public function actionItem()
     {
@@ -94,6 +93,12 @@ class UserController extends Controller
         }
     }
 
+    public function actionGetRoster()
+    {
+        $request = Yii::app()->request;
+        $this->returnSuccess($this->_getRosteredUsers());
+    }
+
     private function _renderUser($id)
     {
         try
@@ -102,7 +107,8 @@ class UserController extends Controller
             if (!$user)
                 throw new Exception("User not found!");
             return $user->publicAttributes;
-        } catch (Exception $e)
+        }
+        catch (Exception $e)
         {
             $this->returnError($e->getMessage());
         }
@@ -113,14 +119,15 @@ class UserController extends Controller
         try
         {
             $usersOut = [];
-            $users = User::model()->findAll(['order'=>'nickname desc']);
+            $users = User::model()->findAll(['order' => 'nickname desc']);
             if (!$users)
                 throw new Exception("Some error?");
 
             foreach ($users as $user)
                 $usersOut[] = $user->shortAttributes;
             return $usersOut;
-        } catch (Exception $e)
+        }
+        catch (Exception $e)
         {
             $this->returnError($e->getMessage());
         }
@@ -138,7 +145,8 @@ class UserController extends Controller
                 throw new Exception("Не правильный логин или пароль!");
 
             return $identity->_model->privateAttributes;
-        } catch (Exception $e)
+        }
+        catch (Exception $e)
         {
             $this->returnError($e->getMessage());
         }
@@ -168,14 +176,14 @@ class UserController extends Controller
                 throw new Exception("Что-то пошло не так... Администратор оповещён");
 
             $transaction->commit();
-        } catch (Exception $e)
+        }
+        catch (Exception $e)
         {
             $transaction->rollback();
             $this->returnError($e->getMessage());
         }
         return Yii::app()->user->privateAttributes;
     }
-
 
     private function _recoverUser($email)
     {
@@ -184,12 +192,31 @@ class UserController extends Controller
         {
             ////User::recover($email);
             $transaction->commit();
-        } catch (Exception $e)
+        }
+        catch (Exception $e)
         {
             $transaction->rollback();
             $this->returnError($e->getMessage());
         }
         return []; //Yii::app()->user->privateAttributes;
+    }
+
+    private function _getRosteredUsers()
+    {
+        if (Yii::app()->user->isGuest || !Yii::app()->user->model->instructor_id)
+            return null;
+
+        $rosterArray = [];
+        foreach (User::model()->scopeJustRostered()->findAll() as $user)
+            $rosterArray[] = $user->getRosterAttributes();
+
+        foreach (User::model()->scopeJustRostered()->findAll() as $user)
+            $rosterArray[] = $user->getRosterAttributes();
+
+        foreach (User::model()->scopeJustRostered()->findAll() as $user)
+            $rosterArray[] = $user->getRosterAttributes();
+
+        return $rosterArray;
     }
 
     /*
@@ -221,7 +248,6 @@ class UserController extends Controller
         }
 
      * */
-
 
     /**
      * This is the action to handle external exceptions.

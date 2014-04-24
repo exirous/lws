@@ -173,11 +173,12 @@ img
 
 .left_content
 {
-    width: 210px;
-    max-width: 210px;
+    width: 215px;
+    max-width: 215px;
     padding: 10px 0;
-    min-height: 200px;
-    display: table-cell;
+    margin-right: -7px;
+    /*min-height: 200px;*/
+    /*display: table-cell;*/
     /*border-right: 1px dashed #000020;*/
     vertical-align: top;
     overflow: hidden;
@@ -192,14 +193,14 @@ img
     vertical-align: top;
 }
 
-.left_content ul
+.ts_channels ul
 {
     list-style: none;
     margin: 0;
     padding: 0 0 0 16px;
 }
 
-.left_content li
+.ts_channels li
 {
     white-space: nowrap;
     margin: 0;
@@ -207,18 +208,18 @@ img
     font-size: 14px;
 }
 
-.left_content li img
+.ts_channels li img
 {
     vertical-align: middle;
 }
 
-.left_content li span
+.ts_channels li span
 {
     vertical-align: middle;
     line-height: 16px;
 }
 
-.left_content li a
+.ts_channels li a
 {
     line-height: 16px;
     color: #06c;
@@ -226,7 +227,7 @@ img
     vertical-align: middle;
 }
 
-.left_content li a:hover
+.ts_channels li a:hover
 {
     color:#999;
 }
@@ -261,3 +262,4 @@ img
 {
     background: #c9f3ff !important;
 }
+

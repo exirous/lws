@@ -48,12 +48,18 @@
             <tr>
                 <td class="ml"></td>
                 <td class="mm">
-                    <div class="main_menu"><a href="ts3server://lws.exirous.com/?nickname={{UserIdentity.fullname}}">TeamSpeak</a>
-                    </div>
-                    <div class="left_content">
-                        <div ng-controller="RosterViewCtrl" style="padding:0">
-                            <div ng-repeat="pilot in roster">{{pilot.name}}</div>
+                    <div ng-if="UserIdentity.isInstructor" ng-controller="RosterViewCtrl" style="padding:0">
+                        <div ng-if="roster.length">
+                            <div class="main_menu">
+                                <a href="">Новобранцы</a>
+                            </div>
+                            <div class="left_content">
+                                <a href="" ng-repeat="pilot in roster" class="list-group-item">{{pilot.nickname}} ({{pilot.firstname}})</a>
+                            </div>
                         </div>
+                    </div>
+                    <div class="main_menu"><a href="ts3server://lws.exirous.com/?nickname={{UserIdentity.fullname}}">TeamSpeak</a></div>
+                    <div class="left_content ts_channels">
                         <ul ng-controller="TSViewCtrl" style="padding:0">
                             <li ng-repeat="channel in tree" ng-include="'TreeItemTmpl'">
                             </li>
@@ -108,7 +114,6 @@
 <script type="text/ng-template" id="UserTmpl">
     <div ng-show="user">
         <h1>Пилот "{{user.nickname}}" {{user.name}}</h1>
-
         <div><img ng-src="{{user.id | avatarUrl}}"></div>
     </div>
 </script>
