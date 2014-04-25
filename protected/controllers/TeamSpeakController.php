@@ -67,7 +67,9 @@ class TeamSpeakController extends Controller
         }*/
 
 
-        Yii::app()->user->model->syncWithTeamSpeak();
+        Order::model()->findByPk(3)->postToTeamSpeak();
+        Order::model()->findByPk(4)->postToTeamSpeak();
+        //Yii::app()->user->model->syncWithTeamSpeak();
 
         //die(var_dump($db[126]));
         //Yii::app()->ts->ts3Server->serverGroupClientDel(7,129);

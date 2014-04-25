@@ -62,7 +62,7 @@ class TeamSpeak extends CApplicationComponent
 
     public function setName($name)
     {
-        $this->ts3Server->execute('clientupdate client_nickname=' . $name);
+        $this->ts3Server->execute('clientupdate client_nickname=' . str_replace(' ','\s',$name).'');
     }
 
     /**

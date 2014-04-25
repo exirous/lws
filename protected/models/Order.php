@@ -148,6 +148,30 @@ class Order extends BaseOrder
 
             $pilot->syncWithTeamSpeak();
         }
+        $order->postToTeamSpeak();
         return $order->id;
+    }
+
+    public function postToTeamSpeak()
+    {
+        $fullmessage = str_replace(["\n", "\r"], '', $this->text);
+        $fullmessage = str_replace('</p>', "\n", $fullmessage);
+        $pos = stripos($fullmessage, '<p>');
+        $event = (substr($fullmessage, 0, $pos));
+        $fullmessage = (substr($fullmessage, $pos + 3));
+        $event = '[b]Приказ №' . $this->id . ':[/b] ' . $event . "\n";
+        $fullmessage = str_replace('</a>', '[/COLOR]', $fullmessage);
+        $fullmessage = preg_replace('/(\<a rank\="([0-9]+)")\>/', '[COLOR=blue]', $fullmessage);
+        $fullmessage = preg_replace('/(\<a pilot\="([0-9]+)")\>/', '[COLOR=red]', $fullmessage);
+        $fullmessage = preg_replace('/(\<a award\="([0-9]+)")\>/', '[COLOR=darkgreen]', $fullmessage);
+        try
+        {
+            Yii::app()->ts->setName('Отдел кадров');
+            Yii::app()->ts->ts3Server->clientGetById(20)->message($event . $fullmessage);
+            //Yii::app()->ts->ts3Server->message($event.$fullmessage);
+        }
+        catch (Exception $e)
+        {
+        }
     }
 }

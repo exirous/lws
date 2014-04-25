@@ -306,7 +306,7 @@ lwsControllers.controller('OrderCreatorCtrl',
                         if (oldOrder > newOrder)
                             rankuptext = ' понижен до ';
                         else
-                            rankuptext = ' присвоено '+(newOrder-oldOrder > 1 ? 'внеочередное' : 'очердное')+' звание ';
+                            rankuptext = ' присвоено '+(newOrder-oldOrder > 1 ? 'внеочередное' : 'очередное')+' звание ';
 
                         if (pilot.old_rank == 5)
                             rankuptext = ' принят на';
