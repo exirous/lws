@@ -69,6 +69,7 @@ class UserController extends Controller
     {
         $request = Yii::app()->request;
         $user = $request->getRequiredRawBodyParam('user', [], AHttpRequest::PARAM_TYPE_ARRAY);
+        $user['ip'] = $request->getUserHostAddress();
         switch ($request->method)
         {
             case AHttpRequest::METHOD_POST:
@@ -96,7 +97,11 @@ class UserController extends Controller
     public function actionGetRoster()
     {
         $request = Yii::app()->request;
-        $this->returnSuccess($this->_getRosteredUsers());
+        $id = $request->getParam('userId', 0);
+        if ($id)
+            $this->returnSuccess($this->_getRosteredUser($id));
+        else
+            $this->returnSuccess($this->_getRosteredUsers());
     }
 
     private function _renderUser($id)
@@ -212,6 +217,16 @@ class UserController extends Controller
 
         return $rosterArray;
     }
+
+    private function _getRosteredUser($id)
+    {
+        if (Yii::app()->user->isGuest || !Yii::app()->user->model->instructor_id)
+            return null;
+        $user = User::model()->findByPk($id)->getRosterAttributes();
+        $user['possibleUsers'] = Yii::app()->ts->findUsersLike($user['nickname'], $user['ip']);
+        return $user;
+    }
+
 
     /*
         $transaction = Yii::app()->db->beginTransaction();

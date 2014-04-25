@@ -127,6 +127,26 @@ class TeamSpeak extends CApplicationComponent
         return getRecursiveList($this->ts3Server->channelList(), true, $knownGroups);
     }
 
+    public function findUsersLike($nickname, $ip)
+    {
+        $db = $this->ts3Server->clientListDb(0,200);
+        $users = [];
+        foreach ($db as $client)
+        {
+            $name = $client['client_nickname'] ? $client['client_nickname']->toString() : '';
+            $lastIp = $client['client_lastip'] ? $client['client_lastip']->toString() : '';
+            if (stripos($name,$nickname)!==false ||  ($ip && ($ip == $lastIp)))
+            {
+                $users[] = [
+                    'uid' => $client['client_unique_identifier']->toString(),
+                    'name' => $name,
+                    'ip'=>$lastIp
+                ];
+            }
+        }
+        return $users;
+    }
+
     public function checkToken($token)
     {
         if (!$token) return false;

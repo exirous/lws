@@ -38,6 +38,10 @@ lwsServices.factory('User', ['$resource', function ($resource)
             url: '/user/roster',
             method: 'post'
         },
+        getRoster:{
+            url: '/user/getRoster',
+            method: 'get'
+        },
         recover:{
             url: '/user/recover',
             method: 'post'

@@ -20,13 +20,14 @@
  * @property string $roster
  * @property string $rank_id
  * @property string $instructor_id
+ * @property string $ip
  *
  * @property BattleEvent[] $battleEvents
  * @property News[] $news
  * @property Notification[] $notifications
  * @property Order[] $orders
- * @property Rank $instructor
  * @property Rank $rank
+ * @property Rank $instructor
  * @property Award[] $awards
  * @property UserEvent[] $userEvents
  * @property UserMark[] $userMarks
@@ -57,13 +58,13 @@ abstract class BaseUser extends AActiveRecord
     public function rules()
     {
         return array(
-            array('nickname, password', 'length', 'max'=>32),
+            array('nickname, password, ip', 'length', 'max'=>32),
             array('firstname', 'length', 'max'=>128),
             array('email, ts_id', 'length', 'max'=>64),
             array('rank_id, instructor_id', 'length', 'max'=>10),
             array('join_date, birth_date, roster', 'safe'),
-            array('nickname, firstname, email, password, ts_id, join_date, birth_date, roster, rank_id, instructor_id', 'default', 'setOnEmpty' => true, 'value' => null),
-            array('id, nickname, firstname, email, password, ts_id, join_date, birth_date, roster, rank_id, instructor_id', 'safe', 'on' => 'search'),
+            array('nickname, firstname, email, password, ts_id, join_date, birth_date, roster, rank_id, instructor_id, ip', 'default', 'setOnEmpty' => true, 'value' => null),
+            array('id, nickname, firstname, email, password, ts_id, join_date, birth_date, roster, rank_id, instructor_id, ip', 'safe', 'on' => 'search'),
         );
     }
 
@@ -74,8 +75,8 @@ abstract class BaseUser extends AActiveRecord
             'news' => array(self::HAS_MANY, 'News', 'issuer_id'),
             'notifications' => array(self::HAS_MANY, 'Notification', 'user_id'),
             'orders' => array(self::MANY_MANY, 'Order', 'order_participant(user_id, order_id)'),
-            'instructor' => array(self::BELONGS_TO, 'Rank', 'instructor_id'),
             'rank' => array(self::BELONGS_TO, 'Rank', 'rank_id'),
+            'instructor' => array(self::BELONGS_TO, 'Rank', 'instructor_id'),
             'awards' => array(self::MANY_MANY, 'Award', 'user_award(user_id, award_id)'),
             'userEvents' => array(self::HAS_MANY, 'UserEvent', 'user_id'),
             'userMarks' => array(self::HAS_MANY, 'UserMark', 'user_id'),
@@ -104,12 +105,13 @@ abstract class BaseUser extends AActiveRecord
             'roster' => Yii::t('app', 'Roster'),
             'rank_id' => null,
             'instructor_id' => null,
+            'ip' => Yii::t('app', 'Ip'),
             'battleEvents' => null,
             'news' => null,
             'notifications' => null,
             'orders' => null,
-            'instructor' => null,
             'rank' => null,
+            'instructor' => null,
             'awards' => null,
             'userEvents' => null,
             'userMarks' => null,
@@ -131,6 +133,7 @@ abstract class BaseUser extends AActiveRecord
         $criteria->compare('roster', $this->roster, true);
         $criteria->compare('rank_id', $this->rank_id);
         $criteria->compare('instructor_id', $this->instructor_id);
+        $criteria->compare('ip', $this->ip, true);
 
         return new CActiveDataProvider($this, array(
             'criteria' => $criteria,

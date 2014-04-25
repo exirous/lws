@@ -80,7 +80,8 @@ class User extends BaseUser
             'nickname' => $this->nickname,
             'firstname' => $this->firstname,
             'id' => $this->id,
-            'roster' => json_decode($this->roster)
+            'roster' => json_decode($this->roster),
+            'ip' => $this->ip
         ];
     }
 
@@ -128,6 +129,7 @@ class User extends BaseUser
         unset($user['private']);
         $newUser->nickname = $user['nickname'];
         $newUser->firstname = $user['firstname'];
+        $newUser->ip = $user['ip'];
         $newUser->roster = json_encode($user);
         if (!$newUser->validate())
             throw new Exception($newUser->getErrors());

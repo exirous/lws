@@ -54,7 +54,7 @@
                                 <a href="">Новобранцы</a>
                             </div>
                             <div class="left_content">
-                                <a href="" ng-repeat="pilot in roster" class="list-group-item">{{pilot.nickname}} ({{pilot.firstname}})</a>
+                                <a ui-sref="rosterUser({userId:pilot.id})" ng-repeat="pilot in roster" class="list-group-item">{{pilot.nickname}} ({{pilot.firstname}})</a>
                             </div>
                         </div>
                     </div>
@@ -285,6 +285,46 @@
         <br>
         TeamSpeak можно скачать пройдя по <a href="http://www.teamspeak.com/?page=downloads" target="_blank">этой</a>
         ссылке.
+    </div>
+</script>
+
+<script type="text/ng-template" id="RosterUserTmpl">
+    <div ng-show="!pilot.roster">
+        <h2>Загрузка....</h2>
+    </div>
+    <div ng-show="pilot.roster">
+    <h2>Заявка на вступление от {{pilot.nickname}} ({{pilot.firstname}})</h2>
+    <br>
+    <label>Родился:</label><br>
+    <span>{{pilot.roster.birthdate}}</span><br>
+    <label>Оценка готовности стремления обучатся:</label><br>
+    <span>{{pilot.roster.scale}}</span><br>
+    <label>Попал в школу посредством:</label><br>
+    <span>{{pilot.roster.reason}}</span><br>
+    <label>Состоит в скваде:</label><br>
+    <span ng-bind="pilot.roster.squad=='yes' ? 'Да' : 'Нет'"></span><br>
+    <label>Наличие в ангаре самолетов Bf-109E-3 и/или Р-36G для истребителей:</label><br>
+    <span ng-show="pilot.roster.craft.bf109">Bf 109E-3</span>
+    <span ng-show="pilot.roster.craft.p36g">P-36G Hawk</span>
+    <br>
+    <label>Предпочитает пилотировать технику:</label><br>
+    <span>{{pilot.roster.nation}}</span><br>
+    <label>Время онлайна:</label><br>
+    <span>C </span><span>{{pilot.roster.onlineFrom | date : "HH:mm"}}</span><span> По </span><span>{{pilot.roster.onlineTo | date : "HH:mm"}}</span>
+    <br><br>
+    <div ng-form="rosterForm">
+        <p class="well">
+            <select ng-model="rosterForm.tsId"
+                    data-placeholder="Привязка к TeamSpeak"
+                    ui-select2>
+                <option></option>
+                <option ng-repeat="option in pilot.possibleUsers" value="{{option.uid}}">{{option.name}}</option>
+            </select>&nbsp;
+            <button type="button" ng-click="send()"
+                    ng-disabled="(rosterForm.$dirty && rosterForm.$invalid) || rosterForm.$pristine || rosterForm.isSubmitting"
+                    class="btn btn-primary">Принять</button>
+        </p>
+    </div>
     </div>
 </script>
 

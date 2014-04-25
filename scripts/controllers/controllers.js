@@ -112,6 +112,17 @@ lwsControllers.controller('UserCtrl',
                 });
         }]);
 
+lwsControllers.controller('RosterUserCtrl',
+    ['$scope', 'User', '$stateParams',
+        function ($scope, User, $stateParams)
+        {
+            User.getRoster({userId: $stateParams.userId},
+                function (resource)
+                {
+                    $scope.pilot = resource.data;
+                });
+        }]);
+
 lwsControllers.controller('RosterCtrl',
     ['$scope', 'User', '$stateParams',
         function ($scope, User, $stateParams)
@@ -390,7 +401,6 @@ lwsControllers.controller("RosterViewCtrl", ['$scope','$timeout','Roster', funct
         Roster.get({}, function (res)
         {
             $scope.roster = res.data;
-            console.log($scope.roster);
             rosterTimeout = $timeout(refreshRosterView, 60 * 1000);
         });
     };
