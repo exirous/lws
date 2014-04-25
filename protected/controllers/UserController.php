@@ -210,12 +210,6 @@ class UserController extends Controller
         foreach (User::model()->scopeJustRostered()->findAll() as $user)
             $rosterArray[] = $user->getRosterAttributes();
 
-        foreach (User::model()->scopeJustRostered()->findAll() as $user)
-            $rosterArray[] = $user->getRosterAttributes();
-
-        foreach (User::model()->scopeJustRostered()->findAll() as $user)
-            $rosterArray[] = $user->getRosterAttributes();
-
         return $rosterArray;
     }
 
