@@ -67,10 +67,33 @@ class User extends BaseUser
 
     public function getPublicAttributes()
     {
+        $medals = [];
+        foreach ($this->awards(['condition' => 'type="medal"']) as $award)
+            $medals[$award->award_replace_id ? $award->award_replace_id : $award->id] = $award->shortAttributes;
+
+        $medals = array_values($medals);
+
+        $crosses = [];
+        foreach ($this->awards(['condition' => 'type="cross"']) as $award)
+            $crosses[$award->award_replace_id ? $award->award_replace_id : $award->id] = $award->shortAttributes;
+
+        $crosses = array_values($crosses);
+
+        $events = [];
+        foreach ($this->userEvents as $event)
+            $events[] = $event->publicAttributes;
+
         return [
             'nickname' => $this->nickname,
             'firstname' => $this->firstname,
-            'id' => $this->id
+            'birthDate' => strtotime($this->birth_date) . '000',
+            'joinDate' => strtotime($this->join_date) . '000',
+            'id' => $this->id,
+            'rank' => $this->rank_id ? $this->rank->getShortAttributes() : null,
+            'instructor' => $this->instructor_id ? $this->instructor->getShortAttributes() : null,
+            'medals' => $medals,
+            'crosses' => $crosses,
+            'events' => $events
         ];
     }
 
@@ -80,8 +103,28 @@ class User extends BaseUser
             'nickname' => $this->nickname,
             'firstname' => $this->firstname,
             'id' => $this->id,
+            'rank' => $this->rank_id,
             'roster' => json_decode($this->roster),
             'ip' => $this->ip
+        ];
+    }
+
+    public function  getMarkAttributes()
+    {
+        $marks = [];
+        foreach ($this->userMarks as $mark)
+            $marks[$mark->subject->course_id][$mark->subject_id] = $mark->publicAttributes;
+
+        $courses = [];
+        foreach (Course::model()->findAll() as $course)
+            $courses[] = $course->publicAttributes;
+
+        return [
+            'id' => $this->id,
+            'nickname' => $this->nickname,
+            'rank' => $this->rank_id,
+            'marks'=> $marks,
+            'courses'=> $courses
         ];
     }
 
@@ -140,13 +183,28 @@ class User extends BaseUser
 
     public function syncWithTeamSpeak()
     {
-        $dbId = Yii::app()->ts->ts3Server->clientFindDb(Yii::app()->user->model->ts_id, true);
+        $dbId = Yii::app()->ts->ts3Server->clientFindDb($this->ts_id, true);
         if (count($dbId))
         {
             $dbId = $dbId[0];
             $groups = Yii::app()->ts->ts3Server->clientGetServerGroupsByDbid($dbId);
             $ignoreRank = false;
             $ignoreInstructor = false;
+            $i = 1;
+            do
+            {
+                $nicknameInUse = false;
+                try
+                {
+                    Yii::app()->ts->setName('Отдел кадров №' . $i);
+                } catch (Exception $e)
+                {
+                    if ($e->getMessage() == 'nickname is already in use')
+                        $nicknameInUse = true;
+                }
+                $i++;
+            } while ($nicknameInUse && ($i < 20));
+
             foreach ($groups as $groupId => $dummy)
             {
                 if ($groupId == 8 || $groupId == 6)
@@ -175,4 +233,26 @@ class User extends BaseUser
             throw new Exception('Пользователь не прикреплён к TeamSpeak');
         }
     }
+
+
+    public function accept($tsId)
+    {
+        $this->ts_id = $tsId;
+        $this->rank_id = 8;
+        if (!$this->save())
+            throw new Exception($this->getErrorsString());
+
+        $data = [
+            'complete' => '<p><a pilot="' . $this->id . '">' . $this->nickname . '</a> принят на <a rank="7">1й Курс</a></p>',
+            'pilots' =>
+                [
+                    [
+                        'id' => $this->id,
+                        'rank' => 7
+                    ]
+                ]
+        ];
+        Order::issueOrder($data);
+    }
+
 }

@@ -33,4 +33,14 @@ class UserEvent extends BaseUserEvent
     {
         return parent::model($className);
     }
+
+
+    public function getPublicAttributes()
+    {
+        return [
+            'id'=>$this->id,
+            'text'=>$this->text,
+            'date'=>strtotime($this->date).'000'
+        ];
+    }
 }

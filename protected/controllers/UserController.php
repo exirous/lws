@@ -41,8 +41,7 @@ class UserController extends Controller
                 default:
                     $this->returnError();
             }
-        }
-        catch (Exception $e)
+        } catch (Exception $e)
         {
             $this->returnError($e->getMessage());
         }
@@ -104,6 +103,49 @@ class UserController extends Controller
             $this->returnSuccess($this->_getRosteredUsers());
     }
 
+    public function actionGetMarks()
+    {
+        $request = Yii::app()->request;
+        $id = $request->getRequiredParam('userId', 0);
+        $this->returnSuccess($this->_getUserMarks($id));
+    }
+
+    public function actionSaveMark()
+    {
+        $request = Yii::app()->request;
+        $userId = $request->getRequiredRawBodyParam('userId', 0);
+        $subjectId = $request->getRequiredRawBodyParam('subjectId', 0);
+        $mark = $request->getRequiredRawBodyParam('mark', 0);
+        $this->returnSuccess($this->_saveUserMark($userId, $subjectId, $mark));
+    }
+
+    public function actionAccept()
+    {
+        $request = Yii::app()->request;
+        $id = $request->getRequiredRawBodyParam('userId', 0);
+        $uId = $request->getRequiredRawBodyParam('uid', '');
+        $this->returnSuccess($this->_acceptRostered($id, $uId));
+    }
+
+    private function _acceptRostered($id, $tsId)
+    {
+        $transaction = Yii::app()->db->beginTransaction();
+        try
+        {
+            $user = User::model()->findByPk($id);
+            if (!$user)
+                throw new Exception('Пользователь не найден');
+
+            $user->accept($tsId);
+            $transaction->commit();
+        } catch (Exception $e)
+        {
+            $transaction->rollback();
+            $this->returnError($e->getMessage());
+        }
+        return [];
+    }
+
     private function _renderUser($id)
     {
         try
@@ -112,8 +154,7 @@ class UserController extends Controller
             if (!$user)
                 throw new Exception("User not found!");
             return $user->publicAttributes;
-        }
-        catch (Exception $e)
+        } catch (Exception $e)
         {
             $this->returnError($e->getMessage());
         }
@@ -131,8 +172,7 @@ class UserController extends Controller
             foreach ($users as $user)
                 $usersOut[] = $user->shortAttributes;
             return $usersOut;
-        }
-        catch (Exception $e)
+        } catch (Exception $e)
         {
             $this->returnError($e->getMessage());
         }
@@ -150,8 +190,7 @@ class UserController extends Controller
                 throw new Exception("Не правильный логин или пароль!");
 
             return $identity->_model->privateAttributes;
-        }
-        catch (Exception $e)
+        } catch (Exception $e)
         {
             $this->returnError($e->getMessage());
         }
@@ -181,8 +220,7 @@ class UserController extends Controller
                 throw new Exception("Что-то пошло не так... Администратор оповещён");
 
             $transaction->commit();
-        }
-        catch (Exception $e)
+        } catch (Exception $e)
         {
             $transaction->rollback();
             $this->returnError($e->getMessage());
@@ -197,8 +235,7 @@ class UserController extends Controller
         {
             ////User::recover($email);
             $transaction->commit();
-        }
-        catch (Exception $e)
+        } catch (Exception $e)
         {
             $transaction->rollback();
             $this->returnError($e->getMessage());
@@ -227,6 +264,31 @@ class UserController extends Controller
         return $user;
     }
 
+    private function _getUserMarks($id)
+    {
+        if (Yii::app()->user->isGuest || !Yii::app()->user->model->instructor_id)
+            return null;
+        $user = User::model()->findByPk($id)->getMarkAttributes();
+        return $user;
+    }
+
+    private function _saveUserMark($userId, $subjectId, $mark)
+    {
+        if (Yii::app()->user->isGuest || !Yii::app()->user->model->instructor_id)
+            return null;
+
+        $transaction = Yii::app()->db->beginTransaction();
+        try
+        {
+            UserMark::saveMark($userId, $subjectId, $mark);
+            $transaction->commit();
+        } catch (Exception $e)
+        {
+            $transaction->rollback();
+            $this->returnError($e->getMessage());
+        }
+        return [];
+    }
 
     /*
         $transaction = Yii::app()->db->beginTransaction();

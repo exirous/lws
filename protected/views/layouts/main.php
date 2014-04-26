@@ -54,11 +54,13 @@
                                 <a href="">Новобранцы</a>
                             </div>
                             <div class="left_content">
-                                <a ui-sref="rosterUser({userId:pilot.id})" ng-repeat="pilot in roster" class="list-group-item">{{pilot.nickname}} ({{pilot.firstname}})</a>
+                                <a ui-sref="rosterUser({userId:pilot.id})" ng-repeat="pilot in roster"
+                                   class="list-group-item">{{pilot.nickname}} ({{pilot.firstname}})</a>
                             </div>
                         </div>
                     </div>
-                    <div class="main_menu"><a href="ts3server://lws.exirous.com/?nickname={{UserIdentity.fullname}}">TeamSpeak</a></div>
+                    <div class="main_menu"><a href="ts3server://lws.exirous.com/?nickname={{UserIdentity.fullname}}">TeamSpeak</a>
+                    </div>
                     <div class="left_content ts_channels">
                         <ul ng-controller="TSViewCtrl" style="padding:0">
                             <li ng-repeat="channel in tree" ng-include="'TreeItemTmpl'">
@@ -102,19 +104,60 @@
 
 <script type="text/ng-template" id="NewsTmpl">
     <h2>Приказы и объявления</h2>
-    <div ng-repeat="newsRec in news" class="news_record {{newsRecord.type}}">
-        <h4>{{newsRec.title}}</h4>
-        <div ng-bind-html="newsRec.text"></div>
-        <div><span>{{newsRec.time}}</span> <img ng-src="{{newsRec.issuer.id | avatarUrl}}"
-                                                style="max-width: 15px;max-height: 15px;"> <a
-                href="#/user/view/{{newsRec.issuer.id}}">{{newsRec.issuer.name}}</a></div>
+    <div ng-repeat="newsRec in news" class="panel panel-{{newsRec.type == 'order' ? 'primary' : 'default'}}">
+        <div class="panel-heading">{{newsRec.title}}</div>
+        <div class="panel-body" ng-bind-html="newsRec.text"></div>
+        <div class="panel-footer">
+            <span>{{newsRec.time}}</span> <img ng-src="{{newsRec.issuer.id | avatarUrl}}" style="max-width: 15px;max-height: 15px;">
+            <a href="#/user/view/{{newsRec.issuer.id}}">{{newsRec.issuer.name}}</a>
+        </div>
     </div>
 </script>
 
 <script type="text/ng-template" id="UserTmpl">
     <div ng-show="user">
-        <h1>Пилот "{{user.nickname}}" {{user.name}}</h1>
-        <div><img ng-src="{{user.id | avatarUrl}}"></div>
+        <h1>{{user.rank.name}} "{{user.nickname}}" {{user.firstname}}</h1>
+        <br>
+        <table>
+            <tr>
+                <td style="height: 120px;">
+                    <div style="margin-right:10px"><img ng-src="{{user.id | avatarUrl}}"></div>
+                </td>
+                <td>
+                    <table class="table" style="width: auto">
+                        <tbody>
+                        <tr><th>Родился</th><td>{{user.birthDate | date : "dd.MM.yyyy"}}</td></tr>
+                        <tr><th>Втсупил в школу</th><td>{{user.joinDate | date : "dd.MM.yyyy"}}</td></tr>
+                        <tr ng-if="user.rank"><th>{{user.rank.order < 5 ? 'Курс' : 'Звание'}}</th><td>{{user.rank.name}}</td></tr>
+                        <tr ng-if="user.instructor"><th>Степень</th><td>{{user.instructor.name}}</td></tr>
+                        <tr ng-if="UserIdentity.isInstructor"><th>Заявка</th><td><a ui-sref="rosterUser({userId:user.id})">Посмотреть</a></td></tr>
+                        <tr ng-if="UserIdentity.isInstructor"><th>Оценки</th><td><a ui-sref="userMarks({userId:user.id})">Посмотреть</a></td></tr>
+                        </tbody>
+                    </table>
+                </td>
+                <td ng-if="user.rank" rowspan="2">
+                    <div class="uniform">
+                        <div class="unform_rank"
+                             style="background: url(/img/uniform/{{user.rank.id}}.png) no-repeat" title="{{user.rank.name}}"></div>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" style="padding-right:10px">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">Лётная книга</div>
+                        <table class="table">
+                            <tbody>
+                            <tr ng-repeat="event in user.events">
+                                <td ng-bind-html="event.text"></td>
+                                <td>{{event.date | date : "dd.MM.yyyy"}}</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </td>
+            </tr>
+        </table>
     </div>
 </script>
 <script type="text/ng-template" id="TreeItemTmpl">
@@ -289,42 +332,46 @@
 </script>
 
 <script type="text/ng-template" id="RosterUserTmpl">
-    <div ng-show="!pilot.roster">
+    <div ng-show="!pilot.id">
         <h2>Загрузка....</h2>
     </div>
-    <div ng-show="pilot.roster">
-    <h2>Заявка на вступление от {{pilot.nickname}} ({{pilot.firstname}})</h2>
-    <br>
-    <label>Родился:</label><br>
-    <span>{{pilot.roster.birthdate}}</span><br>
-    <label>Оценка готовности стремления обучатся:</label><br>
-    <span>{{pilot.roster.scale}}</span><br>
-    <label>Попал в школу посредством:</label><br>
-    <span>{{pilot.roster.reason}}</span><br>
-    <label>Состоит в скваде:</label><br>
-    <span ng-bind="pilot.roster.squad=='yes' ? 'Да' : 'Нет'"></span><br>
-    <label>Наличие в ангаре самолетов Bf-109E-3 и/или Р-36G для истребителей:</label><br>
-    <span ng-show="pilot.roster.craft.bf109">Bf 109E-3</span>
-    <span ng-show="pilot.roster.craft.p36g">P-36G Hawk</span>
-    <br>
-    <label>Предпочитает пилотировать технику:</label><br>
-    <span>{{pilot.roster.nation}}</span><br>
-    <label>Время онлайна:</label><br>
-    <span>C </span><span>{{pilot.roster.onlineFrom | date : "HH:mm"}}</span><span> По </span><span>{{pilot.roster.onlineTo | date : "HH:mm"}}</span>
-    <br><br>
-    <div ng-form="rosterForm">
-        <p class="well">
-            <select ng-model="rosterForm.tsId"
-                    data-placeholder="Привязка к TeamSpeak"
-                    ui-select2>
-                <option></option>
-                <option ng-repeat="option in pilot.possibleUsers" value="{{option.uid}}">{{option.name}}</option>
-            </select>&nbsp;
-            <button type="button" ng-click="send()"
-                    ng-disabled="(rosterForm.$dirty && rosterForm.$invalid) || rosterForm.$pristine || rosterForm.isSubmitting"
-                    class="btn btn-primary">Принять</button>
-        </p>
-    </div>
+    <div ng-show="pilot.id">
+        <h2>Заявка на вступление от {{pilot.nickname}} ({{pilot.firstname}})</h2>
+        <br>
+        <label>Родился:</label><br>
+        <span>{{pilot.roster.birthdate}}</span><br>
+        <label>Оценка готовности стремления обучатся:</label><br>
+        <span>{{pilot.roster.scale}}</span><br>
+        <label>Попал в школу посредством:</label><br>
+        <span>{{pilot.roster.reason}}</span><br>
+        <label>Состоит в скваде:</label><br>
+        <span ng-bind="pilot.roster.squad=='yes' ? 'Да' : 'Нет'"></span><br>
+        <label>Наличие в ангаре самолетов Bf-109E-3 и/или Р-36G для истребителей:</label><br>
+        <span ng-show="pilot.roster.craft.bf109">Bf 109E-3</span>
+        <span ng-show="pilot.roster.craft.p36g">P-36G Hawk</span>
+        <br>
+        <label>Предпочитает пилотировать технику:</label><br>
+        <span>{{pilot.roster.nation}}</span><br>
+        <label>Время онлайна:</label><br>
+        <span>C </span><span>{{pilot.roster.onlineFrom | date : "HH:mm"}}</span><span> По </span><span>{{pilot.roster.onlineTo | date : "HH:mm"}}</span>
+        <br><br>
+
+        <div ng-show="pilot.rank" class="alert alert-success">Пилот принят</div>
+        <div ng-form="rosterForm" ng-show="!pilot.rank">
+            <p class="well">
+                <select ng-model="rosterForm.tsId"
+                        required
+                        data-placeholder="Привязка к TeamSpeak"
+                        ui-select2>
+                    <option></option>
+                    <option ng-repeat="option in pilot.possibleUsers" value="{{option.uid}}">{{option.name}}</option>
+                </select>&nbsp;
+                <button type="button" ng-click="accept()"
+                        ng-disabled="(rosterForm.$dirty && rosterForm.$invalid) || rosterForm.$pristine || rosterForm.isSubmitting"
+                        class="btn btn-primary">Принять
+                </button>
+            </p>
+        </div>
     </div>
 </script>
 
@@ -396,19 +443,22 @@
     <ng-form name="orderForm" novalidate role="form">
         <div class="form-group">
             <div style="display: inline-block;width: 435px;vertical-align: top;">
-            <select data-placeholder="Выберите пилотов"
-                    multiple
-                    ui-select2="pilotSelect2Options"
-                    style="width: 435px;margin-bottom: 6px"
-                    ng-model="orderData.pilots"
-                    required>
-                <option ng-repeat="pilot in initialData.pilots" value="{{pilot.id}}" data-rankid="{{pilot.rank}}">
-                    {{pilot.nickname}}
-                </option>
-            </select>
-            <textarea style="resize: none;width: 100%" rows="3" placeholder="Впишите Событие" ng-model="updatedData.event"></textarea>
+                <select data-placeholder="Выберите пилотов"
+                        multiple
+                        ui-select2="pilotSelect2Options"
+                        style="width: 435px;margin-bottom: 6px"
+                        ng-model="orderData.pilots"
+                        required>
+                    <option ng-repeat="pilot in initialData.pilots" value="{{pilot.id}}" data-rankid="{{pilot.rank}}">
+                        {{pilot.nickname}}
+                    </option>
+                </select>
+                <textarea style="resize: none;width: 100%" rows="3" placeholder="Впишите Событие"
+                          ng-model="updatedData.event"></textarea>
             </div>
-            <div style="resize: none;display:inline-block;width: 49%;padding:5px;border:1px solid #aaa;min-height:107px;background: #eee;color:#555" rows="5" id="completeData" data-ng-bind-html="updatedData.complete"></div>
+            <div
+                style="resize: none;display:inline-block;width: 49%;padding:5px;border:1px solid #aaa;min-height:107px;background: #eee;color:#555"
+                rows="5" id="completeData" data-ng-bind-html="updatedData.complete"></div>
         </div>
         <div class="form-group">
         </div>
@@ -422,7 +472,9 @@
                                 style="width: 300px"
                                 ng-model="pilot.rank">
                             <option></option>
-                            <option ng-repeat="rank in initialData.rankArray | orderBy:'order'" value="{{rank.id}}">{{rank.name}}</option>
+                            <option ng-repeat="rank in initialData.rankArray | orderBy:'order'" value="{{rank.id}}">
+                                {{rank.name}}
+                            </option>
                         </select>
                     </div>
                     <div>
@@ -431,7 +483,9 @@
                                 style="width: 300px;"
                                 ng-model="pilot.instructor">
                             <option></option>
-                            <option ng-repeat="rank in initialData.instructorsArray | orderBy:'order'" value="{{rank.id}}">{{rank.name}}</option>
+                            <option ng-repeat="rank in initialData.instructorsArray | orderBy:'order'"
+                                    value="{{rank.id}}">{{rank.name}}
+                            </option>
                         </select>
                     </div>
                 </div>
@@ -441,7 +495,8 @@
                         multiple
                         ng-model="pilot.awards">
                     <option ng-repeat="award in initialData.awards" value="{{award.id}}"
-                            ng-disabled="{{(initialData.pilots[pilot.id].awards.indexOf(award.id)>=0) && award.only_one_allowed ? true : false}}">{{award.name}}
+                            ng-disabled="{{(initialData.pilots[pilot.id].awards.indexOf(award.id)>=0) && award.only_one_allowed ? true : false}}">
+                        {{award.name}}
                     </option>
                 </select>
             </div>
@@ -455,6 +510,57 @@
             </p>
         </div>
     </ng-form>
+</script>
+<script type="text/ng-template" id="userMarksTmpl">
+    <div ng-show="user.id">
+       <h2>Оценочный лист пилота {{user.nickname}}</h2>
+        <div class="panel panel-{{course.complete ? 'success' : 'primary'}}" ng-repeat="course in user.courses">
+            <div class="panel-heading">{{course.name}}<span class="label label-danger pull-right" style="font-size: 14px;">{{course.average}}</span></div>
+            <table class="table">
+                <tr ng-repeat="subject in course.subjects">
+                    <td>{{subject.name}}</td>
+                    <td style="width:80px;text-align: right;vertical-align: middle">
+                        <button type="button" ng-click="mark(subject.id,course.id)" class="btn btn-xs btn-default"><span class="glyphicon glyphicon-pencil"></span></button>
+                        <span class="label label-primary" style="font-size: 14px;" ng-show="user.marks[course.id][subject.id]">{{user.marks[course.id][subject.id].mark}}</span>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</script>
+
+<script type="text/ng-template" id="markDialogTmpl">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h4 class="modal-title"><span class="glyphicon glyphicon-plane"></span>
+            <span>Поставить оценку</span></h4>
+        </div>
+        <div class="modal-body">
+            <ng-form name="markDialog" novalidate role="form">
+                <div class="btn-group btn-group-lg btn-group-justified">
+                    <div class="btn-group">
+                        <button type="button" ng-model="userMark.mark" btn-radio="'1'" class="btn btn-primary">1</button>
+                    </div>
+                    <div class="btn-group">
+                        <button type="button" ng-model="userMark.mark" btn-radio="'2'" class="btn btn-primary">2</button>
+                    </div>
+                    <div class="btn-group">
+                        <button type="button" ng-model="userMark.mark" btn-radio="'3'" class="btn btn-primary">3</button>
+                    </div>
+                    <div class="btn-group">
+                        <button type="button" ng-model="userMark.mark" btn-radio="'4'" class="btn btn-primary">4</button>
+                    </div>
+                    <div class="btn-group">
+                        <button type="button" ng-model="userMark.mark" btn-radio="'5'" class="btn btn-primary">5</button>
+                    </div>
+                </div>
+            </ng-form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-default" ng-disabled="userMark.isSubmitting" ng-click="cancel()">Отмена</button>
+            <button type="button" class="btn btn-primary" ng-disabled="userMark.isSubmitting" ng-click="saveMark()">Сохранить</button>
+        </div>
+    </div>
 </script>
 
 </body>

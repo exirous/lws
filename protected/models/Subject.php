@@ -33,4 +33,13 @@ class Subject extends BaseSubject
     {
         return parent::model($className);
     }
+
+    public function getPublicAttributes()
+    {
+        return [
+            'id'=>$this->id,
+            'name'=>$this->name,
+        ];
+    }
+
 }

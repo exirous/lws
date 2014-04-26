@@ -68,7 +68,7 @@ class Order extends BaseOrder
         $order->issuer_id = Yii::app()->user->model->id;
         $order->time = $date;
         if (!$order->save())
-            throw new Exception($order->getErrorsString());
+            throw new Exception('1 '.$order->getErrorsString());
 
         $eventText = (isset($data['event']) ? $data['event'] . ' ' : '');
 
@@ -91,7 +91,7 @@ class Order extends BaseOrder
                 $event->date = $date;
                 $event->text = $eventText . 'Присвоена степень <a rank="' . $rank->id . '">' . $rank->name . '</a> ';
                 if (!$event->save())
-                    throw new Exception($event->getErrorsString());
+                    throw new Exception('2 '.$event->getErrorsString());
                 $pilot->instructor_id = $rank->id;
                 $needSave = true;
             }
@@ -111,10 +111,10 @@ class Order extends BaseOrder
                 if ($rank->id == 11 || $rank->id == 12)
                     $text = 'Переведён на ';
                 if ($rank->id == 7)
-                    $text = 'Зачислен на ';
+                    $text = 'Принят на ';
                 $event->text = $eventText . $text . '<a rank="' . $rank->id . '">' . $rank->name . '</a> ';
                 if (!$event->save())
-                    throw new Exception($event->getErrorsString());
+                    throw new Exception('3 '.$event->getErrorsString());
                 $pilot->rank_id = $rank->id;
                 $needSave = true;
             }
@@ -133,18 +133,18 @@ class Order extends BaseOrder
                     $event->date = $date;
                     $event->text = $eventText . 'Награждён <a award="' . $award->id . '">' . $award->name . '</a> ';
                     if (!$event->save())
-                        throw new Exception($event->getErrorsString());
+                        throw new Exception('4 '.$event->getErrorsString());
                     $userAward = new UserAward();
                     $userAward->user_id = $pilot->id;
                     $userAward->event_id = $event->id;
                     $userAward->award_id = $award->id;
                     if (!$userAward->save())
-                        throw new Exception($userAward->getErrorsString());
+                        throw new Exception('5 '.$userAward->getErrorsString());
                 }
             }
 
             if ($needSave && !$pilot->save())
-                throw new Exception($pilot->getErrorsString());
+                throw new Exception('6 '.$pilot->getErrorsString());
 
             $pilot->syncWithTeamSpeak();
         }
@@ -164,14 +164,21 @@ class Order extends BaseOrder
         $fullmessage = preg_replace('/(\<a rank\="([0-9]+)")\>/', '[COLOR=blue]', $fullmessage);
         $fullmessage = preg_replace('/(\<a pilot\="([0-9]+)")\>/', '[COLOR=red]', $fullmessage);
         $fullmessage = preg_replace('/(\<a award\="([0-9]+)")\>/', '[COLOR=darkgreen]', $fullmessage);
-        try
+        $i = 1;
+        do
         {
-            Yii::app()->ts->setName('Отдел кадров');
-            Yii::app()->ts->ts3Server->clientGetById(20)->message($event . $fullmessage);
-            //Yii::app()->ts->ts3Server->message($event.$fullmessage);
-        }
-        catch (Exception $e)
-        {
-        }
+            $nicknameInUse = false;
+            try
+            {
+                Yii::app()->ts->setName('Отдел кадров №' . $i);
+                //Yii::app()->ts->ts3Server->channelGetById(41)->message($event . $fullmessage);
+                Yii::app()->ts->ts3Server->message($event.$fullmessage);
+            } catch (Exception $e)
+            {
+                if ($e->getMessage() == 'nickname is already in use')
+                    $nicknameInUse = true;
+            }
+            $i++;
+        } while ($nicknameInUse && ($i < 20));
     }
 }

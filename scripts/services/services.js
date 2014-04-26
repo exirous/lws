@@ -42,8 +42,20 @@ lwsServices.factory('User', ['$resource', function ($resource)
             url: '/user/getRoster',
             method: 'get'
         },
+        accept:{
+            url: '/user/accept',
+            method: 'post'
+        },
         recover:{
             url: '/user/recover',
+            method: 'post'
+        },
+        getMarks:{
+            url: '/user/getMarks',
+            method: 'get'
+        },
+        saveMark:{
+            url: '/user/saveMark',
             method: 'post'
         }
     });

@@ -87,8 +87,8 @@ abstract class BaseRank extends AActiveRecord
             'courses' => array(self::HAS_MANY, 'Course', 'group_id'),
             'parentGroup' => array(self::BELONGS_TO, 'Rank', 'parent_group_id'),
             'ranks' => array(self::HAS_MANY, 'Rank', 'parent_group_id'),
-            'users' => array(self::HAS_MANY, 'User', 'instructor_id'),
-            'users1' => array(self::HAS_MANY, 'User', 'rank_id'),
+            'users' => array(self::HAS_MANY, 'User', 'rank_id'),
+            'users1' => array(self::HAS_MANY, 'User', 'instructor_id'),
         );
     }
 

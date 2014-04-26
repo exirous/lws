@@ -67,8 +67,8 @@ class TeamSpeakController extends Controller
         }*/
 
 
-        Order::model()->findByPk(3)->postToTeamSpeak();
-        Order::model()->findByPk(4)->postToTeamSpeak();
+        //Order::model()->findByPk(3)->postToTeamSpeak();
+        //Order::model()->findByPk(4)->postToTeamSpeak();
         //Yii::app()->user->model->syncWithTeamSpeak();
 
         //die(var_dump($db[126]));
@@ -83,11 +83,22 @@ class TeamSpeakController extends Controller
         /**
          * @var $client TeamSpeak3_Node_Client
          */
+
+        /*foreach (Yii::app()->ts->ts3Server->channelList() as $channel)
+        {
+            //$info = $channel->getInfo();
+            //var_dump($info['cid']);
+            //echo $info['cid'].':'.$info['channel_name']->toString().'<br>';
+        }*/
+
         /*foreach (Yii::app()->ts->ts3Server->clientList() as $client)
         {
             if ($client["client_type"]) continue;
-                $client->message("[COLOR=red]Server[B]Test[/B]!  Тестирую возможности сервера, не обращайте внимание. (Жека) :)[/COLOR]");
-        }*/
+            var_dump($client);
+            echo '<br><br><br>';
+            /*if ($client["client_type"]) continue;
+                $client->message("[COLOR=red]Server[B]Test[/B]!  Тестирую возможности сервера, не обращайте внимание. (Жека) :)[/COLOR]");*/
+        //}*/
         //Yii::app()->ts->ts3Server->message("[COLOR=red]Server[B]Test[/B]!  Тестирую возможности сервера, не обращайте внимание. (Жека) :)[/COLOR]");
         //Yii::app()->ts->ts3Server->clientGetById(20)->message("[COLOR=red]your client is [B]outdated[/B]... update to [U]ASD[/U] now![/COLOR]");
     }

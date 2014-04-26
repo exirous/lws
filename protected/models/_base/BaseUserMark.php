@@ -9,13 +9,16 @@
  * Columns in table "user_mark" available as properties of the model,
  * followed by relations of table "user_mark" available as properties of the model.
  *
+ * @property string $id
  * @property string $user_id
  * @property string $subject_id
  * @property integer $mark
  * @property string $time
+ * @property string $issuer_id
  *
  * @property User $user
  * @property Subject $subject
+ * @property User $issuer
  */
 abstract class BaseUserMark extends AActiveRecord
 {
@@ -45,9 +48,9 @@ abstract class BaseUserMark extends AActiveRecord
         return array(
             array('user_id, time', 'required'),
             array('mark', 'numerical', 'integerOnly'=>true),
-            array('user_id, subject_id', 'length', 'max'=>10),
-            array('subject_id, mark', 'default', 'setOnEmpty' => true, 'value' => null),
-            array('user_id, subject_id, mark, time', 'safe', 'on' => 'search'),
+            array('user_id, subject_id, issuer_id', 'length', 'max'=>10),
+            array('subject_id, mark, issuer_id', 'default', 'setOnEmpty' => true, 'value' => null),
+            array('id, user_id, subject_id, mark, time, issuer_id', 'safe', 'on' => 'search'),
         );
     }
 
@@ -56,6 +59,7 @@ abstract class BaseUserMark extends AActiveRecord
         return array(
             'user' => array(self::BELONGS_TO, 'User', 'user_id'),
             'subject' => array(self::BELONGS_TO, 'Subject', 'subject_id'),
+            'issuer' => array(self::BELONGS_TO, 'User', 'issuer_id'),
         );
     }
 
@@ -68,12 +72,15 @@ abstract class BaseUserMark extends AActiveRecord
     public function attributeLabels()
     {
         return array(
+            'id' => Yii::t('app', 'ID'),
             'user_id' => null,
             'subject_id' => null,
             'mark' => Yii::t('app', 'Mark'),
             'time' => Yii::t('app', 'Time'),
+            'issuer_id' => null,
             'user' => null,
             'subject' => null,
+            'issuer' => null,
         );
     }
 
@@ -81,10 +88,12 @@ abstract class BaseUserMark extends AActiveRecord
     {
         $criteria = new CDbCriteria;
 
+        $criteria->compare('id', $this->id, true);
         $criteria->compare('user_id', $this->user_id);
         $criteria->compare('subject_id', $this->subject_id);
         $criteria->compare('mark', $this->mark);
         $criteria->compare('time', $this->time, true);
+        $criteria->compare('issuer_id', $this->issuer_id);
 
         return new CActiveDataProvider($this, array(
             'criteria' => $criteria,

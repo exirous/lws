@@ -31,6 +31,7 @@
  * @property Award[] $awards
  * @property UserEvent[] $userEvents
  * @property UserMark[] $userMarks
+ * @property UserMark[] $issuedMarks
  */
 abstract class BaseUser extends AActiveRecord
 {
@@ -79,6 +80,7 @@ abstract class BaseUser extends AActiveRecord
             'instructor' => array(self::BELONGS_TO, 'Rank', 'instructor_id'),
             'awards' => array(self::MANY_MANY, 'Award', 'user_award(user_id, award_id)'),
             'userEvents' => array(self::HAS_MANY, 'UserEvent', 'user_id'),
+            'issuedMarks' => array(self::HAS_MANY, 'UserMark', 'issuer_id'),
             'userMarks' => array(self::HAS_MANY, 'UserMark', 'user_id'),
         );
     }
@@ -114,6 +116,7 @@ abstract class BaseUser extends AActiveRecord
             'instructor' => null,
             'awards' => null,
             'userEvents' => null,
+            'issuedMarks' => null,
             'userMarks' => null,
         );
     }

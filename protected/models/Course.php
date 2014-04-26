@@ -33,4 +33,17 @@ class Course extends BaseCourse
     {
         return parent::model($className);
     }
+
+    public function getPublicAttributes()
+    {
+        $subjects = [];
+        foreach ($this->subjects as $subject)
+            $subjects[] = $subject->publicAttributes;
+
+        return [
+            'id'=>$this->id,
+            'name'=>$this->name,
+            'subjects'=>$subjects
+        ];
+    }
 }

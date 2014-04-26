@@ -1,4 +1,4 @@
-angular.module('app.controllers', ['ui.router', 'app.directives', 'ui.bootstrap.datepicker', 'ui.bootstrap.buttons','ui.bootstrap.accordion', 'ui.bootstrap.timepicker', 'ui.select2']);
+angular.module('app.controllers', ['ui.router', 'app.directives', 'ui.bootstrap.datepicker', 'ui.bootstrap.buttons', 'ui.bootstrap.accordion', 'ui.bootstrap.timepicker', 'ui.select2']);
 var lwsControllers = angular.module('app.controllers');
 
 lwsControllers.controller('AppCtrl',
@@ -17,7 +17,7 @@ lwsControllers.controller('AppCtrl',
                 {
 
                 });
-            }
+            };
             $scope.logout = function ()
             {
                 dlg = $dialogs.confirm('Подтвердите', 'Вы хотите выйти из системы?');
@@ -113,14 +113,24 @@ lwsControllers.controller('UserCtrl',
         }]);
 
 lwsControllers.controller('RosterUserCtrl',
-    ['$scope', 'User', '$stateParams',
-        function ($scope, User, $stateParams)
+    ['$scope', 'User', '$stateParams', '$rootScope', '$location',
+        function ($scope, User, $stateParams, $rootScope, $location)
         {
             User.getRoster({userId: $stateParams.userId},
                 function (resource)
                 {
                     $scope.pilot = resource.data;
                 });
+            $scope.accept = function ()
+            {
+                $scope.rosterForm.isSubmitting = true;
+                User.accept({userId: $stateParams.userId, uid: $scope.rosterForm.tsId}, function ()
+                {
+                    $scope.rosterForm.isSubmitting = false;
+                    $rootScope.$broadcast('refreshRosterList');
+                    $scope.pilot.rank = 7;
+                });
+            }
         }]);
 
 lwsControllers.controller('RosterCtrl',
@@ -274,12 +284,13 @@ lwsControllers.controller('OrderCreatorCtrl',
                     $scope.initialData.instructorsArray = rankArray;
                 });
             }
+
             reloadData();
 
             $scope.save = function ()
             {
                 $scope.orderData.isSubmitting = true;
-                OrderGenerator.save({data:angular.extend({complete: $scope.orderData.complete}, $scope.updatedData)}, function (resource)
+                OrderGenerator.save({data: angular.extend({complete: $scope.orderData.complete}, $scope.updatedData)}, function (resource)
                 {
                     reloadData();
                 });
@@ -301,12 +312,11 @@ lwsControllers.controller('OrderCreatorCtrl',
 
                     if (pilot.old_rank == 7 || pilot.old_rank == 11 || pilot.old_rank == 12)
                     {
-                        pilotname = '<a rank="'+pilot.old_rank+'">Курсант '+pilot.rank_name+'</a> <a pilot="' + pilot.id + '">' + pilot.nickname + '</a>';
+                        pilotname = '<a rank="' + pilot.old_rank + '">Курсант ' + pilot.rank_name + '</a> <a pilot="' + pilot.id + '">' + pilot.nickname + '</a>';
                         afterranktext = 'В связи с успешной сдачей экзамена';
                     }
                     else
-                        pilotname = '<a rank="'+pilot.old_rank+'">'+pilot.rank_name+'</a> <a pilot="' + pilot.id + '">' + pilot.nickname + '</a>';
-
+                        pilotname = '<a rank="' + pilot.old_rank + '">' + pilot.rank_name + '</a> <a pilot="' + pilot.id + '">' + pilot.nickname + '</a>';
 
 
                     if (pilot.old_rank != pilot.rank)
@@ -317,7 +327,7 @@ lwsControllers.controller('OrderCreatorCtrl',
                         if (oldOrder > newOrder)
                             rankuptext = ' понижен до ';
                         else
-                            rankuptext = ' присвоено '+(newOrder-oldOrder > 1 ? 'внеочередное' : 'очередное')+' звание ';
+                            rankuptext = ' присвоено ' + (newOrder - oldOrder > 1 ? 'внеочередное' : 'очередное') + ' звание ';
 
                         if (pilot.old_rank == 5)
                             rankuptext = ' принят на';
@@ -392,7 +402,7 @@ lwsControllers.controller("AfterRosterCtrl", ['$scope', function ($scope)
 
 }]);
 
-lwsControllers.controller("RosterViewCtrl", ['$scope','$timeout','Roster', function ($scope, $timeout, Roster)
+lwsControllers.controller("RosterViewCtrl", ['$scope', '$timeout', 'Roster', function ($scope, $timeout, Roster)
 {
     var rosterTimeout = null;
     var refreshRosterView = function ()
@@ -405,9 +415,86 @@ lwsControllers.controller("RosterViewCtrl", ['$scope','$timeout','Roster', funct
         });
     };
     refreshRosterView();
-    $scope.$on('refreshRosterList', function(event, args) {
+    $scope.$on('refreshRosterList', function (event, args)
+    {
         refreshRosterView();
     });
     $scope.tree = [];
 
 }]);
+
+lwsControllers.controller("UserMarksCtrl", ['$scope', '$stateParams', 'User', '$dialogs', function ($scope, $stateParams, User, $dialogs)
+{
+    $scope.user = {};
+    User.getMarks({userId: $stateParams.userId}, function (resource)
+    {
+        angular.extend($scope.user, resource.data);
+    });
+
+    $scope.mark = function (subjectId, courseId)
+    {
+        var mark = ($scope.user.marks[courseId] && $scope.user.marks[courseId][subjectId]) ? $scope.user.marks[courseId][subjectId].mark : 0;
+
+        var dlg = $dialogs.create('markDialogTmpl', 'MarkDialogCtrl', {
+            mark: mark,
+            subjectId: subjectId,
+            userId: $scope.user.id
+        }, {key: false, back: 'static'});
+        dlg.result.then(function (mark)
+        {
+            if (!$scope.user.marks[courseId])
+                $scope.user.marks[courseId] = {};
+            if (!$scope.user.marks[courseId][subjectId])
+                $scope.user.marks[courseId][subjectId] = {}
+            $scope.user.marks[courseId][subjectId].mark = mark.mark
+        }, function ()
+        {
+
+        });
+    };
+
+    $scope.$watch('user.marks', function ()
+    {
+        if (!$scope.user) return;
+        angular.forEach($scope.user.courses, function (course, key)
+        {
+            var count = 0;
+            var average = 0;
+            angular.forEach($scope.user.marks[course.id], function (mark, key2)
+            {
+                count++;
+                average += parseInt(mark.mark);
+            }, this);
+            $scope.user.courses[key].average = count ? average / count : 0;
+            $scope.user.courses[key].complete = (count == course.subjects.length);
+        }, this);
+    }, true);
+
+}]);
+
+
+lwsControllers.controller('MarkDialogCtrl',
+    ['$scope', '$modalInstance', 'data', 'User', '$dialogs',
+        function ($scope, $modalInstance, data, User, $dialogs)
+        {
+            $scope.userMark = {};
+            angular.extend($scope.userMark, data);
+
+            $scope.cancel = function ()
+            {
+                $modalInstance.dismiss('canceled');
+            }; // end cancel
+
+            $scope.saveMark = function ()
+            {
+                $scope.userMark.isSubmitting = true;
+                User.saveMark($scope.userMark, function (resource)
+                    {
+                        $modalInstance.close($scope.userMark);
+                    },
+                    function (resource)
+                    {
+                        $modalInstance.close($scope.userMark);
+                    });
+            }; // end save
+        }]);

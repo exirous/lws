@@ -263,3 +263,19 @@ img
     background: #c9f3ff !important;
 }
 
+.uniform
+{
+    width: 400px;
+    height: 600px;
+    background: url(/img/uniform/uniform.png);
+}
+
+.uniform .unform_rank
+{
+    width: 400px;
+    height: 600px;
+    left: 15px;
+    position: relative;
+    top: 44px;
+}
+

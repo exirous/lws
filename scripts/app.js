@@ -40,6 +40,11 @@ function mainRouteConfig($stateProvider, $urlRouterProvider)
             templateUrl: 'RosterUserTmpl',
             controller: "RosterUserCtrl"
         })
+        .state('userMarks', {
+            url: "/user/marks/:userId",
+            templateUrl: 'userMarksTmpl',
+            controller: "UserMarksCtrl"
+        })
         .state('afterroster', {
             url: "/afterroster",
             templateUrl: 'AfterRosterTmpl',
