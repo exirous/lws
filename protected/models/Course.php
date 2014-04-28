@@ -43,7 +43,8 @@ class Course extends BaseCourse
         return [
             'id'=>$this->id,
             'name'=>$this->name,
-            'subjects'=>$subjects
+            'subjects'=>$subjects,
+            'rank_order'=>$this->rank_id ? $this->rank->order : ''
         ];
     }
 }

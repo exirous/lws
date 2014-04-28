@@ -18,6 +18,7 @@
  * @property integer $order
  *
  * @property Course[] $courses
+ * @property Course[] $courses1
  * @property Rank $parentGroup
  * @property Rank[] $ranks
  * @property User[] $users
@@ -84,7 +85,8 @@ abstract class BaseRank extends AActiveRecord
     public function relations()
     {
         return array(
-            'courses' => array(self::HAS_MANY, 'Course', 'group_id'),
+            'courses' => array(self::HAS_MANY, 'Course', 'rank_id'),
+            'courses1' => array(self::HAS_MANY, 'Course', 'next_rank_id'),
             'parentGroup' => array(self::BELONGS_TO, 'Rank', 'parent_group_id'),
             'ranks' => array(self::HAS_MANY, 'Rank', 'parent_group_id'),
             'users' => array(self::HAS_MANY, 'User', 'rank_id'),
@@ -109,6 +111,7 @@ abstract class BaseRank extends AActiveRecord
             'type' => Yii::t('app', 'Type'),
             'order' => Yii::t('app', 'Order'),
             'courses' => null,
+            'courses1' => null,
             'parentGroup' => null,
             'ranks' => null,
             'users' => null,

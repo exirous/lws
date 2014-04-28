@@ -123,8 +123,19 @@ class User extends BaseUser
             'id' => $this->id,
             'nickname' => $this->nickname,
             'rank' => $this->rank_id,
-            'marks'=> $marks,
-            'courses'=> $courses
+            'rank_order' => $this->rank->order,
+            'marks' => $marks,
+            'courses' => $courses
+        ];
+    }
+
+    public function  getShortMarkAttributes()
+    {
+        return [
+            'id' => $this->id,
+            'nickname' => $this->nickname,
+            'rank' => $this->rank_id,
+            'rank_order' => $this->rank->order,
         ];
     }
 
@@ -197,13 +208,15 @@ class User extends BaseUser
                 try
                 {
                     Yii::app()->ts->setName('Отдел кадров №' . $i);
-                } catch (Exception $e)
+                }
+                catch (Exception $e)
                 {
                     if ($e->getMessage() == 'nickname is already in use')
                         $nicknameInUse = true;
                 }
                 $i++;
-            } while ($nicknameInUse && ($i < 20));
+            }
+            while ($nicknameInUse && ($i < 20));
 
             foreach ($groups as $groupId => $dummy)
             {
@@ -234,7 +247,6 @@ class User extends BaseUser
         }
     }
 
-
     public function accept($tsId)
     {
         $this->ts_id = $tsId;
@@ -243,7 +255,8 @@ class User extends BaseUser
             throw new Exception($this->getErrorsString());
 
         $data = [
-            'complete' => '<p><a pilot="' . $this->id . '">' . $this->nickname . '</a> принят на <a rank="7">1й Курс</a></p>',
+            'complete' => '<p><a pilot="' . $this->id . '">' . $this->nickname
+                . '</a> принят на <a rank="7">1й Курс</a></p>',
             'pilots' =>
                 [
                     [
@@ -255,4 +268,43 @@ class User extends BaseUser
         Order::issueOrder($data);
     }
 
+    public function promoteCourse($courseId)
+    {
+        $course = Course::model()->findByPk($courseId);
+        if (!$course)
+            throw new Exception('Course not found');
+
+        if ($course->next_rank_id == 16)
+        {
+            if ($this->is_clanner)
+            {
+                $rank = 29;
+                $text = ' зачислен в <a rank="29">Выпускники</a>';
+            }
+            else
+            {
+                $rank = $course->next_rank_id;
+                $text = ' переведён в офицерский состав с присвоением звания <a rank="' . $rank . '">'
+                    . $course->nextRank->name . '</a>';
+            }
+        }
+        else
+        {
+            $rank = $course->next_rank_id;
+            $text = ' переведён на <a rank="' . $rank . '">' . $course->nextRank->name . '</a>';
+        }
+
+        $data = [
+            'complete' => '<p><a pilot="' . $this->id . '">Курсант ' . $this->nickname
+                . '</a>' . $text . ' в связи с успешной сдачей экзаменов</p>',
+            'pilots' =>
+                [
+                    [
+                        'id' => $this->id,
+                        'rank' => $rank
+                    ]
+                ]
+        ];
+        Order::issueOrder($data);
+    }
 }

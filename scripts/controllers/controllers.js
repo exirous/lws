@@ -1,4 +1,11 @@
-angular.module('app.controllers', ['ui.router', 'app.directives', 'ui.bootstrap.datepicker', 'ui.bootstrap.buttons', 'ui.bootstrap.accordion', 'ui.bootstrap.timepicker', 'ui.select2']);
+angular.module('app.controllers',
+    ['ui.router',
+        'app.directives',
+        'ui.bootstrap.datepicker',
+        'ui.bootstrap.buttons',
+        'ui.bootstrap.accordion',
+        'ui.bootstrap.timepicker',
+        'ui.select2']);
 var lwsControllers = angular.module('app.controllers');
 
 lwsControllers.controller('AppCtrl',
@@ -32,9 +39,7 @@ lwsControllers.controller('AppCtrl',
                 });
             }
 
-
         }]);
-
 
 lwsControllers.controller('UserLoginCtrl',
     ['$scope', '$modalInstance', 'data', 'User', '$dialogs',
@@ -76,16 +81,19 @@ lwsControllers.controller('UserLoginCtrl',
 
             }; // end save
 
-
             $scope.hitEnter = function (evt)
             {
-                if (angular.equals(evt.keyCode, 13) && !(angular.equals($scope.email, null) || angular.equals($scope.email, '')) && !(angular.equals($scope.password, null) || angular.equals($scope.password, '')))
+                if (angular.equals(evt.keyCode, 13) && !(angular.equals($scope.email, null)
+                    || angular.equals($scope.email, '')) && !(angular.equals($scope.password, null)
+                    || angular.equals($scope.password, '')))
                     $scope.save();
             }; // end hitEnter
 
             $scope.hitEnterForgot = function (evt)
             {
-                if (angular.equals(evt.keyCode, 13) && !(angular.equals($scope.email, null) || angular.equals($scope.email, '')) && !(angular.equals($scope.password, null) || angular.equals($scope.password, '')))
+                if (angular.equals(evt.keyCode, 13) && !(angular.equals($scope.email, null)
+                    || angular.equals($scope.email, '')) && !(angular.equals($scope.password, null)
+                    || angular.equals($scope.password, '')))
                     $scope.sendPass();
             }; // end hitEnter
 
@@ -230,13 +238,23 @@ lwsControllers.controller('OrderCreatorCtrl',
             function formatRank(state)
             {
                 if (!state.id) return state.text; // optgroup
-                return '<img class="ts_group_icon" src="/img/groups/' + state.id + '.png"> ' + "<span> " + state.text + "</span>";
+                return '<img class="ts_group_icon" src="/img/groups/'
+                + state.id
+                + '.png"> '
+                + "<span> "
+                + state.text
+                + "</span>";
             }
 
             function formatAward(state)
             {
                 if (!state.id) return state.text; // optgroup
-                return '<img class="micro_award" src="/img/awards/' + state.id + '.png"> ' + "<span> " + state.text + "</span>";
+                return '<img class="micro_award" src="/img/awards/'
+                + state.id
+                + '.png"> '
+                + "<span> "
+                + state.text
+                + "</span>";
             }
 
             $scope.pilotSelect2Options = {
@@ -254,7 +272,6 @@ lwsControllers.controller('OrderCreatorCtrl',
                 formatSelection: formatRank,
                 allowClear: true
             };
-
 
             $scope.awardSelect2Options = {
                 formatResult: formatAward,
@@ -290,10 +307,11 @@ lwsControllers.controller('OrderCreatorCtrl',
             $scope.save = function ()
             {
                 $scope.orderData.isSubmitting = true;
-                OrderGenerator.save({data: angular.extend({complete: $scope.orderData.complete}, $scope.updatedData)}, function (resource)
-                {
-                    reloadData();
-                });
+                OrderGenerator.save({data: angular.extend({complete: $scope.orderData.complete}, $scope.updatedData)},
+                    function (resource)
+                    {
+                        reloadData();
+                    });
             };
 
             $scope.$watch('updatedData', function ()
@@ -312,12 +330,29 @@ lwsControllers.controller('OrderCreatorCtrl',
 
                     if (pilot.old_rank == 7 || pilot.old_rank == 11 || pilot.old_rank == 12)
                     {
-                        pilotname = '<a rank="' + pilot.old_rank + '">Курсант ' + pilot.rank_name + '</a> <a pilot="' + pilot.id + '">' + pilot.nickname + '</a>';
+                        pilotname =
+                            '<a rank="'
+                            + pilot.old_rank
+                            + '">Курсант '
+                            + pilot.rank_name
+                            + '</a> <a pilot="'
+                            + pilot.id
+                            + '">'
+                            + pilot.nickname
+                            + '</a>';
                         afterranktext = 'В связи с успешной сдачей экзамена';
                     }
                     else
-                        pilotname = '<a rank="' + pilot.old_rank + '">' + pilot.rank_name + '</a> <a pilot="' + pilot.id + '">' + pilot.nickname + '</a>';
-
+                        pilotname =
+                            '<a rank="'
+                            + pilot.old_rank
+                            + '">'
+                            + pilot.rank_name
+                            + '</a> <a pilot="'
+                            + pilot.id
+                            + '">'
+                            + pilot.nickname
+                            + '</a>';
 
                     if (pilot.old_rank != pilot.rank)
                     {
@@ -327,7 +362,8 @@ lwsControllers.controller('OrderCreatorCtrl',
                         if (oldOrder > newOrder)
                             rankuptext = ' понижен до ';
                         else
-                            rankuptext = ' присвоено ' + (newOrder - oldOrder > 1 ? 'внеочередное' : 'очередное') + ' звание ';
+                            rankuptext =
+                                ' присвоено ' + (newOrder - oldOrder > 1 ? 'внеочередное' : 'очередное') + ' звание ';
 
                         if (pilot.old_rank == 5)
                             rankuptext = ' принят на';
@@ -336,13 +372,24 @@ lwsControllers.controller('OrderCreatorCtrl',
                             rankuptext = ' переведен на ';
                         if (pilot.old_rank == 12)
                             rankuptext = ' переведён в офицерский состав и' + rankuptext;
-                        ranktext = rankuptext + '<a rank="' + pilot.rank + '">' + $scope.initialData.ranks[pilot.rank].name + '</a>';
+                        ranktext =
+                            rankuptext
+                            + '<a rank="'
+                            + pilot.rank
+                            + '">'
+                            + $scope.initialData.ranks[pilot.rank].name
+                            + '</a>';
                     }
 
                     if (pilot.old_instructor != pilot.instructor)
                     {
                         var instruptext = ' присвоенна степень ';
-                        instrtext = instruptext + $sce.trustAsHtml('<a rank="' + pilot.instructor + '">' + $scope.initialData.instructors[pilot.instructor].name + '</a>');
+                        instrtext =
+                            instruptext + $sce.trustAsHtml('<a rank="'
+                            + pilot.instructor
+                            + '">'
+                            + $scope.initialData.instructors[pilot.instructor].name
+                            + '</a>');
                     }
 
                     if (pilot.awards.length)
@@ -350,7 +397,8 @@ lwsControllers.controller('OrderCreatorCtrl',
                         var awards = [];
                         angular.forEach(pilot.awards, function (awardId, key)
                         {
-                            awards.push('<a award="' + awardId + '">' + $scope.initialData.awards[awardId].name) + '</a>';
+                            awards.push('<a award="' + awardId + '">' + $scope.initialData.awards[awardId].name)
+                            + '</a>';
                         });
                         awardtext = 'награждается ' + awards.join(', ');
                     }
@@ -381,7 +429,6 @@ lwsControllers.controller('OrderCreatorCtrl',
 
         }]);
 
-
 lwsControllers.controller("TSViewCtrl", ['$scope', 'TeamSpeak', '$timeout', function ($scope, TeamSpeak, $timeout)
 {
     var refreshTsView = function ()
@@ -395,7 +442,6 @@ lwsControllers.controller("TSViewCtrl", ['$scope', 'TeamSpeak', '$timeout', func
     refreshTsView();
     $scope.tree = [];
 }]);
-
 
 lwsControllers.controller("AfterRosterCtrl", ['$scope', function ($scope)
 {
@@ -423,55 +469,75 @@ lwsControllers.controller("RosterViewCtrl", ['$scope', '$timeout', 'Roster', fun
 
 }]);
 
-lwsControllers.controller("UserMarksCtrl", ['$scope', '$stateParams', 'User', '$dialogs', function ($scope, $stateParams, User, $dialogs)
-{
-    $scope.user = {};
-    User.getMarks({userId: $stateParams.userId}, function (resource)
-    {
-        angular.extend($scope.user, resource.data);
-    });
-
-    $scope.mark = function (subjectId, courseId)
-    {
-        var mark = ($scope.user.marks[courseId] && $scope.user.marks[courseId][subjectId]) ? $scope.user.marks[courseId][subjectId].mark : 0;
-
-        var dlg = $dialogs.create('markDialogTmpl', 'MarkDialogCtrl', {
-            mark: mark,
-            subjectId: subjectId,
-            userId: $scope.user.id
-        }, {key: false, back: 'static'});
-        dlg.result.then(function (mark)
+lwsControllers.controller("UserMarksCtrl",
+    ['$scope',
+        '$stateParams',
+        'User',
+        '$dialogs',
+        function ($scope, $stateParams, User, $dialogs)
         {
-            if (!$scope.user.marks[courseId])
-                $scope.user.marks[courseId] = {};
-            if (!$scope.user.marks[courseId][subjectId])
-                $scope.user.marks[courseId][subjectId] = {}
-            $scope.user.marks[courseId][subjectId].mark = mark.mark
-        }, function ()
-        {
-
-        });
-    };
-
-    $scope.$watch('user.marks', function ()
-    {
-        if (!$scope.user) return;
-        angular.forEach($scope.user.courses, function (course, key)
-        {
-            var count = 0;
-            var average = 0;
-            angular.forEach($scope.user.marks[course.id], function (mark, key2)
+            $scope.user = {};
+            User.getMarks({userId: $stateParams.userId}, function (resource)
             {
-                count++;
-                average += parseInt(mark.mark);
-            }, this);
-            $scope.user.courses[key].average = count ? average / count : 0;
-            $scope.user.courses[key].complete = (count == course.subjects.length);
-        }, this);
-    }, true);
+                angular.extend($scope.user, resource.data);
+            });
 
-}]);
+            $scope.mark = function (subjectId, courseId)
+            {
+                var mark = ($scope.user.marks[courseId] && $scope.user.marks[courseId][subjectId]) ?
+                    $scope.user.marks[courseId][subjectId].mark :
+                    0;
 
+                var dlg = $dialogs.create('markDialogTmpl', 'MarkDialogCtrl', {
+                    mark: mark,
+                    subjectId: subjectId,
+                    userId: $scope.user.id
+                }, {key: false, back: 'static'});
+                dlg.result.then(function (mark)
+                {
+                    if (!$scope.user.marks[courseId])
+                        $scope.user.marks[courseId] = {};
+                    if (!$scope.user.marks[courseId][subjectId])
+                        $scope.user.marks[courseId][subjectId] = {};
+                    $scope.user.marks[courseId][subjectId].mark = mark.mark
+                }, function ()
+                {
+
+                });
+            };
+
+            $scope.promote = function (courseId)
+            {
+                $dialogs.confirm('Подтвердите', 'Продвинуть курсанта на следующий курс?')
+                    .result.then(function (btn)
+                    {
+                        User.promote({userId: $scope.user.id, courseId: courseId}, function (resource)
+                        {
+                            angular.extend($scope.user, resource.data);
+                        });
+                    }, function (btn)
+                    {
+                    });
+            };
+
+            $scope.$watch('user.marks', function ()
+            {
+                if (!$scope.user) return;
+                angular.forEach($scope.user.courses, function (course, key)
+                {
+                    var count = 0;
+                    var average = 0;
+                    angular.forEach($scope.user.marks[course.id], function (mark, key2)
+                    {
+                        count++;
+                        average += parseInt(mark.mark);
+                    }, this);
+                    $scope.user.courses[key].average = count ? average / count : 0;
+                    $scope.user.courses[key].complete = (count == course.subjects.length);
+                }, this);
+            }, true);
+
+        }]);
 
 lwsControllers.controller('MarkDialogCtrl',
     ['$scope', '$modalInstance', 'data', 'User', '$dialogs',

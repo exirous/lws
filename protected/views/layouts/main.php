@@ -514,7 +514,7 @@
 <script type="text/ng-template" id="userMarksTmpl">
     <div ng-show="user.id">
        <h2>Оценочный лист пилота {{user.nickname}}</h2>
-        <div class="panel panel-{{course.complete ? 'success' : 'primary'}}" ng-repeat="course in user.courses">
+        <div class="panel panel-{{course.complete ? 'success' : 'primary'}}" ng-repeat="course in user.courses" ng-if="(course.rank_order <= user.rank_order)">
             <div class="panel-heading">{{course.name}}<span class="label label-danger pull-right" style="font-size: 14px;">{{course.average}}</span></div>
             <table class="table">
                 <tr ng-repeat="subject in course.subjects">
@@ -525,6 +525,7 @@
                     </td>
                 </tr>
             </table>
+            <button type="button" ng-click="promote(course.id)" ng-if="(course.rank_order == user.rank_order) && course.complete" class="btn btn-sm btn-success" style="width: 100%"><span class="glyphicon glyphicon-hand-down"></span> Перевести на следующий курс</button>
         </div>
     </div>
 </script>

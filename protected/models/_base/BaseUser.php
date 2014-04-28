@@ -21,6 +21,7 @@
  * @property string $rank_id
  * @property string $instructor_id
  * @property string $ip
+ * @property string $is_clanner
  *
  * @property BattleEvent[] $battleEvents
  * @property News[] $news
@@ -63,9 +64,10 @@ abstract class BaseUser extends AActiveRecord
             array('firstname', 'length', 'max'=>128),
             array('email, ts_id', 'length', 'max'=>64),
             array('rank_id, instructor_id', 'length', 'max'=>10),
+            array('is_clanner', 'length', 'max'=>1),
             array('join_date, birth_date, roster', 'safe'),
-            array('nickname, firstname, email, password, ts_id, join_date, birth_date, roster, rank_id, instructor_id, ip', 'default', 'setOnEmpty' => true, 'value' => null),
-            array('id, nickname, firstname, email, password, ts_id, join_date, birth_date, roster, rank_id, instructor_id, ip', 'safe', 'on' => 'search'),
+            array('nickname, firstname, email, password, ts_id, join_date, birth_date, roster, rank_id, instructor_id, ip, is_clanner', 'default', 'setOnEmpty' => true, 'value' => null),
+            array('id, nickname, firstname, email, password, ts_id, join_date, birth_date, roster, rank_id, instructor_id, ip, is_clanner', 'safe', 'on' => 'search'),
         );
     }
 
@@ -108,6 +110,7 @@ abstract class BaseUser extends AActiveRecord
             'rank_id' => null,
             'instructor_id' => null,
             'ip' => Yii::t('app', 'Ip'),
+            'is_clanner' => Yii::t('app', 'Is Clanner'),
             'battleEvents' => null,
             'news' => null,
             'notifications' => null,
@@ -137,6 +140,7 @@ abstract class BaseUser extends AActiveRecord
         $criteria->compare('rank_id', $this->rank_id);
         $criteria->compare('instructor_id', $this->instructor_id);
         $criteria->compare('ip', $this->ip, true);
+        $criteria->compare('is_clanner', $this->is_clanner, true);
 
         return new CActiveDataProvider($this, array(
             'criteria' => $criteria,

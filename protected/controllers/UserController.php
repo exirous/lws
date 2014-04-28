@@ -41,7 +41,8 @@ class UserController extends Controller
                 default:
                     $this->returnError();
             }
-        } catch (Exception $e)
+        }
+        catch (Exception $e)
         {
             $this->returnError($e->getMessage());
         }
@@ -127,6 +128,14 @@ class UserController extends Controller
         $this->returnSuccess($this->_acceptRostered($id, $uId));
     }
 
+    public function actionPromote()
+    {
+        $request = Yii::app()->request;
+        $userId = $request->getRequiredRawBodyParam('userId', 0);
+        $courseId = $request->getRequiredRawBodyParam('courseId', 0);
+        $this->returnSuccess($this->_promote($userId, $courseId));
+    }
+
     private function _acceptRostered($id, $tsId)
     {
         $transaction = Yii::app()->db->beginTransaction();
@@ -138,7 +147,8 @@ class UserController extends Controller
 
             $user->accept($tsId);
             $transaction->commit();
-        } catch (Exception $e)
+        }
+        catch (Exception $e)
         {
             $transaction->rollback();
             $this->returnError($e->getMessage());
@@ -154,7 +164,8 @@ class UserController extends Controller
             if (!$user)
                 throw new Exception("User not found!");
             return $user->publicAttributes;
-        } catch (Exception $e)
+        }
+        catch (Exception $e)
         {
             $this->returnError($e->getMessage());
         }
@@ -172,7 +183,8 @@ class UserController extends Controller
             foreach ($users as $user)
                 $usersOut[] = $user->shortAttributes;
             return $usersOut;
-        } catch (Exception $e)
+        }
+        catch (Exception $e)
         {
             $this->returnError($e->getMessage());
         }
@@ -190,7 +202,8 @@ class UserController extends Controller
                 throw new Exception("Не правильный логин или пароль!");
 
             return $identity->_model->privateAttributes;
-        } catch (Exception $e)
+        }
+        catch (Exception $e)
         {
             $this->returnError($e->getMessage());
         }
@@ -220,7 +233,8 @@ class UserController extends Controller
                 throw new Exception("Что-то пошло не так... Администратор оповещён");
 
             $transaction->commit();
-        } catch (Exception $e)
+        }
+        catch (Exception $e)
         {
             $transaction->rollback();
             $this->returnError($e->getMessage());
@@ -235,7 +249,8 @@ class UserController extends Controller
         {
             ////User::recover($email);
             $transaction->commit();
-        } catch (Exception $e)
+        }
+        catch (Exception $e)
         {
             $transaction->rollback();
             $this->returnError($e->getMessage());
@@ -282,13 +297,39 @@ class UserController extends Controller
         {
             UserMark::saveMark($userId, $subjectId, $mark);
             $transaction->commit();
-        } catch (Exception $e)
+        }
+        catch (Exception $e)
         {
             $transaction->rollback();
             $this->returnError($e->getMessage());
         }
         return [];
     }
+
+    private function _promote($userId, $courseId)
+    {
+        if (Yii::app()->user->isGuest || !Yii::app()->user->model->instructor_id)
+            return null;
+
+        $user = null;
+        $transaction = Yii::app()->db->beginTransaction();
+        try
+        {
+            $user = User::model()->findByPk($userId);
+            if (!$user)
+                throw new Exception('Cannot find user');
+            $user->promoteCourse($courseId);
+            $transaction->commit();
+            $user->refresh();
+        }
+        catch (Exception $e)
+        {
+            $transaction->rollback();
+            $this->returnError($e->getMessage());
+        }
+        return $user->getShortMarkAttributes();
+    }
+
 
     /*
         $transaction = Yii::app()->db->beginTransaction();

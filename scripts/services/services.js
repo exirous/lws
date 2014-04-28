@@ -57,6 +57,10 @@ lwsServices.factory('User', ['$resource', function ($resource)
         saveMark:{
             url: '/user/saveMark',
             method: 'post'
+        },
+        promote:{
+            url: '/user/promote',
+            method: 'post'
         }
     });
 }]);
