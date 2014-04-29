@@ -1,6 +1,7 @@
 <?php
 
 Yii::import('application.models._base.BaseAward');
+
 /**
  * @method Award find
  * @method Award[] findAll
@@ -39,14 +40,16 @@ class Award extends BaseAward
         return [
             'name' => $this->name,
             'id' => $this->id,
-            'only_one_allowed'=>$this->only_one_allowed
+            'only_one_allowed' => $this->only_one_allowed,
+            'top' => $this->top,
+            'left' => $this->left
         ];
     }
 
     public function defaultScope()
     {
         return array(
-            'order'=>'`name`',
+            'order' => '`name`',
         );
     }
 }

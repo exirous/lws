@@ -171,7 +171,6 @@ class Order extends BaseOrder
             try
             {
                 Yii::app()->ts->setName('Отдел кадров №' . $i);
-                //Yii::app()->ts->ts3Server->channelGetById(41)->message($event . $fullmessage);
                 Yii::app()->ts->ts3Server->message($event.$fullmessage);
             } catch (Exception $e)
             {

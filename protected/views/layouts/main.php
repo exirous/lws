@@ -138,7 +138,10 @@
                 <td ng-if="user.rank" rowspan="2">
                     <div class="uniform">
                         <div class="unform_rank"
-                             style="background: url(/img/uniform/{{user.rank.id}}.png) no-repeat" title="{{user.rank.name}}"></div>
+                             style="background: url(/img/uniform/{{user.rank.id}}.png) no-repeat" title="{{user.rank.name}}">
+                             </div>
+                        <img title="{{medal.name}}" ng-repeat="medal in user.medals" style="top:{{medal.top}}px;left:{{medal.left}}px;" ng-src="/img/awards/{{medal.id}}.png">
+                        <img title="{{cross.name}}" ng-repeat="cross in user.crosses" style="top: {{cross.top}}px;left:{{cross.left}}px;" ng-src="/img/awards/{{cross.id}}.png">
                     </div>
                 </td>
             </tr>
@@ -514,7 +517,8 @@
 <script type="text/ng-template" id="userMarksTmpl">
     <div ng-show="user.id">
        <h2>Оценочный лист пилота {{user.nickname}}</h2>
-        <div class="panel panel-{{course.complete ? 'success' : 'primary'}}" ng-repeat="course in user.courses" ng-if="(course.rank_order <= user.rank_order)">
+        <div class="panel panel-{{course.complete ? 'success' : 'primary'}}" ng-repeat="course in user.courses">
+            <!-- ng-if="(course.rank_order <= user.rank_order)"-->
             <div class="panel-heading">{{course.name}}<span class="label label-danger pull-right" style="font-size: 14px;">{{course.average}}</span></div>
             <table class="table">
                 <tr ng-repeat="subject in course.subjects">

@@ -68,13 +68,13 @@ class User extends BaseUser
     public function getPublicAttributes()
     {
         $medals = [];
-        foreach ($this->awards(['condition' => 'type="medal"']) as $award)
+        foreach ($this->awards(['condition' => 'type="medal"','order'=>'`order`']) as $award)
             $medals[$award->award_replace_id ? $award->award_replace_id : $award->id] = $award->shortAttributes;
 
         $medals = array_values($medals);
 
         $crosses = [];
-        foreach ($this->awards(['condition' => 'type="cross"']) as $award)
+        foreach ($this->awards(['condition' => 'type="cross"','order'=>'`order`']) as $award)
             $crosses[$award->award_replace_id ? $award->award_replace_id : $award->id] = $award->shortAttributes;
 
         $crosses = array_values($crosses);
