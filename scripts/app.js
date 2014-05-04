@@ -60,6 +60,16 @@ function mainRouteConfig($stateProvider, $urlRouterProvider)
             templateUrl: 'NewsCreatorTmpl',
             controller: "NewsCreatorCtrl"
         })
+        .state('school', {
+            url: "/school",
+            templateUrl: 'SchoolTmpl',
+            controller: "SchoolCtrl"
+        })
+        .state('pilots', {
+            url: "/pilots",
+            templateUrl: 'BarracksTmpl',
+            controller: "BarracksCtrl"
+        })
 }
 lwsApp.config(mainRouteConfig);
 lwsApp.config( [

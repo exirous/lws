@@ -32,13 +32,11 @@ class TeamSpeak extends CApplicationComponent
                 $this->ts3Server = TeamSpeak3::factory($this->connectionString . ($blocking ? '' : '&blocking=0'));
                 file_put_contents(dirname(Yii::app()->basePath) . '/protected/data/ts_connection' . ($blocking ? '' : '_noblock'), serialize($this->ts3Server));
             }
-        }
-        catch (TeamSpeak3_Adapter_ServerQuery_Exception $e)
+        } catch (TeamSpeak3_Adapter_ServerQuery_Exception $e)
         {
             $this->ts3Server = false;
         }
     }
-
 
 
     /**
@@ -62,7 +60,7 @@ class TeamSpeak extends CApplicationComponent
 
     public function setName($name)
     {
-        $this->ts3Server->execute('clientupdate client_nickname=' . str_replace(' ','\s',$name).'');
+        $this->ts3Server->execute('clientupdate client_nickname=' . str_replace(' ', '\s', $name) . '');
     }
 
     /**
@@ -112,9 +110,9 @@ class TeamSpeak extends CApplicationComponent
                 }
 
                 $channelNode = [
-                    'name'     => $channel->toString(),
+                    'name' => $channel->toString(),
                     'channels' => getRecursiveList($channel->subChannelList(), false, $knownGroups),
-                    'clients'  => $clients
+                    'clients' => $clients
                 ];
 
                 if (count($channelNode['clients']) || count($channelNode['channels']))
@@ -129,18 +127,18 @@ class TeamSpeak extends CApplicationComponent
 
     public function findUsersLike($nickname, $ip)
     {
-        $db = $this->ts3Server->clientListDb(0,200);
+        $db = $this->ts3Server->clientListDb(0, 200);
         $users = [];
         foreach ($db as $client)
         {
             $name = $client['client_nickname'] ? $client['client_nickname']->toString() : '';
             $lastIp = $client['client_lastip'] ? $client['client_lastip']->toString() : '';
-            if (stripos($name,$nickname)!==false ||  ($ip && ($ip == $lastIp)))
+            if (stripos($name, $nickname) !== false || ($ip && ($ip == $lastIp)))
             {
                 $users[] = [
                     'uid' => $client['client_unique_identifier']->toString(),
                     'name' => $name,
-                    'ip'=>$lastIp
+                    'ip' => $lastIp
                 ];
             }
         }
@@ -153,8 +151,7 @@ class TeamSpeak extends CApplicationComponent
         try
         {
             $tokenList = array_keys($this->ts3Server->tokenList());
-        }
-        catch (TeamSpeak3_Adapter_ServerQuery_Exception $e)
+        } catch (TeamSpeak3_Adapter_ServerQuery_Exception $e)
         {
             return false;
         }
@@ -167,9 +164,9 @@ class TeamSpeak extends CApplicationComponent
         foreach ($clients as $client)
         {
             $isInstructor = false;
-            $groups = explode(',',$client["client_servergroups"]);
-            foreach (['9','27','28'] as $group)
-                if (in_array($group,$groups))
+            $groups = explode(',', $client["client_servergroups"]);
+            foreach (['9', '27', '28'] as $group)
+                if (in_array($group, $groups))
                 {
                     $isInstructor = true;
                     break;
@@ -199,7 +196,7 @@ class TeamSpeak extends CApplicationComponent
 
     public function getDb($offset = 0)
     {
-        return $this->ts3Server->clientListDb($offset,200);
+        return $this->ts3Server->clientListDb($offset, 200);
     }
 
 }

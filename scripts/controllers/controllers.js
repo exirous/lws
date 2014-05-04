@@ -120,6 +120,17 @@ lwsControllers.controller('UserCtrl',
                 });
         }]);
 
+
+lwsControllers.controller('BarracksCtrl',
+    ['$scope', 'User', '$stateParams',
+        function ($scope, User, $stateParams)
+        {
+            User.query({},function (resource)
+                {
+                    $scope.pilots= resource.data;
+                });
+        }]);
+
 lwsControllers.controller('RosterUserCtrl',
     ['$scope', 'User', '$stateParams', '$rootScope', '$location',
         function ($scope, User, $stateParams, $rootScope, $location)

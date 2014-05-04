@@ -147,6 +147,7 @@ class User extends BaseUser
 
         return [
             'nickname' => $this->nickname,
+            'firstname' => $this->firstname,
             'id' => $this->id,
             'rank' => $this->rank_id,
             'old_rank' => $this->rank_id,
@@ -184,11 +185,13 @@ class User extends BaseUser
         $newUser->nickname = $user['nickname'];
         $newUser->firstname = $user['firstname'];
         $newUser->ip = $user['ip'];
+        $newUser->is_clanner = ($user['squad'] == 'yes') ? 1 : 0;
         $newUser->roster = json_encode($user);
         if (!$newUser->validate())
             throw new Exception($newUser->getErrors());
         if (!$newUser->save())
             throw new Exception('Возникла непредвиденная ошибка, мы над этим работаем...');
+        @copy(dirname(Yii::app()->basePath) . '/img/users/no_image.jpg', dirname(Yii::app()->basePath) . '/img/users/'.$newUser->id.'.jpg');
         return $newUser;
     }
 

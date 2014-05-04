@@ -25,6 +25,7 @@
     <script src="/scripts/filters/filters.js"></script>
     <script src="/scripts/directives/directives.js"></script>
     <script src="/scripts/controllers/controllers.js"></script>
+    <script src="/scripts/lib/socket.io.js"></script>
     <link rel="stylesheet" href="/css/bootstrap/bootstrap.css" type="text/css">
     <!--<link rel="stylesheet" href="/css/bootstrap.css" type="text/css">-->
     <link rel="stylesheet" href="/css/style.css" type="text/css">
@@ -77,6 +78,8 @@
                     <div class="main_menu">
                         <a ui-sref="news">Главная</a>
                         <a ui-sref="roster" ng-if="UserIdentity.isGuest">Вступить в школу</a>
+                        <a ui-sref="school" ng-if="!UserIdentity.isGuest">Учебный класс</a>
+                        <a ui-sref="pilots" ng-if="!UserIdentity.isGuest">Казарма</a>
                         <a ui-sref="makeorder" ng-if="UserIdentity.canMakeOrders">Отдать приказ</a>
                         <a ui-sref="makenews" ng-if="UserIdentity.canMakeOrders">Добавить новость</a>
                         <a href="" style="float:right" ng-click="login()" ng-if="UserIdentity.isGuest">Вход</a>
@@ -121,7 +124,7 @@
         <table>
             <tr>
                 <td style="height: 120px;">
-                    <div style="margin-right:10px"><img ng-src="{{user.id | avatarUrl}}"></div>
+                    <div style="margin-right:10px"><img ng-src="{{user.id | avatarUrl}}" style="max-width: 200px"></div>
                 </td>
                 <td>
                     <table class="table" style="width: auto">
@@ -331,6 +334,21 @@
         <br>
         TeamSpeak можно скачать пройдя по <a href="http://www.teamspeak.com/?page=downloads" target="_blank">этой</a>
         ссылке.
+    </div>
+</script>
+
+
+<script type="text/ng-template" id="BarracksTmpl">
+    <h2>Казарма</h2>
+    <br>
+    <div class="col-sm-6 col-md-4" ng-repeat="pilot in pilots">
+        <a class="thumbnail" ui-sref="user({userId:pilot.id})">
+            <img ng-src="/img/users/{{pilot.id}}.jpg" alt="" style="width:200px; height:220px">
+            <div class="caption">
+                <h3>{{pilot.nickname}} ({{pilot.firstname}})</h3>
+                <p></p>
+            </div>
+        </a>
     </div>
 </script>
 
@@ -567,6 +585,8 @@
         </div>
     </div>
 </script>
+
+
 
 </body>
 </html>

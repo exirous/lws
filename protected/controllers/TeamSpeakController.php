@@ -59,11 +59,16 @@ class TeamSpeakController extends Controller
         //$db = Yii::app()->ts->ts3Server->clientFindDb(Yii::app()->user->model->ts_id,true);
         //echo nl2br(print_r(Yii::app()->ts->ts3Server->clientInfoDb($db[0]), true));
 
-        /*$db = Yii::app()->ts->ts3Server->clientGetServerGroupsByDbid(2);
-        foreach ($db as $key => $client)
+        Yii::app()->ts->channelTree2();
+        die();
+
+        //$db = Yii::app()->ts->ts3Server->clientGetServerGroupsByDbid(2);
+        //$db = Yii::app()->ts->ts3Server->clientList();
+        /*foreach ($db as $key => $client)
         {
+            //$client->message('Здорово! Мы потихонечку переходим на новый сайт и переносим туда все данные. НО, данные о регистрации перенести муторно, поэтому прошу регистрироватся заново на новом сайте (заодно можете назвать другой адрес электронной почты и пароль, по желанию)  [url]http://lws.exirous.com/#/roster[/url] Спасибо за внимание! :)');
             //if (stripos($client['client_nickname']->toString(), 'exirous') === false) continue;
-            echo '!=' . $key . ':' . nl2br(print_r($client, true)) . '<br>';
+            //echo '!=' . $key . ':' . nl2br(print_r($client['clid'], true)) . '<br>';
         }*/
 
 

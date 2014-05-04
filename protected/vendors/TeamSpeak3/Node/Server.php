@@ -620,7 +620,7 @@ class TeamSpeak3_Node_Server extends TeamSpeak3_Node_Abstract
    * Returns an array filled with TeamSpeak3_Node_Client objects.
    *
    * @param  array $filter
-   * @return array
+   * @return TeamSpeak3_Node_Client[]
    */
   public function clientList(array $filter = array())
   {

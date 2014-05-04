@@ -14,7 +14,7 @@ class Controller extends CController
 
     public function beforeAction($action)
     {
-        if (isset($_COOKIE['letmepeek']) || isset($_GET['iwanttotakeapeek']))
+        /*if (isset($_COOKIE['letmepeek']) || isset($_GET['iwanttotakeapeek']))
         {
             if (isset($_GET['iwanttotakeapeek']))
                 setcookie('letmepeek', '1', time() + 60 * 60 * 24 * 365, '/');
@@ -23,7 +23,8 @@ class Controller extends CController
         else
         {
             die(file_get_contents('workinprogress.html'));
-        }
+        }*/
+        return true;
     }
 
     public function returnSuccess($data = [])
