@@ -16,6 +16,7 @@
     <script src="/scripts/lib/angular-ui-router.js"></script>
     <script src="/scripts/lib/angular-resource.js"></script>
     <script src="/scripts/lib/angular-sanitize.js"></script>
+    <script src="/scripts/lib/animate.js"></script>
     <script src="/scripts/lib/select2.js"></script>
     <script src="/scripts/lib/ui-bootstrap-tpls.js"></script>
     <script src="/scripts/lib/statehelper.js"></script>
@@ -26,11 +27,13 @@
     <script src="/scripts/directives/directives.js"></script>
     <script src="/scripts/controllers/controllers.js"></script>
     <script src="/scripts/lib/socket.io.js"></script>
+    <script src="/scripts/loading-bar.js"></script>
     <link rel="stylesheet" href="/css/bootstrap/bootstrap.css" type="text/css">
     <!--<link rel="stylesheet" href="/css/bootstrap.css" type="text/css">-->
     <link rel="stylesheet" href="/css/style.css" type="text/css">
     <link rel="stylesheet" href="/css/select2.css" type="text/css">
     <link rel="stylesheet" href="/css/select2-bootstrap.css" type="text/css">
+    <link rel="stylesheet" href="/css/loading-bar.css" type="text/css">
     <!--<link rel="stylesheet" href="/css/chosen.css" type="text/css">-->
     <!--[if lt IE 8]>
     <script type="text/javascript">
@@ -85,7 +88,7 @@
                         <a href="" style="float:right" ng-click="login()" ng-if="UserIdentity.isGuest">Вход</a>
                         <a href="" style="float:right" ng-click="logout()" ng-if="!UserIdentity.isGuest">Выход</a>
                     </div>
-                    <div class="content" style="min-height:200px">
+                    <div class="content" style="min-height:400px">
                         <div class="center_content" ui-view>
                         </div>
                     </div>
@@ -341,12 +344,15 @@
 <script type="text/ng-template" id="BarracksTmpl">
     <h2>Казарма</h2>
     <br>
-    <div class="col-sm-6 col-md-4" ng-repeat="pilot in pilots">
-        <a class="thumbnail" ui-sref="user({userId:pilot.id})">
-            <img ng-src="/img/users/{{pilot.id}}.jpg" alt="" style="width:200px; height:220px">
+    <div class="big-spinner" ng-if="!pilots.length">
+        <div class="spinner-icon"></div>
+    </div>
+    <div class="col-sm-6 col-md-3" ng-repeat="pilot in pilots">
+        <a class="thumbnail isRelative" ui-sref="user({userId:pilot.id})" title="{{pilot.rank_name}}">
+            <img ng-src="/img/users/{{pilot.id}}.jpg" alt="" style="width:182px; height:182px">
+            <div class="floating_rank"><img ng-src="/img/groups/{{pilot.rank}}.png"></div>
             <div class="caption">
-                <h3>{{pilot.nickname}} ({{pilot.firstname}})</h3>
-                <p></p>
+                {{pilot.nickname}}<br>({{pilot.firstname}})
             </div>
         </a>
     </div>
@@ -380,7 +386,7 @@
         <div ng-show="pilot.rank" class="alert alert-success">Пилот принят</div>
         <div ng-form="rosterForm" ng-show="!pilot.rank">
             <p class="well">
-                <select ng-model="rosterForm.tsId"
+                <select ng-model="rosterForm.tsId" style="width:350px"
                         required
                         data-placeholder="Привязка к TeamSpeak"
                         ui-select2>

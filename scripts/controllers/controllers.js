@@ -498,7 +498,6 @@ lwsControllers.controller("UserMarksCtrl",
                 var mark = ($scope.user.marks[courseId] && $scope.user.marks[courseId][subjectId]) ?
                     $scope.user.marks[courseId][subjectId].mark :
                     0;
-
                 var dlg = $dialogs.create('markDialogTmpl', 'MarkDialogCtrl', {
                     mark: mark,
                     subjectId: subjectId,

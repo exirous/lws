@@ -176,7 +176,7 @@ class UserController extends Controller
         try
         {
             $usersOut = [];
-            $users = User::model()->findAll(['condition'=>'rank_id>0','order' => 'nickname desc']);
+            $users = User::model()->with('rank')->findAll(['condition'=>'rank_id>0','order' => 'rank.order desc,nickname']);
             if (!$users)
                 throw new Exception("Some error?");
 

@@ -137,8 +137,9 @@ class TeamSpeak extends CApplicationComponent
             {
                 $users[] = [
                     'uid' => $client['client_unique_identifier']->toString(),
-                    'name' => $name,
-                    'ip' => $lastIp
+                    'name' => $name.' ('.($ip == $lastIp ? 'найден по IP' : 'найден по имени').')',
+                    //'lastOnline'=>$client[''];
+                    'ip' => $lastIp,
                 ];
             }
         }

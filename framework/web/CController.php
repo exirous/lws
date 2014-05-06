@@ -121,6 +121,7 @@ class CController extends CBaseController
 	 */
 	public function init()
 	{
+        //die(var_dump($_SERVER['REQUEST_URI']));
 	}
 
 	/**

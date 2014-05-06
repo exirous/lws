@@ -68,13 +68,13 @@ class User extends BaseUser
     public function getPublicAttributes()
     {
         $medals = [];
-        foreach ($this->awards(['condition' => 'type="medal"','order'=>'`order`']) as $award)
+        foreach ($this->awards(['condition' => 'type="medal"', 'order' => '`order`']) as $award)
             $medals[$award->award_replace_id ? $award->award_replace_id : $award->id] = $award->shortAttributes;
 
         $medals = array_values($medals);
 
         $crosses = [];
-        foreach ($this->awards(['condition' => 'type="cross"','order'=>'`order`']) as $award)
+        foreach ($this->awards(['condition' => 'type="cross"', 'order' => '`order`']) as $award)
             $crosses[$award->award_replace_id ? $award->award_replace_id : $award->id] = $award->shortAttributes;
 
         $crosses = array_values($crosses);
@@ -187,11 +187,15 @@ class User extends BaseUser
         $newUser->ip = $user['ip'];
         $newUser->is_clanner = ($user['squad'] == 'yes') ? 1 : 0;
         $newUser->roster = json_encode($user);
+
         if (!$newUser->validate())
             throw new Exception($newUser->getErrors());
+
         if (!$newUser->save())
             throw new Exception('Возникла непредвиденная ошибка, мы над этим работаем...');
-        @copy(dirname(Yii::app()->basePath) . '/img/users/no_image.jpg', dirname(Yii::app()->basePath) . '/img/users/'.$newUser->id.'.jpg');
+
+        //@copy(dirname(Yii::app()->basePath) . '/img/users/no_image.jpg', dirname(Yii::app()->basePath) . '/img/users/' . $newUser->id . '.jpg');
+
         return $newUser;
     }
 
@@ -211,15 +215,13 @@ class User extends BaseUser
                 try
                 {
                     Yii::app()->ts->setName('Отдел кадров №' . $i);
-                }
-                catch (Exception $e)
+                } catch (Exception $e)
                 {
                     if ($e->getMessage() == 'nickname is already in use')
                         $nicknameInUse = true;
                 }
                 $i++;
-            }
-            while ($nicknameInUse && ($i < 20));
+            } while ($nicknameInUse && ($i < 20));
 
             foreach ($groups as $groupId => $dummy)
             {
