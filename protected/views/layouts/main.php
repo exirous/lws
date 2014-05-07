@@ -113,11 +113,12 @@
     <div class="big-spinner" ng-if="!news.length">
         <div class="spinner-icon"></div>
     </div>
-    <div ng-repeat="newsRec in news" class="panel panel-{{newsRec.type == 'order' ? 'primary' : 'default'}}">
+    <div ng-repeat="newsRec in news" class="news-row panel panel-{{newsRec.type == 'order' ? 'primary' : 'default'}}">
         <div class="panel-heading">{{newsRec.title}}</div>
         <div class="panel-body" ng-bind-html="newsRec.text"></div>
         <div class="panel-footer">
-            <span>{{newsRec.time}}</span> <img ng-src="{{newsRec.issuer.id | avatarUrl}}" style="width:15px;height:15px;border-radius: 50%">
+            <span>{{newsRec.time}}</span> <img ng-src="{{newsRec.issuer.id | avatarUrl}}"
+                                               style="width:15px;height:15px;border-radius: 50%">
             <a href="#/user/view/{{newsRec.issuer.id}}">{{newsRec.issuer.name}}</a>
         </div>
     </div>
@@ -133,27 +134,49 @@
         <table>
             <tr>
                 <td style="height: 120px;">
-                    <div style="margin-right:10px"><img ng-src="{{user.id | avatarUrl}}" style="max-width: 200px;border-radius:10%"></div>
+                    <div style="margin-right:10px"><img ng-src="{{user.id | avatarUrl}}"
+                                                        style="max-width: 200px;border-radius:10%"></div>
                 </td>
                 <td>
                     <table class="table" style="width: auto">
                         <tbody>
-                        <tr><th>Родился</th><td>{{user.birthDate | date : "dd.MM.yyyy"}}</td></tr>
-                        <tr><th>Втсупил в школу</th><td>{{user.joinDate | date : "dd.MM.yyyy"}}</td></tr>
-                        <tr ng-if="user.rank"><th>{{user.rank.order < 5 ? 'Курс' : 'Звание'}}</th><td>{{user.rank.name}}</td></tr>
-                        <tr ng-if="user.instructor"><th>Степень</th><td>{{user.instructor.name}}</td></tr>
-                        <tr ng-if="UserIdentity.isInstructor"><th>Заявка</th><td><a ui-sref="rosterUser({userId:user.id})">Посмотреть</a></td></tr>
-                        <tr ng-if="UserIdentity.isInstructor"><th>Оценки</th><td><a ui-sref="userMarks({userId:user.id})">Посмотреть</a></td></tr>
+                        <tr>
+                            <th>Родился</th>
+                            <td>{{user.birthDate | date : "dd.MM.yyyy"}}</td>
+                        </tr>
+                        <tr>
+                            <th>Втсупил в школу</th>
+                            <td>{{user.joinDate | date : "dd.MM.yyyy"}}</td>
+                        </tr>
+                        <tr ng-if="user.rank">
+                            <th>{{user.rank.order < 5 ? 'Курс' : 'Звание'}}</th>
+                            <td>{{user.rank.name}}</td>
+                        </tr>
+                        <tr ng-if="user.instructor">
+                            <th>Степень</th>
+                            <td>{{user.instructor.name}}</td>
+                        </tr>
+                        <tr ng-if="UserIdentity.isInstructor">
+                            <th>Заявка</th>
+                            <td><a ui-sref="rosterUser({userId:user.id})">Посмотреть</a></td>
+                        </tr>
+                        <tr ng-if="UserIdentity.isInstructor">
+                            <th>Оценки</th>
+                            <td><a ui-sref="userMarks({userId:user.id})">Посмотреть</a></td>
+                        </tr>
                         </tbody>
                     </table>
                 </td>
                 <td ng-if="user.rank" rowspan="2">
                     <div class="uniform">
                         <div class="unform_rank"
-                             style="background: url(/img/uniform/{{user.rank.id}}.png) no-repeat" title="{{user.rank.name}}">
-                             </div>
-                        <img title="{{medal.name}}" ng-repeat="medal in user.medals" style="top:{{medal.top}}px;left:{{medal.left}}px;" ng-src="/img/awards/{{medal.id}}.png">
-                        <img title="{{cross.name}}" ng-repeat="cross in user.crosses" style="top: {{cross.top}}px;left:{{cross.left}}px;" ng-src="/img/awards/{{cross.id}}.png">
+                             style="background: url(/img/uniform/{{user.rank.id}}.png) no-repeat"
+                             title="{{user.rank.name}}">
+                        </div>
+                        <img title="{{medal.name}}" ng-repeat="medal in user.medals"
+                             style="top:{{medal.top}}px;left:{{medal.left}}px;" ng-src="/img/awards/{{medal.id}}.png">
+                        <img title="{{cross.name}}" ng-repeat="cross in user.crosses"
+                             style="top: {{cross.top}}px;left:{{cross.left}}px;" ng-src="/img/awards/{{cross.id}}.png">
                     </div>
                 </td>
             </tr>
@@ -350,18 +373,22 @@
 <script type="text/ng-template" id="BarracksTmpl">
     <h2>Казарма</h2>
     <br>
-    <div class="big-spinner" ng-if="!pilots.length">
-        <div class="spinner-icon"></div>
-    </div>
-    <div class="col-sm-6 col-md-3" ng-repeat="pilot in pilots">
-        <a class="thumbnail isRelative" ui-sref="user({userId:pilot.id})" title="{{pilot.rank_name}}">
-            <img ng-src="/img/users/{{pilot.id}}.jpg" alt="" style="width:182px; height:182px">
-            <div class="floating_rank"><img ng-src="/img/groups/{{pilot.rank}}.png"></div>
-            <div ng-if="pilot.instructor" class="floating_rank" style="left:40px"><img ng-src="/img/groups/{{pilot.instructor}}.png"></div>
-            <div class="caption">
-                <b>{{pilot.nickname}}</b><br>{{pilot.firstname}}
-            </div>
-        </a>
+    <div style="min-height: 550px">
+        <div class="big-spinner" ng-if="!pilots.length">
+            <div class="spinner-icon"></div>
+        </div>
+        <div class="col-sm-6 col-md-3 user-cell" ng-repeat="pilot in pilots">
+            <a class="thumbnail isRelative" ui-sref="user({userId:pilot.id})" title="{{pilot.rank_name}}">
+                <img ng-src="/img/users/{{pilot.id}}.jpg" alt="" style="width:182px; height:182px">
+
+                <div class="floating_rank"><img ng-src="/img/groups/{{pilot.rank}}.png"></div>
+                <div ng-if="pilot.instructor" class="floating_rank" style="left:40px"><img
+                        ng-src="/img/groups/{{pilot.instructor}}.png"></div>
+                <div class="caption">
+                    <b>{{pilot.nickname}}</b><br>{{pilot.firstname}}
+                </div>
+            </a>
+        </div>
     </div>
 </script>
 
@@ -550,20 +577,27 @@
         <div class="spinner-icon"></div>
     </div>
     <div ng-show="user.id">
-       <h2>Оценочный лист пилота {{user.nickname}}</h2>
+        <h2>Оценочный лист пилота {{user.nickname}}</h2>
+
         <div class="panel panel-{{course.complete ? 'success' : 'primary'}}" ng-repeat="course in user.courses">
             <!-- ng-if="(course.rank_order <= user.rank_order)"-->
-            <div class="panel-heading">{{course.name}}<span class="label label-danger pull-right" style="font-size: 14px;">{{course.average}}</span></div>
+            <div class="panel-heading">{{course.name}}<span class="label label-danger pull-right"
+                                                            style="font-size: 14px;">{{course.average}}</span></div>
             <table class="table">
                 <tr ng-repeat="subject in course.subjects">
                     <td>{{subject.name}}</td>
                     <td style="width:80px;text-align: right;vertical-align: middle">
-                        <button type="button" ng-click="mark(subject.id,course.id)" class="btn btn-xs btn-default"><span class="glyphicon glyphicon-pencil"></span></button>
-                        <span class="label label-primary" style="font-size: 14px;" ng-show="user.marks[course.id][subject.id]">{{user.marks[course.id][subject.id].mark}}</span>
+                        <button type="button" ng-click="mark(subject.id,course.id)" class="btn btn-xs btn-default"><span
+                                class="glyphicon glyphicon-pencil"></span></button>
+                        <span class="label label-primary" style="font-size: 14px;"
+                              ng-show="user.marks[course.id][subject.id]">{{user.marks[course.id][subject.id].mark}}</span>
                     </td>
                 </tr>
             </table>
-            <button type="button" ng-click="promote(course.id)" ng-if="(course.rank_order == user.rank_order) && course.complete" class="btn btn-sm btn-success" style="width: 100%"><span class="glyphicon glyphicon-hand-down"></span> Перевести на следующий курс</button>
+            <button type="button" ng-click="promote(course.id)"
+                    ng-if="(course.rank_order == user.rank_order) && course.complete" class="btn btn-sm btn-success"
+                    style="width: 100%"><span class="glyphicon glyphicon-hand-down"></span> Перевести на следующий курс
+            </button>
         </div>
     </div>
 </script>
@@ -572,36 +606,44 @@
     <div class="modal-content">
         <div class="modal-header">
             <h4 class="modal-title"><span class="glyphicon glyphicon-plane"></span>
-            <span>Поставить оценку</span></h4>
+                <span>Поставить оценку</span></h4>
         </div>
         <div class="modal-body">
             <ng-form name="markDialog" novalidate role="form">
                 <div class="btn-group btn-group-lg btn-group-justified">
                     <div class="btn-group">
-                        <button type="button" ng-model="userMark.mark" btn-radio="'1'" class="btn btn-primary">1</button>
+                        <button type="button" ng-model="userMark.mark" btn-radio="'1'" class="btn btn-primary">1
+                        </button>
                     </div>
                     <div class="btn-group">
-                        <button type="button" ng-model="userMark.mark" btn-radio="'2'" class="btn btn-primary">2</button>
+                        <button type="button" ng-model="userMark.mark" btn-radio="'2'" class="btn btn-primary">2
+                        </button>
                     </div>
                     <div class="btn-group">
-                        <button type="button" ng-model="userMark.mark" btn-radio="'3'" class="btn btn-primary">3</button>
+                        <button type="button" ng-model="userMark.mark" btn-radio="'3'" class="btn btn-primary">3
+                        </button>
                     </div>
                     <div class="btn-group">
-                        <button type="button" ng-model="userMark.mark" btn-radio="'4'" class="btn btn-primary">4</button>
+                        <button type="button" ng-model="userMark.mark" btn-radio="'4'" class="btn btn-primary">4
+                        </button>
                     </div>
                     <div class="btn-group">
-                        <button type="button" ng-model="userMark.mark" btn-radio="'5'" class="btn btn-primary">5</button>
+                        <button type="button" ng-model="userMark.mark" btn-radio="'5'" class="btn btn-primary">5
+                        </button>
                     </div>
                 </div>
             </ng-form>
         </div>
         <div class="modal-footer">
-            <button type="button" class="btn btn-default" ng-disabled="userMark.isSubmitting" ng-click="cancel()">Отмена</button>
-            <button type="button" class="btn btn-primary" ng-disabled="userMark.isSubmitting" ng-click="saveMark()">Сохранить</button>
+            <button type="button" class="btn btn-default" ng-disabled="userMark.isSubmitting" ng-click="cancel()">
+                Отмена
+            </button>
+            <button type="button" class="btn btn-primary" ng-disabled="userMark.isSubmitting" ng-click="saveMark()">
+                Сохранить
+            </button>
         </div>
     </div>
 </script>
-
 
 
 </body>
