@@ -110,24 +110,30 @@
 
 <script type="text/ng-template" id="NewsTmpl">
     <h2>Приказы и объявления</h2>
+    <div class="big-spinner" ng-if="!news.length">
+        <div class="spinner-icon"></div>
+    </div>
     <div ng-repeat="newsRec in news" class="panel panel-{{newsRec.type == 'order' ? 'primary' : 'default'}}">
         <div class="panel-heading">{{newsRec.title}}</div>
         <div class="panel-body" ng-bind-html="newsRec.text"></div>
         <div class="panel-footer">
-            <span>{{newsRec.time}}</span> <img ng-src="{{newsRec.issuer.id | avatarUrl}}" style="max-width: 15px;max-height: 15px;">
+            <span>{{newsRec.time}}</span> <img ng-src="{{newsRec.issuer.id | avatarUrl}}" style="width:15px;height:15px;border-radius: 50%">
             <a href="#/user/view/{{newsRec.issuer.id}}">{{newsRec.issuer.name}}</a>
         </div>
     </div>
 </script>
 
 <script type="text/ng-template" id="UserTmpl">
+    <div class="big-spinner" ng-if="!user">
+        <div class="spinner-icon"></div>
+    </div>
     <div ng-show="user">
         <h1>{{user.rank.name}} "{{user.nickname}}" {{user.firstname}}</h1>
         <br>
         <table>
             <tr>
                 <td style="height: 120px;">
-                    <div style="margin-right:10px"><img ng-src="{{user.id | avatarUrl}}" style="max-width: 200px"></div>
+                    <div style="margin-right:10px"><img ng-src="{{user.id | avatarUrl}}" style="max-width: 200px;border-radius:10%"></div>
                 </td>
                 <td>
                     <table class="table" style="width: auto">
@@ -351,16 +357,17 @@
         <a class="thumbnail isRelative" ui-sref="user({userId:pilot.id})" title="{{pilot.rank_name}}">
             <img ng-src="/img/users/{{pilot.id}}.jpg" alt="" style="width:182px; height:182px">
             <div class="floating_rank"><img ng-src="/img/groups/{{pilot.rank}}.png"></div>
+            <div ng-if="pilot.instructor" class="floating_rank" style="left:40px"><img ng-src="/img/groups/{{pilot.instructor}}.png"></div>
             <div class="caption">
-                {{pilot.nickname}}<br>({{pilot.firstname}})
+                <b>{{pilot.nickname}}</b><br>{{pilot.firstname}}
             </div>
         </a>
     </div>
 </script>
 
 <script type="text/ng-template" id="RosterUserTmpl">
-    <div ng-show="!pilot.id">
-        <h2>Загрузка....</h2>
+    <div class="big-spinner" ng-if="!pilot.id">
+        <div class="spinner-icon"></div>
     </div>
     <div ng-show="pilot.id">
         <h2>Заявка на вступление от {{pilot.nickname}} ({{pilot.firstname}})</h2>
@@ -539,6 +546,9 @@
     </ng-form>
 </script>
 <script type="text/ng-template" id="userMarksTmpl">
+    <div class="big-spinner" ng-if="!user.id">
+        <div class="spinner-icon"></div>
+    </div>
     <div ng-show="user.id">
        <h2>Оценочный лист пилота {{user.nickname}}</h2>
         <div class="panel panel-{{course.complete ? 'success' : 'primary'}}" ng-repeat="course in user.courses">

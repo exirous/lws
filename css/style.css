@@ -297,14 +297,17 @@ img
 .floating_rank
 {
     position: absolute;
-    left:5px;
-    top:5px;
+    left:7px;
+    top:7px;
     border-radius: 100%;
     -webkit-border-radius:100%;
+    background: #eee;
 }
 
 .floating_rank img
 {
+    width: 30px;
+    height:30px;
     border:2px solid #eee;
     border-radius: 100%;
     -webkit-border-radius:100%;
