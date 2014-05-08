@@ -151,7 +151,7 @@ img
     margin-bottom: 10px;
 }
 
-.main_menu a
+.main_menu > a,.main_menu > span > a
 {
     padding: 5px 10px;
     display: inline-block;
@@ -161,7 +161,7 @@ img
     border-right: 1px dotted #555;
 }
 
-.main_menu a:hover
+.main_menu > a:hover,.main_menu > span > a:hover
 {
     color: #fff;
 }
@@ -406,6 +406,7 @@ img
 
 .user-cell
 {
+    width: 221px;
     overflow: hidden;
 }
 

@@ -41,8 +41,7 @@ class UserController extends Controller
                 default:
                     $this->returnError();
             }
-        }
-        catch (Exception $e)
+        } catch (Exception $e)
         {
             $this->returnError($e->getMessage());
         }
@@ -58,7 +57,11 @@ class UserController extends Controller
                 if ($id)
                     $this->returnSuccess($this->_renderUser($id));
                 else
-                    $this->returnSuccess($this->_renderUserList());
+                {
+                    $filters = $request->getParam('filters', '', AHttpRequest::PARAM_TYPE_STRING);
+                    $filters = @json_decode($filters, true);
+                    $this->returnSuccess($this->_renderUserList($filters));
+                }
                 break;
             default:
                 $this->returnError();
@@ -147,8 +150,7 @@ class UserController extends Controller
 
             $user->accept($tsId);
             $transaction->commit();
-        }
-        catch (Exception $e)
+        } catch (Exception $e)
         {
             $transaction->rollback();
             $this->returnError($e->getMessage());
@@ -164,30 +166,33 @@ class UserController extends Controller
             if (!$user)
                 throw new Exception("User not found!");
             return $user->publicAttributes;
-        }
-        catch (Exception $e)
+        } catch (Exception $e)
         {
             $this->returnError($e->getMessage());
         }
     }
 
-    private function _renderUserList()
+    private function _renderUserList($filters)
     {
         try
         {
+            $users = User::model()->with('rank');
+
+            if (isset($filters['name']) && $filters['name'])
+                $users = $users->scopeName($filters['name']);
+
             $usersOut = [];
-            $users = User::model()->with('rank')->findAll(['condition'=>'rank_id>0','order' => 'rank.order desc,nickname']);
-            if (!$users)
-                throw new Exception("Some error?");
+            $users = $users->findAll(['condition' => 'rank_id>0', 'order' => 'rank.order desc, nickname']);
 
             foreach ($users as $user)
                 $usersOut[] = $user->shortAttributes;
+
             return $usersOut;
-        }
-        catch (Exception $e)
+        } catch (Exception $e)
         {
             $this->returnError($e->getMessage());
         }
+        return null;
     }
 
     private function _loginUser($username, $password)
@@ -202,8 +207,7 @@ class UserController extends Controller
                 throw new Exception("Не правильный логин или пароль!");
 
             return $identity->_model->privateAttributes;
-        }
-        catch (Exception $e)
+        } catch (Exception $e)
         {
             $this->returnError($e->getMessage());
         }
@@ -233,8 +237,7 @@ class UserController extends Controller
                 throw new Exception("Что-то пошло не так... Администратор оповещён");
 
             $transaction->commit();
-        }
-        catch (Exception $e)
+        } catch (Exception $e)
         {
             $transaction->rollback();
             $this->returnError($e->getMessage());
@@ -249,8 +252,7 @@ class UserController extends Controller
         {
             ////User::recover($email);
             $transaction->commit();
-        }
-        catch (Exception $e)
+        } catch (Exception $e)
         {
             $transaction->rollback();
             $this->returnError($e->getMessage());
@@ -297,8 +299,7 @@ class UserController extends Controller
         {
             UserMark::saveMark($userId, $subjectId, $mark);
             $transaction->commit();
-        }
-        catch (Exception $e)
+        } catch (Exception $e)
         {
             $transaction->rollback();
             $this->returnError($e->getMessage());
@@ -321,8 +322,7 @@ class UserController extends Controller
             $user->promoteCourse($courseId);
             $transaction->commit();
             $user->refresh();
-        }
-        catch (Exception $e)
+        } catch (Exception $e)
         {
             $transaction->rollback();
             $this->returnError($e->getMessage());

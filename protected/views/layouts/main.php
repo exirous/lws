@@ -84,6 +84,13 @@
                         <a ui-sref="school" ng-if="!UserIdentity.isGuest">Учебный класс</a>
                         <a ui-sref="pilots" ng-if="!UserIdentity.isGuest">Казарма</a>
                         <a ui-sref="makeorder" ng-if="UserIdentity.canMakeOrders">Отдать приказ</a>
+                        <!--<span class="dropdown" ng-if="UserIdentity.canMakeOrders" on-toggle="toggled(open)">
+                           <a href class="dropdown-toggle">Отдать приказ</a>
+                           <ul class="dropdown-menu">
+                               <li><a ui-sref="makeorder">Генератор</a></li>
+                               <li><a ui-sref="makeorder">В ручную</a></li>
+                           </ul>
+                        </span>-->
                         <a ui-sref="makenews" ng-if="UserIdentity.canMakeOrders">Добавить новость</a>
                         <a href="" style="float:right" ng-click="login()" ng-if="UserIdentity.isGuest">Вход</a>
                         <a href="" style="float:right" ng-click="logout()" ng-if="!UserIdentity.isGuest">Выход</a>
@@ -129,23 +136,24 @@
         <div class="spinner-icon"></div>
     </div>
     <div ng-show="user">
-        <h1>{{user.rank.name}} "{{user.nickname}}" {{user.firstname}}</h1>
+        <h2>{{user.rank.name}} "{{user.nickname}}" {{user.firstname}}</h2>
         <br>
-        <table>
+        <table style="width: 100%">
             <tr>
-                <td style="height: 120px;">
-                    <div style="margin-right:10px"><img ng-src="{{user.id | avatarUrl}}"
-                                                        style="max-width: 200px;border-radius:10%"></div>
+                <td style="height: 210px;width: 210px">
+                    <div style="margin-right:10px">
+                        <img ng-src="{{user.id | avatarUrl}}" style="width: 200px;border-radius:10%;display:block">
+                    </div>
                 </td>
                 <td>
-                    <table class="table" style="width: auto">
+                    <table class="table" style="width: 100%">
                         <tbody>
                         <tr>
-                            <th>Родился</th>
-                            <td>{{user.birthDate | date : "dd.MM.yyyy"}}</td>
+                            <th style="width: 90px">Родился</th>
+                            <td><span>{{user.birthDate | date : "dd.MM.yyyy"}}</span><br><span> ({{user.birthDate | age}} лет)</span></td>
                         </tr>
                         <tr>
-                            <th>Втсупил в школу</th>
+                            <th>Поступил</th>
                             <td>{{user.joinDate | date : "dd.MM.yyyy"}}</td>
                         </tr>
                         <tr ng-if="user.rank">
@@ -167,7 +175,7 @@
                         </tbody>
                     </table>
                 </td>
-                <td ng-if="user.rank" rowspan="2">
+                <td ng-if="user.rank" rowspan="2" style="width: 400px;padding-left: 5px">
                     <div class="uniform">
                         <div class="unform_rank"
                              style="background: url(/img/uniform/{{user.rank.id}}.png) no-repeat"
@@ -371,10 +379,15 @@
 
 
 <script type="text/ng-template" id="BarracksTmpl">
-    <h2>Казарма</h2>
-    <br>
+    <h2>Казарма </h2>
+    <div class="well well-sm">
+        <div class="input-group">
+            <span class="input-group-addon glyphicon glyphicon glyphicon-search" style="top:0"></span>
+            <input type="text" class="form-control" placeholder="Найти по имени или никнейму" ng-model="filters.name">
+        </div>
+    </div>
     <div style="min-height: 550px">
-        <div class="big-spinner" ng-if="!pilots.length">
+        <div class="big-spinner" ng-if="isLoading">
             <div class="spinner-icon"></div>
         </div>
         <div class="col-sm-6 col-md-3 user-cell" ng-repeat="pilot in pilots">
@@ -400,7 +413,8 @@
         <h2>Заявка на вступление от {{pilot.nickname}} ({{pilot.firstname}})</h2>
         <br>
         <label>Родился:</label><br>
-        <span>{{pilot.roster.birthdate}}</span><br>
+        <span>{{pilot.roster.birthdate | date : "dd.MM.yyyy"}}</span>
+        (<span>{{pilot.roster.birthdate | age}}</span>)<br>
         <label>Оценка готовности стремления обучатся:</label><br>
         <span>{{pilot.roster.scale}}</span><br>
         <label>Попал в школу посредством:</label><br>
@@ -510,7 +524,8 @@
                         style="width: 435px;margin-bottom: 6px"
                         ng-model="orderData.pilots"
                         required>
-                    <option ng-repeat="pilot in initialData.pilots" value="{{pilot.id}}" data-rankid="{{pilot.rank}}">
+                    <option ng-repeat="pilot in initialData.pilotsArray  | orderBy:'nickname'" value="{{pilot.id}}"
+                            data-rankid="{{pilot.rank}}">
                         {{pilot.nickname}}
                     </option>
                 </select>

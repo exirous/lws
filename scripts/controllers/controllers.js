@@ -122,13 +122,31 @@ lwsControllers.controller('UserCtrl',
 
 
 lwsControllers.controller('BarracksCtrl',
-    ['$scope', 'User', '$stateParams',
-        function ($scope, User, $stateParams)
+    ['$scope', 'User', '$stateParams','$timeout',
+        function ($scope, User, $stateParams, $timeout)
         {
-            User.query({},function (resource)
+            $scope.filters = {name:null};
+            var firstLoad = true;
+
+            $scope.loadData = function ()
+            {
+                $scope.isLoading = true
+                User.query({filters:$scope.filters}, function (resource)
                 {
-                    $scope.pilots= resource.data;
+                    $scope.pilots = resource.data;
+                    firstLoad = false;
+                    $scope.isLoading = false;
                 });
+            };
+            var timeoutPromise = null;
+            $scope.$watch('filters',function(){
+                if (firstLoad) return;
+                $timeout.cancel(timeoutPromise);
+                timeoutPromise = $timeout(function(){
+                    $scope.loadData();
+                },600);
+            },true);
+            $scope.loadData();
         }]);
 
 lwsControllers.controller('RosterUserCtrl',
@@ -216,6 +234,8 @@ lwsControllers.controller('OrderCreatorCtrl',
             $scope.orderData = {pilots: []};
             $scope.updatedData = {pilots: {}};
 
+
+
             function formatPilot(state)
             {
                 if (!state.id) return state.text; // optgroup
@@ -298,18 +318,25 @@ lwsControllers.controller('OrderCreatorCtrl',
                 OrderGenerator.get({}, function (resource)
                 {
                     angular.extend($scope.initialData, resource.data);
-                    var rankArray = [];
+                    var intArray = [];
+                    angular.forEach($scope.initialData.pilots, function (value, key)
+                    {
+                        intArray.push(value);
+                    });
+                    $scope.initialData.pilotsArray = intArray;
+                    intArray = [];
+
                     angular.forEach($scope.initialData.ranks, function (value, key)
                     {
-                        rankArray.push(value);
+                        intArray.push(value);
                     })
-                    $scope.initialData.rankArray = rankArray;
-                    rankArray = [];
+                    $scope.initialData.rankArray = intArray;
+                    intArray = [];
                     angular.forEach($scope.initialData.instructors, function (value, key)
                     {
-                        rankArray.push(value);
+                        intArray.push(value);
                     })
-                    $scope.initialData.instructorsArray = rankArray;
+                    $scope.initialData.instructorsArray = intArray;
                 });
             }
 

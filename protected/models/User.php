@@ -65,6 +65,15 @@ class User extends BaseUser
         return $this;
     }
 
+    public function scopeName($name)
+    {
+        $this->dbCriteria->mergeWith([
+            'condition' => '`firstname` LIKE :name OR `nickname` LIKE :name',
+            'params'=>['name'=>'%'.$name.'%']
+        ]);
+        return $this;
+    }
+
     public function getPublicAttributes()
     {
         $medals = [];
@@ -99,12 +108,15 @@ class User extends BaseUser
 
     public function getRosterAttributes()
     {
+        $roster = json_decode($this->roster, true);
+        $roster['birthdate'] = strtotime($roster['birthdate']) . '000';
+
         return [
             'nickname' => $this->nickname,
             'firstname' => $this->firstname,
             'id' => $this->id,
             'rank' => $this->rank_id,
-            'roster' => json_decode($this->roster),
+            'roster' => $roster,
             'ip' => $this->ip
         ];
     }

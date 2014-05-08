@@ -12,7 +12,7 @@ var lwsApp = angular.module('app', [
     'dialogs',
     'ui.router.stateHelper',
     'ngAnimate',
-    'chieffancypants.loadingBar'
+    'chieffancypants.loadingBar',
 ]);
 
 function mainRouteConfig($stateProvider, $urlRouterProvider)
