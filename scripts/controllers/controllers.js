@@ -109,6 +109,16 @@ lwsControllers.controller('NewsCtrl',
             });
         }]);
 
+lwsControllers.controller('OrdersCtrl',
+    ['$scope', 'News',
+        function ($scope, News)
+        {
+            News.orders({}, function (res)
+            {
+                $scope.news = res.data;
+            });
+        }]);
+
 lwsControllers.controller('UserCtrl',
     ['$scope', 'User', '$stateParams',
         function ($scope, User, $stateParams)
@@ -488,6 +498,21 @@ lwsControllers.controller("AfterRosterCtrl", ['$scope', function ($scope)
 
 }]);
 
+lwsControllers.controller("NewsCreatorCtrl", ['$scope','News', function ($scope, News)
+{
+    $scope.save = function()
+    {
+        $scope.newsRecord.newsAdded = false;
+        $scope.newsRecord.isSubmitting = true;
+        News.save($scope.newsRecord, function (resource)
+        {
+            $scope.newsRecord.text = '';
+            $scope.newsRecord.newsAdded = true;
+            $scope.newsRecord.isSubmitting = false;
+        });
+    }
+}]);
+
 lwsControllers.controller("RosterViewCtrl", ['$scope', '$timeout', 'Roster', function ($scope, $timeout, Roster)
 {
     var rosterTimeout = null;
@@ -508,6 +533,28 @@ lwsControllers.controller("RosterViewCtrl", ['$scope', '$timeout', 'Roster', fun
     $scope.tree = [];
 
 }]);
+
+lwsControllers.controller("BirthdayViewCtrl", ['$scope', '$timeout', 'User', function ($scope, $timeout, User)
+{
+    var rosterTimeout = null;
+    var refreshBirthdayView = function ()
+    {
+        $timeout.cancel(rosterTimeout);
+        User.getbirthdays({}, function (res)
+        {
+            $scope.birthdays = res.data;
+            rosterTimeout = $timeout(refreshBirthdayView, 720 * 1000);
+        });
+    };
+    refreshBirthdayView();
+    $scope.$on('refreshRosterList', function (event, args)
+    {
+        refreshBirthdayView();
+    });
+    $scope.tree = [];
+
+}]);
+
 
 lwsControllers.controller("UserMarksCtrl",
     ['$scope',

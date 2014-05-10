@@ -60,6 +60,21 @@ class Order extends BaseOrder
         ];
     }
 
+    public static function getLast()
+    {
+        $lastNews = [];
+        foreach (Order::model()->findAll(['order' => 'time desc', 'limit' => 8]) as $news)
+            $lastNews[] = $news->renderAttributes();
+
+        /*usort($lastNews, function ($a, $b)
+        {
+            return $a['timepar'] > $b['timepar'] ? -1 : 1;
+        });*/
+
+        return $lastNews;
+    }
+
+
     public static function issueOrder($data)
     {
         if (!isset($data['time']))
@@ -74,8 +89,8 @@ class Order extends BaseOrder
         if (!$order->save())
             throw new Exception('1 ' . $order->getErrorsString());
 
-        $eventText = trim(isset($data['event']) ? $data['event'] . ' ' : '');
-        $customText = trim(isset($data['customText']) ? ' ' . $data['customText'] : '');
+        $eventText = trim($data['event']) ? $data['event'] . ' ' : '';
+        $customText = trim($data['customText']) ? ' ' . $data['customText'] : '';
 
         foreach ($data['pilots'] as $pilotData)
         {
@@ -121,8 +136,12 @@ class Order extends BaseOrder
                 if (!$event->save())
                     throw new Exception('3 ' . $event->getErrorsString());
                 $pilot->rank_id = $rank->id;
-                if ($rank->order > 6)
+                if ($rank->order > 5)
+                {
                     $pilot->is_clanner = false;
+                    if ($pilot->rank->order < 5)
+                    $pilotData['awards'][] = '41';
+                }
                 $needSave = true;
             }
 

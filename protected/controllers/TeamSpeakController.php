@@ -35,6 +35,8 @@ class TeamSpeakController extends Controller
     public function actionTest()
     {
 
+        phpinfo();
+        die();
         // URL on which we have to post data
         $url = "http://192.168.1.4:3001";
 

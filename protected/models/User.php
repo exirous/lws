@@ -74,6 +74,15 @@ class User extends BaseUser
         return $this;
     }
 
+    public function scopeClosestBirthdays()
+    {
+        $this->dbCriteria->mergeWith([
+            'condition'=>'DATE_ADD(STR_TO_DATE(birth_date, "%m/%d/%Y"), INTERVAL YEAR(CURDATE())-YEAR(STR_TO_DATE(birth_date, "%m/%d/%Y")) YEAR)
+            BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 10 DAY)'
+        ]);
+        return $this;
+    }
+
     public function getPublicAttributes()
     {
         $medals = [];
@@ -103,6 +112,7 @@ class User extends BaseUser
 
         return [
             'nickname' => $this->nickname,
+            'img_src'=>$this->img_src,
             'firstname' => $this->firstname,
             'birthDate' => strtotime($this->birth_date) . '000',
             'joinDate' => strtotime($this->join_date) . '000',
@@ -110,7 +120,6 @@ class User extends BaseUser
             'rank' => $this->rank_id ? $this->rank->getShortAttributes() : null,
             'instructor' => $this->instructor_id ? $this->instructor->getShortAttributes() : null,
             'is_clanner' => intval($this->is_clanner),
-            //'is_technitian'=>intval($this->is_technitian)
             'medals' => $medals,
             'crosses' => $crosses,
             'events' => $events
@@ -187,7 +196,9 @@ class User extends BaseUser
         return [
             'nickname' => $this->nickname,
             'firstname' => $this->firstname,
+            'birthday'=>strtotime($this->birth_date),
             'id' => $this->id,
+            'img_src'=>$this->img_src,
             'rank' => $this->rank_id,
             'rank_name' => $this->rank->name,
             'instructor' => $this->instructor_id,
@@ -200,6 +211,7 @@ class User extends BaseUser
         return [
             'nickname' => $this->nickname,
             'firstname' => $this->firstname,
+            'img_src'=>$this->img_src,
             'canMakeOrders' => ($this->rank_id && $this->rank->order > 6),
             'canMakeNews' => ($this->rank_id && $this->rank->order > 6),
             'isInstructor' => $this->instructor_id ? true : false,

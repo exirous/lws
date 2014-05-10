@@ -13,6 +13,7 @@ var lwsApp = angular.module('app', [
     'ui.router.stateHelper',
     'ngAnimate',
     'chieffancypants.loadingBar',
+    'angularFileUpload'
 ]);
 
 function mainRouteConfig($stateProvider, $urlRouterProvider)
@@ -27,6 +28,11 @@ function mainRouteConfig($stateProvider, $urlRouterProvider)
             url: "/",
             templateUrl: 'NewsTmpl',
             controller: "NewsCtrl"
+        })
+        .state('orders', {
+            url: "/orders",
+            templateUrl: 'OrdersTmpl',
+            controller: "OrdersCtrl"
         })
         .state('user', {
             url: "/user/view/:userId",

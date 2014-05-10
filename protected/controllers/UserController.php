@@ -68,6 +68,20 @@ class UserController extends Controller
         }
     }
 
+    public function actionBirthdays()
+    {
+
+        $request = Yii::app()->request;
+        switch ($request->method)
+        {
+            case AHttpRequest::METHOD_GET:
+                    $this->returnSuccess($this->_renderBirthdayList());
+                break;
+            default:
+                $this->returnError();
+        }
+    }
+
     public function actionRoster()
     {
         $request = Yii::app()->request;
@@ -139,6 +153,36 @@ class UserController extends Controller
         $this->returnSuccess($this->_promote($userId, $courseId));
     }
 
+    public function actionUpload()
+    {
+        try
+        {
+            if (Yii::app()->user->isGuest)
+                throw new Exception("ЭЭ??");
+
+            $user = Yii::app()->user->model;
+            $src = substr(md5(time()),0,10);
+            $file = CUploadedFile::getInstanceByName('file');
+            $newFileName = $user->id.'_'.$src.'.jpg';
+            $oldFileName = $user->id.'_'.$user->img_src.'.jpg';
+            $user->img_src  = $src;
+            $image = Yii::app()->image->load($file->tempName);
+            $image->resize(200, 200);
+            $image->crop(200,200);
+            $image->save(dirname(Yii::app()->basePath) . '/img/users/' . $newFileName); // or $image->save('images/small.jpg');
+            if (file_exists(dirname(Yii::app()->basePath) . '/img/users/' . $oldFileName))
+                unlink(dirname(Yii::app()->basePath) . '/img/users/' . $oldFileName);
+            $user->save();
+            //throw new Exception('не могу сохранить файл почему-то...');
+            //if (!$file->saveAs())
+            $this->returnSuccess($src);
+        }
+        catch (Exception $e)
+        {
+            $this->returnError($e->getMessage());
+        }
+    }
+
     private function _acceptRostered($id, $tsId)
     {
         $transaction = Yii::app()->db->beginTransaction();
@@ -184,6 +228,24 @@ class UserController extends Controller
             $usersOut = [];
             $users = $users->scopeWithRank()->findAll(['condition' => 'rank_id>0', 'order' => 'rank.order desc, nickname']);
 
+            foreach ($users as $user)
+                $usersOut[] = $user->listAttributes;
+
+            return $usersOut;
+        } catch (Exception $e)
+        {
+            $this->returnError($e->getMessage());
+        }
+        return null;
+    }
+
+    private function _renderBirthdayList()
+    {
+        try
+        {
+            $users = User::model()->with('rank');
+            $usersOut = [];
+            $users = $users->scopeWithRank()->scopeClosestBirthdays()->findAll();
             foreach ($users as $user)
                 $usersOut[] = $user->listAttributes;
 

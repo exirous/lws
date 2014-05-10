@@ -22,6 +22,8 @@
  * @property string $instructor_id
  * @property string $ip
  * @property string $is_clanner
+ * @property string $is_technician
+ * @property string $img_src
  *
  * @property BattleEvent[] $battleEvents
  * @property News[] $news
@@ -32,7 +34,7 @@
  * @property Award[] $awards
  * @property UserEvent[] $userEvents
  * @property UserMark[] $userMarks
- * @property UserMark[] $issuedMarks
+ * @property UserMark[] $userMarks1
  */
 abstract class BaseUser extends AActiveRecord
 {
@@ -63,11 +65,11 @@ abstract class BaseUser extends AActiveRecord
             array('nickname, password, ip', 'length', 'max'=>32),
             array('firstname', 'length', 'max'=>128),
             array('email, ts_id', 'length', 'max'=>64),
-            array('rank_id, instructor_id', 'length', 'max'=>10),
-            array('is_clanner', 'length', 'max'=>1),
+            array('rank_id, instructor_id, img_src', 'length', 'max'=>10),
+            array('is_clanner, is_technician', 'length', 'max'=>1),
             array('join_date, birth_date, roster', 'safe'),
-            array('nickname, firstname, email, password, ts_id, join_date, birth_date, roster, rank_id, instructor_id, ip, is_clanner', 'default', 'setOnEmpty' => true, 'value' => null),
-            array('id, nickname, firstname, email, password, ts_id, join_date, birth_date, roster, rank_id, instructor_id, ip, is_clanner', 'safe', 'on' => 'search'),
+            array('nickname, firstname, email, password, ts_id, join_date, birth_date, roster, rank_id, instructor_id, ip, is_clanner, is_technician, img_src', 'default', 'setOnEmpty' => true, 'value' => null),
+            array('id, nickname, firstname, email, password, ts_id, join_date, birth_date, roster, rank_id, instructor_id, ip, is_clanner, is_technician, img_src', 'safe', 'on' => 'search'),
         );
     }
 
@@ -82,8 +84,8 @@ abstract class BaseUser extends AActiveRecord
             'instructor' => array(self::BELONGS_TO, 'Rank', 'instructor_id'),
             'awards' => array(self::MANY_MANY, 'Award', 'user_award(user_id, award_id)'),
             'userEvents' => array(self::HAS_MANY, 'UserEvent', 'user_id'),
-            'issuedMarks' => array(self::HAS_MANY, 'UserMark', 'issuer_id'),
             'userMarks' => array(self::HAS_MANY, 'UserMark', 'user_id'),
+            'userMarks1' => array(self::HAS_MANY, 'UserMark', 'issuer_id'),
         );
     }
 
@@ -111,6 +113,8 @@ abstract class BaseUser extends AActiveRecord
             'instructor_id' => null,
             'ip' => Yii::t('app', 'Ip'),
             'is_clanner' => Yii::t('app', 'Is Clanner'),
+            'is_technician' => Yii::t('app', 'Is Technician'),
+            'img_src' => Yii::t('app', 'Img Src'),
             'battleEvents' => null,
             'news' => null,
             'notifications' => null,
@@ -119,8 +123,8 @@ abstract class BaseUser extends AActiveRecord
             'instructor' => null,
             'awards' => null,
             'userEvents' => null,
-            'issuedMarks' => null,
             'userMarks' => null,
+            'userMarks1' => null,
         );
     }
 
@@ -141,6 +145,8 @@ abstract class BaseUser extends AActiveRecord
         $criteria->compare('instructor_id', $this->instructor_id);
         $criteria->compare('ip', $this->ip, true);
         $criteria->compare('is_clanner', $this->is_clanner, true);
+        $criteria->compare('is_technician', $this->is_technician, true);
+        $criteria->compare('img_src', $this->img_src, true);
 
         return new CActiveDataProvider($this, array(
             'criteria' => $criteria,

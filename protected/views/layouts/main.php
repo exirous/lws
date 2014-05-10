@@ -12,7 +12,7 @@
     <script src="/scripts/jquery.js"></script>
     <!--<script src="/scripts/chosen.jquery.js"></script>-->
     <script src="/scripts/lib/select2.min.js"></script>
-    <script src="/scripts/lib/angular.js"></script>
+    <script src="/scripts/lib/angular.min.js"></script>
     <script src="/scripts/lib/angular-ui-router.js"></script>
     <script src="/scripts/lib/angular-resource.js"></script>
     <script src="/scripts/lib/angular-sanitize.js"></script>
@@ -53,6 +53,17 @@
             <tr>
                 <td class="ml"></td>
                 <td class="mm">
+                    <div ng-controller="BirthdayViewCtrl" style="padding:0">
+                        <div ng-if="birthdays.length">
+                            <div class="main_menu">
+                                <a href="">Дни рождения</a>
+                            </div>
+                            <div class="left_content">
+                                <a ui-sref="User({userId:pilot.id})" ng-repeat="pilot in roster"
+                                   class="list-group-item">{{pilot.nickname}} ({{pilot.firstname}}) ({{pilot.birthday}})</a>
+                            </div>
+                        </div>
+                    </div>
                     <div ng-if="UserIdentity.isInstructor" ng-controller="RosterViewCtrl" style="padding:0">
                         <div ng-if="roster.length">
                             <div class="main_menu">
@@ -81,17 +92,11 @@
                 <td class="mm">
                     <div class="main_menu">
                         <a ui-sref="news">Главная</a>
+                        <a ui-sref="orders">Приказы</a>
                         <a ui-sref="roster" ng-if="UserIdentity.isGuest">Вступить в школу</a>
                         <a ui-sref="school" ng-if="!UserIdentity.isGuest">Учебный класс</a>
-                        <a ui-sref="pilots" ng-if="!UserIdentity.isGuest">Казарма</a>
+                        <a ui-sref="pilots">Казарма</a>
                         <a ui-sref="makeorder" ng-if="UserIdentity.canMakeOrders">Отдать приказ</a>
-                        <!--<span class="dropdown" ng-if="UserIdentity.canMakeOrders" on-toggle="toggled(open)">
-                           <a href class="dropdown-toggle">Отдать приказ</a>
-                           <ul class="dropdown-menu">
-                               <li><a ui-sref="makeorder">Генератор</a></li>
-                               <li><a ui-sref="makeorder">В ручную</a></li>
-                           </ul>
-                        </span>-->
                         <a ui-sref="makenews" ng-if="UserIdentity.canMakeOrders">Добавить новость</a>
                         <a href="" style="float:right" ng-click="login()" ng-if="UserIdentity.isGuest">Вход</a>
                         <a href="" style="float:right" ng-click="logout()" ng-if="!UserIdentity.isGuest">Выход</a>
@@ -117,7 +122,7 @@
 </div>
 
 <script type="text/ng-template" id="NewsTmpl">
-    <h2>Приказы и объявления</h2>
+    <h2>Объявления</h2>
     <div class="big-spinner" ng-if="!news.length">
         <div class="spinner-icon"></div>
     </div>
@@ -132,6 +137,36 @@
     </div>
 </script>
 
+<script type="text/ng-template" id="OrdersTmpl">
+    <h2>Приказы</h2>
+    <div class="big-spinner" ng-if="!news.length">
+        <div class="spinner-icon"></div>
+    </div>
+    <div ng-repeat="newsRec in news" class="news-row panel panel-{{newsRec.type == 'order' ? 'primary' : 'default'}}">
+        <div class="panel-heading">{{newsRec.title}}</div>
+        <div class="panel-body" ng-bind-html="newsRec.text"></div>
+        <div class="panel-footer">
+            <span>{{newsRec.time}}</span> <img ng-src="{{newsRec.issuer.id | avatarUrl}}"
+                                               style="width:15px;height:15px;border-radius: 50%">
+            <a href="#/user/view/{{newsRec.issuer.id}}">{{newsRec.issuer.name}}</a>
+        </div>
+    </div>
+</script>
+
+
+<script type="text/ng-template" id="fileUploadBoxTemplate">
+    <div ng-if="!uploadItem.isUploading" style="max-width: 200px;overflow: hidden">
+        <input type="file" ng-file-select style="height: 22px;max-height: 22px">
+        <div>
+            <a href="" class="btn btn-xs btn-default" style="width: 100%;margin-top: -45px;pointer-events:none">Поменять фотографию</a>
+        </div>
+    </div>
+    <div class="big-spinner" ng-if="uploadItem.isUploading">
+        <div class="spinner-icon"></div>
+        <div class="text">{{uploadItem.progress}}%</div>
+    </div>
+</script>
+
 <script type="text/ng-template" id="UserTmpl">
     <div class="big-spinner" ng-if="!user">
         <div class="spinner-icon"></div>
@@ -141,9 +176,10 @@
         <br>
         <table style="width: 100%">
             <tr>
-                <td style="height: 210px;width: 210px">
-                    <div style="margin-right:10px">
-                        <img ng-src="{{user.id | avatarUrl}}" style="width: 200px;border-radius:10%;display:block">
+                <td style="min-height: 210px;width: 210px">
+                    <div style="margin-right:10px;position: relative">
+                        <img ng-src="/img/users/{{user.img_src ? user.id+'_'+user.img_src+'.jpg' : 'no_image.png'}}" style="width: 200px;border-radius:10%;display:block">
+                        <div ng-if="user.id == UserIdentity.id" file-upload-box></div>
                     </div>
                 </td>
                 <td>
@@ -395,7 +431,7 @@
         </div>
         <div class="col-sm-6 col-md-3 user-cell" ng-repeat="pilot in pilots">
             <a class="thumbnail isRelative" ui-sref="user({userId:pilot.id})" title="{{pilot.rank_name}}">
-                <img ng-src="/img/users/{{pilot.id}}.jpg" alt="" style="width:182px; height:182px">
+                <img ng-src="/img/users/{{pilot.img_src ? pilot.id+'_'+pilot.img_src+'.jpg' : 'no_image.png'}}" alt="" style="width:182px; height:182px">
 
                 <div class="floating_rank"><img ng-src="/img/groups/{{pilot.rank}}{{pilot.is_clanner ? '_clanner' : ''}}.png"></div>
                 <div ng-if="pilot.instructor" class="floating_rank" style="left:40px"><img
@@ -544,8 +580,6 @@
         <div class="form-group">
             <input type="text" class="form-control" placeholder="Ручной приказ" ng-model="updatedData.customText">
         </div>
-        <div class="form-group">
-        </div>
         <div class="panel panel-primary" ng-repeat="pilot in updatedData.pilots">
             <div class="panel-heading">{{pilot.nickname}}</div>
             <div class="panel-body">
@@ -588,8 +622,8 @@
         </div>
         <div>
             <p class="well">
-                <input type="date" placeholder="Например: 09.05.1945" name="time" class="form-control"
-                       ng-model="updatedData.time" ng-required="true" style="width: 300px; display: inline-block"/>
+                <input type="date" placeholder="Например: 09.05.1945" name="time" class="form-control cdate"
+                       ng-model="updatedData.time" ng-required="true"/>
                 <button type="button" ng-click="save()"
                         ng-disabled="(orderForm.$dirty && orderForm.$invalid) || orderForm.$pristine || orderData.isSubmitting"
                         class="btn btn-primary">Отдать
@@ -598,6 +632,34 @@
         </div>
     </ng-form>
 </script>
+
+<script type="text/ng-template" id="NewsCreatorTmpl">
+    <h2>Добавить новость</h2>
+    <ng-form name="newsForm" novalidate role="form">
+        <div ng-if="newsRecord.newsAdded" class="alert alert-success">Новость успешно добавленна</div>
+        <div class="form-group">
+            <input type="text" placeholder="Впишите заголовок" class="form-control"
+                   ng-model="newsRecord.title" ng-required="true"/>
+            <div style="height: 5px"></div>
+            <textarea style="resize: none;width: 100%;"
+                      rows="6"
+                      class="form-control"
+                      placeholder="Впишите Новость"
+                      ng-required="true"
+                      ng-model="newsRecord.text">
+            </textarea>
+        </div>
+        <div>
+            <p class="well">
+                <button type="button" ng-click="save()"
+                        ng-disabled="(newsForm.$dirty && newsForm.$invalid) || newsForm.$pristine || newsRecord.isSubmitting"
+                        class="btn btn-primary">Опубликовать
+                </button>
+            </p>
+        </div>
+    </ng-form>
+</script>
+
 <script type="text/ng-template" id="userMarksTmpl">
     <div class="big-spinner" ng-if="!user.id">
         <div class="spinner-icon"></div>
@@ -627,6 +689,8 @@
         </div>
     </div>
 </script>
+
+
 
 <script type="text/ng-template" id="markDialogTmpl">
     <div class="modal-content">

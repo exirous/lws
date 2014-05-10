@@ -6,7 +6,12 @@ lwsServices.factory('News', ['$resource', function ($resource)
         last: {
             url: '/news/last',
             method: 'get'
+        },
+        orders: {
+            url: '/news/lastOrders',
+            method: 'get'
         }
+
     });
 }]);
 
@@ -23,6 +28,11 @@ lwsServices.factory('TeamSpeak', ['$resource', function ($resource)
 lwsServices.factory('User', ['$resource', function ($resource)
 {
     return $resource('/user/item', {}, {
+        getbirthdays:
+        {
+            url: '/user/birthdays',
+            method: 'get'
+        },
         query: {
             method: 'get'
         },

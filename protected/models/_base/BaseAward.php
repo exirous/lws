@@ -16,6 +16,7 @@
  * @property integer $only_one_allowed
  * @property integer $top
  * @property integer $left
+ * @property string $order
  *
  * @property Award $awardReplace
  * @property Award[] $awards
@@ -69,8 +70,9 @@ abstract class BaseAward extends AActiveRecord
             array('name', 'length', 'max'=>64),
             array('award_replace_id', 'length', 'max'=>10),
             array('type', 'length', 'max'=>5),
-            array('award_replace_id, type, only_one_allowed, top, left', 'default', 'setOnEmpty' => true, 'value' => null),
-            array('id, name, award_replace_id, type, only_one_allowed, top, left', 'safe', 'on' => 'search'),
+            array('order', 'length', 'max'=>2),
+            array('award_replace_id, type, only_one_allowed, top, left, order', 'default', 'setOnEmpty' => true, 'value' => null),
+            array('id, name, award_replace_id, type, only_one_allowed, top, left, order', 'safe', 'on' => 'search'),
         );
     }
 
@@ -100,6 +102,7 @@ abstract class BaseAward extends AActiveRecord
             'only_one_allowed' => Yii::t('app', 'Only One Allowed'),
             'top' => Yii::t('app', 'Top'),
             'left' => Yii::t('app', 'Left'),
+            'order' => Yii::t('app', 'Order'),
             'awardReplace' => null,
             'awards' => null,
             'users' => null,
@@ -117,6 +120,7 @@ abstract class BaseAward extends AActiveRecord
         $criteria->compare('only_one_allowed', $this->only_one_allowed);
         $criteria->compare('top', $this->top);
         $criteria->compare('left', $this->left);
+        $criteria->compare('order', $this->order, true);
 
         return new CActiveDataProvider($this, array(
             'criteria' => $criteria,

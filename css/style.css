@@ -349,6 +349,17 @@ img
     animation:         loading-bar-spinner 400ms linear infinite;
 }
 
+.big-spinner .text
+{
+    font-size: 20px;
+    color: #2EE;
+    font-weight: bold;
+    left: -23px;
+    position: absolute;
+    top: -12px;
+    width: 55px;
+    text-align: center;
+}
 
 .news-row.ng-enter-stagger {
     /* 200ms will be applied between each sucessive enter operation */
@@ -445,3 +456,9 @@ img.identifier_31
 }
 
 
+.cdate
+{
+    width: 300px;
+    display: inline-block;
+    vertical-align: middle;
+}

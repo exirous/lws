@@ -21,10 +21,25 @@ class NewsController extends Controller
 
 
 
+    public function actionItem()
+    {
+        $request = Yii::app()->request;
+        switch ($request->method)
+        {
+            case AHttpRequest::METHOD_POST:
+                $text = $request->getRequiredRawBodyParam('text','',AHttpRequest::PARAM_TYPE_STRING);
+                $title = $request->getRequiredRawBodyParam('title','',AHttpRequest::PARAM_TYPE_STRING);
+                $this->returnSuccess($this->_addNews($title, $text));
+                break;
+            default:
+                $this->returnError();
+        }
+    }
+
+
     public function actionLast()
     {
         $request = Yii::app()->request;
-        //$action = $request->getRequiredParam('action', 'none', AHttpRequest::PARAM_TYPE_STRING);
         switch ($request->method)
         {
             case AHttpRequest::METHOD_GET:
@@ -34,6 +49,35 @@ class NewsController extends Controller
                 $this->returnError();
         }
     }
+
+    public function actionLastOrders()
+    {
+        $request = Yii::app()->request;
+        switch ($request->method)
+        {
+            case AHttpRequest::METHOD_GET:
+                $this->returnSuccess(Order::getLast());
+                break;
+            default:
+                $this->returnError();
+        }
+    }
+
+    private function _addNews($title,$text)
+    {
+        $transaction = Yii::app()->db->beginTransaction();
+        try
+        {
+            News::add($title,$text);
+            $transaction->commit();
+        } catch (Exception $e)
+        {
+            $transaction->rollback();
+            $this->returnError($e->getMessage());
+        }
+        return [];
+    }
+
 
 
     /**

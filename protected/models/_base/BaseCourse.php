@@ -15,9 +15,9 @@
  * @property string $rank_id
  * @property string $next_rank_id
  *
+ * @property Program $program
  * @property Rank $rank
  * @property Rank $nextRank
- * @property Program $program
  * @property Subject[] $subjects
  */
 abstract class BaseCourse extends AActiveRecord
@@ -57,9 +57,9 @@ abstract class BaseCourse extends AActiveRecord
     public function relations()
     {
         return array(
+            'program' => array(self::BELONGS_TO, 'Program', 'program_id'),
             'rank' => array(self::BELONGS_TO, 'Rank', 'rank_id'),
             'nextRank' => array(self::BELONGS_TO, 'Rank', 'next_rank_id'),
-            'program' => array(self::BELONGS_TO, 'Program', 'program_id'),
             'subjects' => array(self::HAS_MANY, 'Subject', 'course_id'),
         );
     }
@@ -78,9 +78,9 @@ abstract class BaseCourse extends AActiveRecord
             'program_id' => null,
             'rank_id' => null,
             'next_rank_id' => null,
+            'program' => null,
             'rank' => null,
             'nextRank' => null,
-            'program' => null,
             'subjects' => null,
         );
     }
