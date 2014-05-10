@@ -227,14 +227,12 @@ lwsControllers.controller('RosterCtrl',
         }]);
 
 lwsControllers.controller('OrderCreatorCtrl',
-    ['$scope', 'OrderGenerator', '$stateParams', '$sce', '$compile',
-        function ($scope, OrderGenerator, $stateParams, $sce, $compile)
+    ['$scope', 'OrderGenerator', '$stateParams', '$sce', '$compile' ,'$filter',
+        function ($scope, OrderGenerator, $stateParams, $sce, $compile, $filter)
         {
             $scope.initialData = {pilots: {}};
             $scope.orderData = {pilots: []};
             $scope.updatedData = {pilots: {}};
-
-
 
             function formatPilot(state)
             {
@@ -313,7 +311,10 @@ lwsControllers.controller('OrderCreatorCtrl',
             {
                 $scope.initialData = {pilots: {}};
                 $scope.orderData = {pilots: []};
-                $scope.updatedData = {pilots: {}};
+                var time = new Date();
+                time = $filter('date')(time, "yyyy-MM-dd");
+
+                $scope.updatedData = {pilots: {}, time:time, customText:''};
 
                 OrderGenerator.get({}, function (resource)
                 {
@@ -378,7 +379,7 @@ lwsControllers.controller('OrderCreatorCtrl',
                             + '">'
                             + pilot.nickname
                             + '</a>';
-                        afterranktext = 'В связи с успешной сдачей экзамена';
+                        afterranktext = ' в связи с успешной сдачей экзаменов';
                     }
                     else
                         pilotname =
@@ -421,7 +422,7 @@ lwsControllers.controller('OrderCreatorCtrl',
 
                     if (pilot.old_instructor != pilot.instructor)
                     {
-                        var instruptext = ' присвоенна степень ';
+                        var instruptext = ' присвоена должность ';
                         instrtext =
                             instruptext + $sce.trustAsHtml('<a rank="'
                             + pilot.instructor
@@ -441,7 +442,7 @@ lwsControllers.controller('OrderCreatorCtrl',
                         awardtext = 'награждается ' + awards.join(', ');
                     }
 
-                    if (ranktext || awardtext || instrtext)
+                    if (ranktext || awardtext || instrtext || $scope.updatedData.event || $scope.updatedData.customText)
                     {
                         var pilotText = '';
                         pilotText += pilotname;
@@ -456,6 +457,7 @@ lwsControllers.controller('OrderCreatorCtrl',
                     }
                 });
                 var text = ($scope.updatedData.event ? $scope.updatedData.event + '\n' : '') + pilotTexts.join('');
+                text += $scope.updatedData.customText ? ' '+$scope.updatedData.customText : '';
                 $scope.orderData.complete = text;
                 var linkingFunction = $compile('<div>' + text + '</div>');
                 var elem = linkingFunction($scope);

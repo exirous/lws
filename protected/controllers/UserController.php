@@ -182,10 +182,10 @@ class UserController extends Controller
                 $users = $users->scopeName($filters['name']);
 
             $usersOut = [];
-            $users = $users->findAll(['condition' => 'rank_id>0', 'order' => 'rank.order desc, nickname']);
+            $users = $users->scopeWithRank()->findAll(['condition' => 'rank_id>0', 'order' => 'rank.order desc, nickname']);
 
             foreach ($users as $user)
-                $usersOut[] = $user->shortAttributes;
+                $usersOut[] = $user->listAttributes;
 
             return $usersOut;
         } catch (Exception $e)
@@ -374,4 +374,6 @@ class UserController extends Controller
                 $this->render('error', $error);
         }
     }
+
+
 }

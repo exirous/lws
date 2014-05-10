@@ -34,6 +34,34 @@ class TeamSpeakController extends Controller
 
     public function actionTest()
     {
+
+        // URL on which we have to post data
+        $url = "http://192.168.1.4:3001";
+
+        // Any other field you might want to post
+        $json_data = json_encode(array("name"=>"PHP Rockstart", "age"=>29));
+        $post_data['json_data'] = $json_data;
+        $post_data['secure_hash'] = mktime();
+
+        // Initialize cURL
+        $ch = curl_init();
+        // Set URL on which you want to post the Form and/or data
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_POST,           1 );
+        curl_setopt($ch, CURLOPT_POSTFIELDS,     $json_data);
+        curl_setopt($ch, CURLOPT_HTTPHEADER,     array('Content-Type: text/plain'));
+        // Pass TRUE or 1 if you want to wait for and catch the response against the request made
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        // For Debug mode; shows up any error encountered during the operation
+        curl_setopt($ch, CURLOPT_VERBOSE, 1);
+        // Execute the request
+        $response = curl_exec($ch);
+        $error = curl_error ($ch);
+        // Just for debug: to see response
+        var_dump($error);
+        echo '<br>';
+        die(var_dump($response));
+
         //Yii::app()->ts->fixName();
 
         /*$user   = User::model()->findByPk(1);
@@ -59,8 +87,8 @@ class TeamSpeakController extends Controller
         //$db = Yii::app()->ts->ts3Server->clientFindDb(Yii::app()->user->model->ts_id,true);
         //echo nl2br(print_r(Yii::app()->ts->ts3Server->clientInfoDb($db[0]), true));
 
-        Yii::app()->ts->channelTree2();
-        die();
+        //Yii::app()->ts->channelTree2();
+        //die();
 
         //$db = Yii::app()->ts->ts3Server->clientGetServerGroupsByDbid(2);
         //$db = Yii::app()->ts->ts3Server->clientList();

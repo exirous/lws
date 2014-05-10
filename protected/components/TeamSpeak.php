@@ -90,7 +90,10 @@ class TeamSpeak extends CApplicationComponent
 
                     $clientNode = ['name' => $client['client_nickname']->toString(), 'groups' => []];
                     if ($user)
+                    {
                         $clientNode['id'] = $user->id;
+                        $clientNode['is_clanner'] = intval($user->is_clanner);
+                    }
                     /**
                      * @var $group TeamSpeak3_Node_Servergroup
                      */

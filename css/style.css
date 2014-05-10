@@ -273,6 +273,11 @@ img
     position: relative;
 }
 
+.uniform.clanner
+{
+    background: url(/img/uniform/clanner/uniform.png);
+}
+
 .uniform .unform_rank
 {
     width: 400px;
@@ -280,6 +285,11 @@ img
     left: 15px;
     position: relative;
     top: 44px;
+}
+
+.clanner .unform_rank
+{
+    top:51px;
 }
 
 .uniform img
@@ -417,3 +427,21 @@ img
     padding: initial;
     max-width: 222px;
 }
+
+img.identifier_9,img.identifier_28,img.identifier_27
+{
+    top:218px;
+    left:112px;
+}
+img.identifier_30
+{
+    top:219px;
+    left:117px;
+}
+img.identifier_31
+{
+    top:217px;
+    left:112px;
+}
+
+

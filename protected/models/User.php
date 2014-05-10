@@ -57,7 +57,7 @@ class User extends BaseUser
         return $this;
     }
 
-    public function  scopeWithRank()
+    public function scopeWithRank()
     {
         $this->dbCriteria->mergeWith([
             'condition' => 'rank_id is NOT NULL'
@@ -69,7 +69,7 @@ class User extends BaseUser
     {
         $this->dbCriteria->mergeWith([
             'condition' => '`firstname` LIKE :name OR `nickname` LIKE :name',
-            'params'=>['name'=>'%'.$name.'%']
+            'params' => ['name' => '%' . $name . '%']
         ]);
         return $this;
     }
@@ -77,14 +77,23 @@ class User extends BaseUser
     public function getPublicAttributes()
     {
         $medals = [];
-        foreach ($this->awards(['condition' => 'type="medal"', 'order' => '`order`']) as $award)
-            $medals[$award->award_replace_id ? $award->award_replace_id : $award->id] = $award->shortAttributes;
+        if ($this->id == '0')
+            foreach (Award::model()->findAll(['condition' => 'type="medal"', 'order' => '`order`']) as $award)
+                $medals[$award->award_replace_id ? $award->award_replace_id : $award->id] = $award->shortAttributes;
+        else
+            foreach ($this->awards(['condition' => 'type="medal"', 'order' => '`order`']) as $award)
+                $medals[$award->award_replace_id ? $award->award_replace_id : $award->id] = $award->shortAttributes;
 
         $medals = array_values($medals);
 
         $crosses = [];
-        foreach ($this->awards(['condition' => 'type="cross"', 'order' => '`order`']) as $award)
-            $crosses[$award->award_replace_id ? $award->award_replace_id : $award->id] = $award->shortAttributes;
+
+        if ($this->id == '0')
+            foreach (Award::model()->findAll(['condition' => 'type="cross"', 'order' => '`order`']) as $award)
+                $crosses[$award->award_replace_id ? $award->award_replace_id : $award->id] = $award->shortAttributes;
+        else
+            foreach ($this->awards(['condition' => 'type="cross"', 'order' => '`order`']) as $award)
+                $crosses[$award->award_replace_id ? $award->award_replace_id : $award->id] = $award->shortAttributes;
 
         $crosses = array_values($crosses);
 
@@ -100,6 +109,8 @@ class User extends BaseUser
             'id' => $this->id,
             'rank' => $this->rank_id ? $this->rank->getShortAttributes() : null,
             'instructor' => $this->instructor_id ? $this->instructor->getShortAttributes() : null,
+            'is_clanner' => intval($this->is_clanner),
+            //'is_technitian'=>intval($this->is_technitian)
             'medals' => $medals,
             'crosses' => $crosses,
             'events' => $events
@@ -166,7 +177,21 @@ class User extends BaseUser
             'old_instructor' => $this->instructor_id,
             'rank_name' => $this->rank->name,
             'instructor' => $this->instructor_id,
+            'is_clanner' => intval($this->is_clanner),
             'awards' => $awards
+        ];
+    }
+
+    public function getListAttributes()
+    {
+        return [
+            'nickname' => $this->nickname,
+            'firstname' => $this->firstname,
+            'id' => $this->id,
+            'rank' => $this->rank_id,
+            'rank_name' => $this->rank->name,
+            'instructor' => $this->instructor_id,
+            'is_clanner' => intval($this->is_clanner),
         ];
     }
 

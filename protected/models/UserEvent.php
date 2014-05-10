@@ -33,6 +33,12 @@ class UserEvent extends BaseUserEvent
     {
         return parent::model($className);
     }
+    public function defaultScope()
+    {
+        return [
+            'order' =>'date, id'
+        ];
+    }
 
 
     public function getPublicAttributes()

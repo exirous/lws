@@ -62,15 +62,20 @@ class Order extends BaseOrder
 
     public static function issueOrder($data)
     {
-        $date = gmdate("Y-m-d H:i:s");
+        if (!isset($data['time']))
+            $date = gmdate("Y-m-d H:i:s");
+        else
+            $date = gmdate("Y-m-d H:i:s", strtotime($data['time']));
+
         $order = new Order();
         $order->text = $data['complete'];
         $order->issuer_id = Yii::app()->user->model->id;
         $order->time = $date;
         if (!$order->save())
-            throw new Exception('1 '.$order->getErrorsString());
+            throw new Exception('1 ' . $order->getErrorsString());
 
-        $eventText = (isset($data['event']) ? $data['event'] . ' ' : '');
+        $eventText = trim(isset($data['event']) ? $data['event'] . ' ' : '');
+        $customText = trim(isset($data['customText']) ? ' ' . $data['customText'] : '');
 
         foreach ($data['pilots'] as $pilotData)
         {
@@ -89,9 +94,9 @@ class Order extends BaseOrder
                 $event->user_id = $pilot->id;
                 $event->order_id = $order->id;
                 $event->date = $date;
-                $event->text = $eventText . 'Присвоена степень <a rank="' . $rank->id . '">' . $rank->name . '</a> ';
+                $event->text = $eventText . 'Присвоена должность <a rank="' . $rank->id . '">' . $rank->name . '</a>';
                 if (!$event->save())
-                    throw new Exception('2 '.$event->getErrorsString());
+                    throw new Exception('2 ' . $event->getErrorsString());
                 $pilot->instructor_id = $rank->id;
                 $needSave = true;
             }
@@ -112,11 +117,24 @@ class Order extends BaseOrder
                     $text = 'Переведён на ';
                 if ($rank->id == 7)
                     $text = 'Принят на ';
-                $event->text = $eventText . $text . '<a rank="' . $rank->id . '">' . $rank->name . '</a> ';
+                $event->text = $eventText . $text . '<a rank="' . $rank->id . '">' . $rank->name . '</a>';
                 if (!$event->save())
-                    throw new Exception('3 '.$event->getErrorsString());
+                    throw new Exception('3 ' . $event->getErrorsString());
                 $pilot->rank_id = $rank->id;
+                if ($rank->order > 6)
+                    $pilot->is_clanner = false;
                 $needSave = true;
+            }
+
+            if ($customText && $customText != '')
+            {
+                $event = new UserEvent();
+                $event->user_id = $pilot->id;
+                $event->order_id = $order->id;
+                $event->date = $date;
+                $event->text = $eventText .' '. $customText;
+                if (!$event->save())
+                    throw new Exception('5 ' . $event->getErrorsString());
             }
 
             if (isset($pilotData['awards']))
@@ -131,24 +149,25 @@ class Order extends BaseOrder
                     $event->user_id = $pilot->id;
                     $event->order_id = $order->id;
                     $event->date = $date;
-                    $event->text = $eventText . 'Награждён <a award="' . $award->id . '">' . $award->name . '</a> ';
+                    $event->text = $eventText . 'Награждён <a award="' . $award->id . '">' . $award->name . '</a>';
                     if (!$event->save())
-                        throw new Exception('4 '.$event->getErrorsString());
+                        throw new Exception('4 ' . $event->getErrorsString());
                     $userAward = new UserAward();
                     $userAward->user_id = $pilot->id;
                     $userAward->event_id = $event->id;
                     $userAward->award_id = $award->id;
                     if (!$userAward->save())
-                        throw new Exception('5 '.$userAward->getErrorsString());
+                        throw new Exception('5 ' . $userAward->getErrorsString());
                 }
             }
 
             if ($needSave && !$pilot->save())
-                throw new Exception('6 '.$pilot->getErrorsString());
+                throw new Exception('6 ' . $pilot->getErrorsString());
 
             $pilot->syncWithTeamSpeak();
         }
-        $order->postToTeamSpeak();
+        if (strtotime($order->time) > (time() - 3600 * 48))
+            $order->postToTeamSpeak();
         return $order->id;
     }
 
@@ -171,7 +190,7 @@ class Order extends BaseOrder
             try
             {
                 Yii::app()->ts->setName('Отдел кадров №' . $i);
-                Yii::app()->ts->ts3Server->message($event.$fullmessage);
+                Yii::app()->ts->ts3Server->message($event . $fullmessage);
             } catch (Exception $e)
             {
                 if ($e->getMessage() == 'nickname is already in use')

@@ -28,6 +28,7 @@
     <script src="/scripts/controllers/controllers.js"></script>
     <script src="/scripts/lib/socket.io.js"></script>
     <script src="/scripts/loading-bar.js"></script>
+    <script src="/scripts/lib/angular-file-upload.js"></script>
     <link rel="stylesheet" href="/css/bootstrap/bootstrap.css" type="text/css">
     <!--<link rel="stylesheet" href="/css/bootstrap.css" type="text/css">-->
     <link rel="stylesheet" href="/css/style.css" type="text/css">
@@ -176,15 +177,17 @@
                     </table>
                 </td>
                 <td ng-if="user.rank" rowspan="2" style="width: 400px;padding-left: 5px">
-                    <div class="uniform">
+                    <div class="uniform {{user.is_clanner ? 'clanner' : ''}}">
                         <div class="unform_rank"
-                             style="background: url(/img/uniform/{{user.rank.id}}.png) no-repeat"
+                             style="background: url(/img/uniform/{{user.is_clanner ? 'clanner/' : ''}}{{user.rank.id}}.png) no-repeat"
                              title="{{user.rank.name}}">
                         </div>
                         <img title="{{medal.name}}" ng-repeat="medal in user.medals"
                              style="top:{{medal.top}}px;left:{{medal.left}}px;" ng-src="/img/awards/{{medal.id}}.png">
                         <img title="{{cross.name}}" ng-repeat="cross in user.crosses"
                              style="top: {{cross.top}}px;left:{{cross.left}}px;" ng-src="/img/awards/{{cross.id}}.png">
+                        <img ng-if="user.instructor" title="{{user.instructor.name}}" class="identifier_{{user.instructor.id}}"
+                             ng-src="/img/identifiers/ident_{{user.instructor.id}}.png">
                     </div>
                 </td>
             </tr>
@@ -211,7 +214,7 @@
     <ul>
         <li ng-repeat="channel in channel.channels" ng-include="'TreeItemTmpl'"></li>
         <li ng-repeat="client in channel.clients"><img class="ts_group_icon" ng-repeat="group in client.groups"
-                                                       ng-src="/img/groups/{{group.id}}.png" title="{{group.name}}"/><a
+                                                       ng-src="/img/groups/{{group.id}}{{client.is_clanner ? '_clanner' : ''}}.png" title="{{group.name}}"/><a
                 ng-if="client.id" href="#/user/view/{{client.id}}"> {{client.name | clearNickname}}</a><span
                 ng-if="!client.id"> {{client.name | clearNickname}}</span>
         </li>
@@ -379,7 +382,7 @@
 
 
 <script type="text/ng-template" id="BarracksTmpl">
-    <h2>Казарма </h2>
+    <h2>Казарма<span ng-show="pilots.length"> ({{pilots.length}})</span></h2>
     <div class="well well-sm">
         <div class="input-group">
             <span class="input-group-addon glyphicon glyphicon glyphicon-search" style="top:0"></span>
@@ -394,7 +397,7 @@
             <a class="thumbnail isRelative" ui-sref="user({userId:pilot.id})" title="{{pilot.rank_name}}">
                 <img ng-src="/img/users/{{pilot.id}}.jpg" alt="" style="width:182px; height:182px">
 
-                <div class="floating_rank"><img ng-src="/img/groups/{{pilot.rank}}.png"></div>
+                <div class="floating_rank"><img ng-src="/img/groups/{{pilot.rank}}{{pilot.is_clanner ? '_clanner' : ''}}.png"></div>
                 <div ng-if="pilot.instructor" class="floating_rank" style="left:40px"><img
                         ng-src="/img/groups/{{pilot.instructor}}.png"></div>
                 <div class="caption">
@@ -414,7 +417,7 @@
         <br>
         <label>Родился:</label><br>
         <span>{{pilot.roster.birthdate | date : "dd.MM.yyyy"}}</span>
-        (<span>{{pilot.roster.birthdate | age}}</span>)<br>
+        (<span>{{pilot.roster.birthdate | age}}</span> лет)<br>
         <label>Оценка готовности стремления обучатся:</label><br>
         <span>{{pilot.roster.scale}}</span><br>
         <label>Попал в школу посредством:</label><br>
@@ -522,6 +525,7 @@
                         multiple
                         ui-select2="pilotSelect2Options"
                         style="width: 435px;margin-bottom: 6px"
+                        class="form-control"
                         ng-model="orderData.pilots"
                         required>
                     <option ng-repeat="pilot in initialData.pilotsArray  | orderBy:'nickname'" value="{{pilot.id}}"
@@ -529,12 +533,16 @@
                         {{pilot.nickname}}
                     </option>
                 </select>
-                <textarea style="resize: none;width: 100%" rows="3" placeholder="Впишите Событие"
+                <textarea style="resize: none;width: 100%" rows="3" class="form-control" placeholder="Впишите Событие"
                           ng-model="updatedData.event"></textarea>
             </div>
             <div
-                style="resize: none;display:inline-block;width: 49%;padding:5px;border:1px solid #aaa;min-height:107px;background: #eee;color:#555"
+                class="form-control"
+                style="resize: none;display:inline-block;width: 49%;padding:5px;border:1px solid #aaa;min-height:114px;background: #eee;color:#555"
                 rows="5" id="completeData" data-ng-bind-html="updatedData.complete"></div>
+        </div>
+        <div class="form-group">
+            <input type="text" class="form-control" placeholder="Ручной приказ" ng-model="updatedData.customText">
         </div>
         <div class="form-group">
         </div>
@@ -567,6 +575,7 @@
                 </div>
                 <select data-placeholder="Выберите Награды"
                         ui-select2="awardSelect2Options"
+                        class="form-control"
                         style="width: 535px;vertical-align: top;"
                         multiple
                         ng-model="pilot.awards">
@@ -579,6 +588,8 @@
         </div>
         <div>
             <p class="well">
+                <input type="date" placeholder="Например: 09.05.1945" name="time" class="form-control"
+                       ng-model="updatedData.time" ng-required="true" style="width: 300px; display: inline-block"/>
                 <button type="button" ng-click="save()"
                         ng-disabled="(orderForm.$dirty && orderForm.$invalid) || orderForm.$pristine || orderData.isSubmitting"
                         class="btn btn-primary">Отдать
