@@ -8,12 +8,12 @@ class TeamSpeakController extends Controller
         return array(
             // captcha action renders the CAPTCHA image displayed on the contact page
             'captcha' => array(
-                'class'     => 'CCaptchaAction',
+                'class' => 'CCaptchaAction',
                 'backColor' => 0xFFFFFF,
             ),
             // page action renders "static" pages stored under 'protected/views/site/pages'
             // They can be accessed via: index.php?r=site/page&view=FileName
-            'page'    => array(
+            'page' => array(
                 'class' => 'CViewAction',
             ),
         );
@@ -32,16 +32,54 @@ class TeamSpeakController extends Controller
         }
     }
 
+    public function actionParse()
+    {
+        $content = file_get_contents('http://unicode.org/repos/cldr-tmp/trunk/diff/supplemental/language_plural_rules.html');
+        preg_match_all('/\<tr\>(.*?)\<\/tr\>/', $content, $rows);
+        $languages = [];
+        $lang = false;
+        foreach ($rows[0] as $row)
+        {
+            if (strpos($row, 'class=\'h\'') !== false)
+                break;
+            if (strpos($row, '<th') !== false)
+            {
+                if ($lang)
+                {
+                    $languages[] = $lang;
+                }
+                $lang = [];
+            }
+            else
+            {
+                if (!isset($lang['id']))
+                {
+                    preg_match('/\<a name="([a-z]{2,4})"/', $row, $id);
+                    $lang['id'] = $id[1];
+                    preg_match('/\<tr\>\<td(.*?)\>(.*?)\</',$row,$name);
+                    $lang['name'] = $name[2];
+                }
+                preg_match_all('/\<td class=\'target\'\>(.*?)\<\/td\>/', $row, $rowdata);
+                $lang['rules'][$rowdata[1][0]] = $rowdata[1][1];
+            }
+        }
+        //die(var_dump($languages));
+        echo nl2br(print_r($languages,true));
+
+        //echo $content;
+        die();
+    }
+
     public function actionTest()
     {
 
         phpinfo();
         die();
         // URL on which we have to post data
-        $url = "http://192.168.1.4:3001";
+        $url = "http://127.0.0.1:3001";
 
         // Any other field you might want to post
-        $json_data = json_encode(array("name"=>"PHP Rockstart", "age"=>29));
+        $json_data = json_encode(array("name" => "PHP Rockstart", "age" => 29));
         $post_data['json_data'] = $json_data;
         $post_data['secure_hash'] = mktime();
 
@@ -49,16 +87,16 @@ class TeamSpeakController extends Controller
         $ch = curl_init();
         // Set URL on which you want to post the Form and/or data
         curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_POST,           1 );
-        curl_setopt($ch, CURLOPT_POSTFIELDS,     $json_data);
-        curl_setopt($ch, CURLOPT_HTTPHEADER,     array('Content-Type: text/plain'));
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $json_data);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: text/plain'));
         // Pass TRUE or 1 if you want to wait for and catch the response against the request made
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         // For Debug mode; shows up any error encountered during the operation
         curl_setopt($ch, CURLOPT_VERBOSE, 1);
         // Execute the request
         $response = curl_exec($ch);
-        $error = curl_error ($ch);
+        $error = curl_error($ch);
         // Just for debug: to see response
         var_dump($error);
         echo '<br>';
@@ -80,7 +118,6 @@ class TeamSpeakController extends Controller
         //mb_send_mail("exirous@gmail.com","test","test");
 
         //$db = Yii::app()->ts->getDb();
-
 
 
         //echo Yii::app()->user->model->ts_id;

@@ -267,7 +267,7 @@ img
 
 .uniform
 {
-    width: 400px;
+    width: 380px;
     height: 600px;
     background: url(/img/uniform/uniform.png);
     position: relative;
@@ -280,7 +280,7 @@ img
 
 .uniform .unform_rank
 {
-    width: 400px;
+    width: 360px;
     height: 600px;
     left: 15px;
     position: relative;

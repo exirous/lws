@@ -86,7 +86,7 @@ class News extends BaseNews
                 'type' => 'news',
                 'id' => $this->id,
                 'text' => $this->text,
-                'issuer' => ['id' => $this->issuer_id, 'name' => $this->issuer->nickname]
+                'issuer' => $this->issuer->getListAttributes()
             ];
     }
 

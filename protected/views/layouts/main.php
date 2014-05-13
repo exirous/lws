@@ -59,8 +59,8 @@
                                 <a href="">Дни рождения</a>
                             </div>
                             <div class="left_content">
-                                <a ui-sref="User({userId:pilot.id})" ng-repeat="pilot in roster"
-                                   class="list-group-item">{{pilot.nickname}} ({{pilot.firstname}}) ({{pilot.birthday}})</a>
+                                <a ui-sref="user({userId:pilot.id})" ng-repeat="pilot in birthdays  | orderBy:'birthday'"
+                                   class="list-group-item">{{pilot.nickname}} ({{pilot.birthday | date : "dd.MM"}})</a>
                             </div>
                         </div>
                     </div>
@@ -126,13 +126,13 @@
     <div class="big-spinner" ng-if="!news.length">
         <div class="spinner-icon"></div>
     </div>
-    <div ng-repeat="newsRec in news" class="news-row panel panel-{{newsRec.type == 'order' ? 'primary' : 'default'}}">
+    <div ng-repeat="newsRec in news" class="news-row panel panel-default">
         <div class="panel-heading">{{newsRec.title}}</div>
         <div class="panel-body" ng-bind-html="newsRec.text"></div>
         <div class="panel-footer">
-            <span>{{newsRec.time}}</span> <img ng-src="{{newsRec.issuer.id | avatarUrl}}"
-                                               style="width:15px;height:15px;border-radius: 50%">
-            <a href="#/user/view/{{newsRec.issuer.id}}">{{newsRec.issuer.name}}</a>
+            <span>{{newsRec.time}}</span> <img ng-src="/img/users/{{newsRec.issuer.img_src ? newsRec.issuer.id+'_'+newsRec.issuer.img_src+'.jpg' : 'no_image.png'}}"
+                                               style="width:16px;height:16px;border-radius: 50%">
+            <a href="#/user/view/{{newsRec.issuer.id}}">{{newsRec.issuer.nickname}}</a>
         </div>
     </div>
 </script>
@@ -142,17 +142,16 @@
     <div class="big-spinner" ng-if="!news.length">
         <div class="spinner-icon"></div>
     </div>
-    <div ng-repeat="newsRec in news" class="news-row panel panel-{{newsRec.type == 'order' ? 'primary' : 'default'}}">
+    <div ng-repeat="newsRec in news" class="news-row panel panel-default">
         <div class="panel-heading">{{newsRec.title}}</div>
         <div class="panel-body" ng-bind-html="newsRec.text"></div>
         <div class="panel-footer">
-            <span>{{newsRec.time}}</span> <img ng-src="{{newsRec.issuer.id | avatarUrl}}"
-                                               style="width:15px;height:15px;border-radius: 50%">
-            <a href="#/user/view/{{newsRec.issuer.id}}">{{newsRec.issuer.name}}</a>
+            <span>{{newsRec.time}}</span> <img ng-src="/img/users/{{newsRec.issuer.img_src ? newsRec.issuer.id+'_'+newsRec.issuer.img_src+'.jpg' : 'no_image.png'}}"
+                                               style="width:16px;height:16px;border-radius: 50%">
+            <a href="#/user/view/{{newsRec.issuer.id}}">{{newsRec.issuer.nickname}}</a>
         </div>
     </div>
 </script>
-
 
 <script type="text/ng-template" id="fileUploadBoxTemplate">
     <div ng-if="!uploadItem.isUploading" style="max-width: 200px;overflow: hidden">
@@ -176,9 +175,9 @@
         <br>
         <table style="width: 100%">
             <tr>
-                <td style="min-height: 210px;width: 210px">
+                <td style="height: 210px;width: 210px">
                     <div style="margin-right:10px;position: relative">
-                        <img ng-src="/img/users/{{user.img_src ? user.id+'_'+user.img_src+'.jpg' : 'no_image.png'}}" style="width: 200px;border-radius:10%;display:block">
+                        <img ng-src="/img/users/{{user.img_src ? user.id+'_'+user.img_src+'.jpg' : 'no_image.png'}}" style="width: 200px;display:block">
                         <div ng-if="user.id == UserIdentity.id" file-upload-box></div>
                     </div>
                 </td>
@@ -212,7 +211,7 @@
                         </tbody>
                     </table>
                 </td>
-                <td ng-if="user.rank" rowspan="2" style="width: 400px;padding-left: 5px">
+                <td ng-if="user.rank" rowspan="2" style="width: 380px;padding-left: 5px;max-width: 380px;">
                     <div class="uniform {{user.is_clanner ? 'clanner' : ''}}">
                         <div class="unform_rank"
                              style="background: url(/img/uniform/{{user.is_clanner ? 'clanner/' : ''}}{{user.rank.id}}.png) no-repeat"

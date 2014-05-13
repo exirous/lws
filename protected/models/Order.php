@@ -56,7 +56,7 @@ class Order extends BaseOrder
             'type' => 'order',
             'id' => $this->id,
             'text' => $this->text,
-            'issuer' => ['id' => $this->issuer_id, 'name' => $this->issuer->nickname]
+            'issuer' => $this->issuer->getListAttributes()
         ];
     }
 
@@ -78,9 +78,9 @@ class Order extends BaseOrder
     public static function issueOrder($data)
     {
         if (!isset($data['time']))
-            $date = gmdate("Y-m-d H:i:s");
+            $date = date("Y-m-d H:i:s");
         else
-            $date = gmdate("Y-m-d H:i:s", strtotime($data['time']));
+            $date = date("Y-m-d H:i:s", strtotime($data['time']));
 
         $order = new Order();
         $order->text = $data['complete'];
@@ -88,6 +88,9 @@ class Order extends BaseOrder
         $order->time = $date;
         if (!$order->save())
             throw new Exception('1 ' . $order->getErrorsString());
+
+        $data['event'] = isset($data['event']) ? $data['event'] : '';
+        $data['customText'] = isset($data['customText']) ? $data['customText'] : '';
 
         $eventText = trim($data['event']) ? $data['event'] . ' ' : '';
         $customText = trim($data['customText']) ? ' ' . $data['customText'] : '';

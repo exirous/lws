@@ -77,7 +77,7 @@ class User extends BaseUser
     public function scopeClosestBirthdays()
     {
         $this->dbCriteria->mergeWith([
-            'condition'=>'DATE_ADD(STR_TO_DATE(birth_date, "%m/%d/%Y"), INTERVAL YEAR(CURDATE())-YEAR(STR_TO_DATE(birth_date, "%m/%d/%Y")) YEAR)
+            'condition'=>'DATE_ADD(birth_date, INTERVAL YEAR(CURDATE())-YEAR(birth_date) YEAR)
             BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 10 DAY)'
         ]);
         return $this;
@@ -196,7 +196,7 @@ class User extends BaseUser
         return [
             'nickname' => $this->nickname,
             'firstname' => $this->firstname,
-            'birthday'=>strtotime($this->birth_date),
+            'birthday'=>strtotime($this->birth_date).'000',
             'id' => $this->id,
             'img_src'=>$this->img_src,
             'rank' => $this->rank_id,
