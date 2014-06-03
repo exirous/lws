@@ -77,7 +77,7 @@ class User extends BaseUser
     public function scopeClosestBirthdays()
     {
         $this->dbCriteria->mergeWith([
-            'condition'=>'DATE_ADD(birth_date, INTERVAL YEAR(CURDATE())-YEAR(birth_date) YEAR)
+            'condition' => 'DATE_ADD(birth_date, INTERVAL YEAR(CURDATE())-YEAR(birth_date) YEAR)
             BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 10 DAY)'
         ]);
         return $this;
@@ -112,7 +112,7 @@ class User extends BaseUser
 
         return [
             'nickname' => $this->nickname,
-            'img_src'=>$this->img_src,
+            'img_src' => $this->img_src,
             'firstname' => $this->firstname,
             'birthDate' => strtotime($this->birth_date) . '000',
             'joinDate' => strtotime($this->join_date) . '000',
@@ -155,6 +155,7 @@ class User extends BaseUser
             'id' => $this->id,
             'nickname' => $this->nickname,
             'rank' => $this->rank_id,
+            'is_clanner' => intval($this->is_clanner),
             'rank_order' => $this->rank->order,
             'marks' => $marks,
             'courses' => $courses
@@ -196,9 +197,9 @@ class User extends BaseUser
         return [
             'nickname' => $this->nickname,
             'firstname' => $this->firstname,
-            'birthday'=>strtotime($this->birth_date).'000',
+            'birthday' => strtotime($this->birth_date) . '000',
             'id' => $this->id,
-            'img_src'=>$this->img_src,
+            'img_src' => $this->img_src,
             'rank' => $this->rank_id,
             'rank_name' => $this->rank->name,
             'instructor' => $this->instructor_id,
@@ -211,13 +212,26 @@ class User extends BaseUser
         return [
             'nickname' => $this->nickname,
             'firstname' => $this->firstname,
-            'img_src'=>$this->img_src,
-            'canMakeOrders' => ($this->rank_id && $this->rank->order > 6),
-            'canMakeNews' => ($this->rank_id && $this->rank->order > 6),
-            'isInstructor' => $this->instructor_id ? true : false,
+            'img_src' => $this->img_src,
+            'canMakeOrders' => $this->canMakeOrders(),
+            'canMakeNews' => $this->canMakeNews(),
+            'isInstructor' => $this->isInstructor(),
             'fullname' => $this->nickname . ' (' . $this->firstname . ')',
             'id' => $this->id
         ];
+    }
+
+    public function canMakeOrders()
+    {
+        return ($this->rank_id && $this->rank->order > 6);
+    }
+    public function canMakeNews()
+    {
+        return ($this->rank_id && $this->rank->order > 6);
+    }
+    public function isInstructor()
+    {
+        return $this->instructor_id ? true : false;
     }
 
     public static function roster($user)
@@ -234,7 +248,7 @@ class User extends BaseUser
         $newUser->nickname = $user['nickname'];
         $newUser->firstname = $user['firstname'];
         $newUser->ip = $user['ip'];
-        $newUser->is_clanner = ($user['squad'] == 'yes') ? 1 : 0;
+        $newUser->is_clanner = (isset($user['squad']) && $user['squad']) ? 1 : 0;
         $newUser->roster = json_encode($user);
 
         if (!$newUser->validate())
@@ -242,8 +256,6 @@ class User extends BaseUser
 
         if (!$newUser->save())
             throw new Exception('Возникла непредвиденная ошибка, мы над этим работаем...');
-
-        //@copy(dirname(Yii::app()->basePath) . '/img/users/no_image.jpg', dirname(Yii::app()->basePath) . '/img/users/' . $newUser->id . '.jpg');
 
         return $newUser;
     }
@@ -310,7 +322,7 @@ class User extends BaseUser
 
         $data = [
             'complete' => '<p><a pilot="' . $this->id . '">' . $this->nickname
-                . '</a> принят на <a rank="7">1й Курс</a></p>',
+                . '</a> зачислен на <a rank="7">1-й Курс</a> в начальную школу пилотов</p>',
             'pilots' =>
                 [
                     [
@@ -322,24 +334,28 @@ class User extends BaseUser
         Order::issueOrder($data);
     }
 
-    public function promoteCourse($courseId)
+    public function promoteCourse($courseId, $promoteToOfficer)
     {
         $course = Course::model()->findByPk($courseId);
         if (!$course)
             throw new Exception('Course not found');
 
+        $afterText = ' в связи с успешной сдачей экзаменов';
+        $eventText = 'В связи с успешной сдачей экзаменов';
+
         if ($course->next_rank_id == 16)
         {
-            if ($this->is_clanner)
+            $afterText = '';
+            $eventText = 'В связи с окончанием школы пилотов';
+            if (!$promoteToOfficer)
             {
                 $rank = 29;
-                $text = ' зачислен в <a rank="29">Выпускники</a>';
+                $text = ' окончил школу пилотов, присвоено звание <a rank="29">Выпускник</a>, выдан значок об окончании школы';
             }
             else
             {
-                $rank = $course->next_rank_id;
-                $text = ' переведён в офицерский состав с присвоением звания <a rank="' . $rank . '">'
-                    . $course->nextRank->name . '</a>';
+                $rank = $course->nextRank->id;
+                $text = ' окончил школу пилотов, присвоено звание <a rank="' . $course->nextRank->name . '"></a>, выдан <a award="41">значок об окончании школы</a>';
             }
         }
         else
@@ -349,13 +365,14 @@ class User extends BaseUser
         }
 
         $data = [
+            'event'=> $eventText,
             'complete' => '<p><a pilot="' . $this->id . '">Курсант ' . $this->nickname
-                . '</a>' . $text . ' в связи с успешной сдачей экзаменов</p>',
+                . '</a>' . $text . $afterText . '</p>',
             'pilots' =>
                 [
                     [
                         'id' => $this->id,
-                        'rank' => $rank
+                        'rank' => $rank,
                     ]
                 ]
         ];

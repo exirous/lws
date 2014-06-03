@@ -26,6 +26,8 @@
  * @property string $img_src
  *
  * @property BattleEvent[] $battleEvents
+ * @property ForumMessage[] $forumMessages
+ * @property ForumTopic[] $forumTopics
  * @property News[] $news
  * @property Notification[] $notifications
  * @property Order[] $orders
@@ -35,6 +37,7 @@
  * @property UserEvent[] $userEvents
  * @property UserMark[] $userMarks
  * @property UserMark[] $userMarks1
+ * @property Vacation[] $vacations
  */
 abstract class BaseUser extends AActiveRecord
 {
@@ -77,6 +80,8 @@ abstract class BaseUser extends AActiveRecord
     {
         return array(
             'battleEvents' => array(self::HAS_MANY, 'BattleEvent', 'user_id'),
+            'forumMessages' => array(self::HAS_MANY, 'ForumMessage', 'author_id'),
+            'forumTopics' => array(self::HAS_MANY, 'ForumTopic', 'author_id'),
             'news' => array(self::HAS_MANY, 'News', 'issuer_id'),
             'notifications' => array(self::HAS_MANY, 'Notification', 'user_id'),
             'orders' => array(self::MANY_MANY, 'Order', 'order_participant(user_id, order_id)'),
@@ -86,6 +91,7 @@ abstract class BaseUser extends AActiveRecord
             'userEvents' => array(self::HAS_MANY, 'UserEvent', 'user_id'),
             'userMarks' => array(self::HAS_MANY, 'UserMark', 'user_id'),
             'userMarks1' => array(self::HAS_MANY, 'UserMark', 'issuer_id'),
+            'vacations' => array(self::HAS_MANY, 'Vacation', 'user_id'),
         );
     }
 
@@ -116,6 +122,8 @@ abstract class BaseUser extends AActiveRecord
             'is_technician' => Yii::t('app', 'Is Technician'),
             'img_src' => Yii::t('app', 'Img Src'),
             'battleEvents' => null,
+            'forumMessages' => null,
+            'forumTopics' => null,
             'news' => null,
             'notifications' => null,
             'orders' => null,
@@ -125,6 +133,7 @@ abstract class BaseUser extends AActiveRecord
             'userEvents' => null,
             'userMarks' => null,
             'userMarks1' => null,
+            'vacations' => null,
         );
     }
 

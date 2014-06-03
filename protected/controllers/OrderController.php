@@ -34,6 +34,9 @@ class OrderController extends Controller
     private function _makeOrder($data)
     {
         $orderId = null;
+        if (Yii::app()->user->isGuest || !Yii::app()->user->model->canMakeOrders())
+            return null;
+
         $transaction = Yii::app()->db->beginTransaction();
         try
         {

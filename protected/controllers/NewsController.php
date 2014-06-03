@@ -37,6 +37,8 @@ class NewsController extends Controller
     }
 
 
+
+
     public function actionLast()
     {
         $request = Yii::app()->request;

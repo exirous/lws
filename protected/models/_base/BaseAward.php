@@ -11,6 +11,7 @@
  *
  * @property string $id
  * @property string $name
+ * @property string $sub_name
  * @property string $award_replace_id
  * @property string $type
  * @property integer $only_one_allowed
@@ -67,12 +68,12 @@ abstract class BaseAward extends AActiveRecord
         return array(
             array('name', 'required'),
             array('only_one_allowed, top, left', 'numerical', 'integerOnly'=>true),
-            array('name', 'length', 'max'=>64),
+            array('name, sub_name', 'length', 'max'=>128),
             array('award_replace_id', 'length', 'max'=>10),
             array('type', 'length', 'max'=>5),
             array('order', 'length', 'max'=>2),
-            array('award_replace_id, type, only_one_allowed, top, left, order', 'default', 'setOnEmpty' => true, 'value' => null),
-            array('id, name, award_replace_id, type, only_one_allowed, top, left, order', 'safe', 'on' => 'search'),
+            array('sub_name, award_replace_id, type, only_one_allowed, top, left, order', 'default', 'setOnEmpty' => true, 'value' => null),
+            array('id, name, sub_name, award_replace_id, type, only_one_allowed, top, left, order', 'safe', 'on' => 'search'),
         );
     }
 
@@ -97,6 +98,7 @@ abstract class BaseAward extends AActiveRecord
         return array(
             'id' => Yii::t('app', 'ID'),
             'name' => Yii::t('app', 'Name'),
+            'sub_name' => Yii::t('app', 'Sub Name'),
             'award_replace_id' => null,
             'type' => Yii::t('app', 'Type'),
             'only_one_allowed' => Yii::t('app', 'Only One Allowed'),
@@ -115,6 +117,7 @@ abstract class BaseAward extends AActiveRecord
 
         $criteria->compare('id', $this->id, true);
         $criteria->compare('name', $this->name, true);
+        $criteria->compare('sub_name', $this->sub_name, true);
         $criteria->compare('award_replace_id', $this->award_replace_id);
         $criteria->compare('type', $this->type, true);
         $criteria->compare('only_one_allowed', $this->only_one_allowed);

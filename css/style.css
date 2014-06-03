@@ -69,6 +69,14 @@ img
     margin-top: 5px;
     z-index: 1;
     background: #eee;
+    overflow: hidden;
+}
+
+.photostack img
+{
+    width: 1188px;
+    height: 288px;
+    display: block;
 }
 
 .contentTable
@@ -297,7 +305,25 @@ img
     position: absolute;
     top:0;
     left:0;
+    margin-top: 0px;
+    -webkit-transition:all linear 0.1s;
+    -moz-transition:all linear 0.1s;
+    -o-transition:all linear 0.1s;
+    transition:all linear 0.1s;
 }
+
+.uniform img:hover
+{
+    -webkit-filter: drop-shadow(0px 3px 5px rgba(0,0,0,1));
+    -ms-filter: "progid:DXImageTransform.Microsoft.Dropshadow(OffX=0, OffY=3, Color='#444')";
+    filter: "progid:DXImageTransform.Microsoft.Dropshadow(OffX=0, OffY=3, Color='#444')";
+    margin-top: -3px;
+    -webkit-transform:  scale(1.2);
+    transform: scale(1.2);
+
+    z-index: 1000;
+}
+
 
 .isRelative
 {
@@ -349,6 +375,8 @@ img
     animation:         loading-bar-spinner 400ms linear infinite;
 }
 
+
+
 .big-spinner .text
 {
     font-size: 20px;
@@ -359,6 +387,30 @@ img
     top: -12px;
     width: 55px;
     text-align: center;
+}
+
+
+.small-spinner {
+    display: block;
+    position: absolute;
+    z-index: 100;
+    top: 50%;
+    left: 50%;
+}
+
+.small-spinner .spinner-icon {
+    width: 50px;
+    height: 50px;
+    margin: -25px -25px;
+    border:  solid 5px transparent;
+    border-top-color:  #29d;
+    border-left-color: #29d;
+    border-radius: 50%;
+    -webkit-animation: loading-bar-spinner 400ms linear infinite;
+    -moz-animation:    loading-bar-spinner 400ms linear infinite;
+    -ms-animation:     loading-bar-spinner 400ms linear infinite;
+    -o-animation:      loading-bar-spinner 400ms linear infinite;
+    animation:         loading-bar-spinner 400ms linear infinite;
 }
 
 .news-row.ng-enter-stagger {
@@ -461,4 +513,101 @@ img.identifier_31
     width: 300px;
     display: inline-block;
     vertical-align: middle;
+}
+
+.dropdown-hover:hover .dropdown-menu {
+    display: block;
+}
+
+.header-image.ng-enter-stagger {
+    /* 200ms will be applied between each sucessive enter operation */
+    -webkit-transition-delay:0.05s;
+    transition-delay:0.05s;
+
+    /* this is here to avoid accidental CSS inheritance */
+    -webkit-transition-duration:0;
+    transition-duration:0;
+}
+
+.header-image.ng-leave, .header-image.ng-enter,.header-image.ng-move {
+    -webkit-transition:all cubic-bezier(0.250, 0.460, 0.450, 0.940) 0.5s;
+    -moz-transition:all cubic-bezier(0.250, 0.460, 0.450, 0.940) 0.5s;
+    -o-transition:all cubic-bezier(0.250, 0.460, 0.450, 0.940) 0.5s;
+    transition:all cubic-bezier(0.250, 0.460, 0.450, 0.940) 0.5s;
+    /*-webkit-transition:all linear 0.2s;
+    transition:all linear 0.2s;*/
+}
+
+.header-image.ng-leave.ng-leave-active,
+.header-image.ng-move,
+.header-image.ng-enter {
+    max-height:0;
+}
+
+
+
+.header-image.ng-leave,
+.header-image.ng-move.ng-move-active,
+.header-image.ng-enter.ng-enter-active {
+    max-height:288px;
+}
+
+.sceditor-container, .sceditor-container *
+{
+    box-sizing:content-box;
+    -webkit-box-sizing: content-box;
+}
+
+ol li
+{
+    margin: 0;
+}
+
+.forumTopicHeader
+{
+    margin-bottom: -20px;
+    margin-left: 10px;
+}
+
+.forumTopicHeader img
+{
+    position: relative;
+    width:40px;height:40px;
+    border-radius: 50%;
+    vertical-align: middle;
+    border: 1px solid #ddd;
+}
+
+.forumTopicHeader a
+{
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, .05);
+    box-shadow: 0 1px 1px rgba(0, 0, 0, .05);
+    margin-left: -8px;
+    padding:5px 10px 5px 15px;
+    vertical-align: middle;
+}
+
+.tinter
+{
+    position: absolute;
+    right: 0;
+    top:0;
+    bottom: 0;
+    background: #31b0d5;
+    width: 100px;
+    background: -moz-linear-gradient(left,  rgba(255,255,255,0) 0%, rgba(255,255,255,1) 95%); /* FF3.6+ */
+    background: -webkit-gradient(linear, left top, right top, color-stop(0%,rgba(255,255,255,0)), color-stop(95%,rgba(255,255,255,1))); /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(left,  rgba(255,255,255,0) 0%,rgba(255,255,255,1) 95%); /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(left,  rgba(255,255,255,0) 0%,rgba(255,255,255,1) 95%); /* Opera 11.10+ */
+    background: -ms-linear-gradient(left,  rgba(255,255,255,0) 0%,rgba(255,255,255,1) 95%); /* IE10+ */
+    background: linear-gradient(to right,  rgba(255,255,255,0) 0%,rgba(255,255,255,1) 95%); /* W3C */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00ffffff', endColorstr='#ffffff',GradientType=1 ); /* IE6-9 */
+}
+
+.with-underline
+{
+    border-bottom: 1px solid #bbb;
 }

@@ -75,7 +75,7 @@ class UserController extends Controller
         switch ($request->method)
         {
             case AHttpRequest::METHOD_GET:
-                    $this->returnSuccess($this->_renderBirthdayList());
+                $this->returnSuccess($this->_renderBirthdayList());
                 break;
             default:
                 $this->returnError();
@@ -145,12 +145,102 @@ class UserController extends Controller
         $this->returnSuccess($this->_acceptRostered($id, $uId));
     }
 
+    public function actionReject()
+    {
+        $request = Yii::app()->request;
+        $id = $request->getRequiredRawBodyParam('userId', 0);
+        $this->returnSuccess($this->_rejectRostered($id));
+    }
+
+
     public function actionPromote()
     {
         $request = Yii::app()->request;
         $userId = $request->getRequiredRawBodyParam('userId', 0);
         $courseId = $request->getRequiredRawBodyParam('courseId', 0);
-        $this->returnSuccess($this->_promote($userId, $courseId));
+        $promoteToOfficer = $request->getRequiredRawBodyParam('promoteToOfficer', false);
+        $this->returnSuccess($this->_promote($userId, $courseId, $promoteToOfficer));
+    }
+
+    public function actionSaveEvent()
+    {
+        $request = Yii::app()->request;
+        if ($request->method != AHttpRequest::METHOD_POST)
+            $this->returnError();
+        else
+        {
+            $eventId = $request->getRequiredRawBodyParam('id', 0);
+            $date = $request->getRequiredRawBodyParam('dateString', '');
+            $text = $request->getRequiredRawBodyParam('text', '');
+            $userId = $request->getRequiredRawBodyParam('userId', 0);
+            $this->returnSuccess($this->_updateEvent($eventId, $date, $text, $userId));
+        }
+    }
+
+    public function actionDeleteEvent()
+    {
+        $request = Yii::app()->request;
+        if ($request->method != AHttpRequest::METHOD_POST)
+            $this->returnError();
+        else
+        {
+            $eventId = $request->getRequiredRawBodyParam('eventId', 0);
+            $this->returnSuccess($this->_deleteEvent($eventId));
+        }
+    }
+
+
+    private function _updateEvent($id, $date, $text, $userId)
+    {
+        $transaction = Yii::app()->db->beginTransaction();
+        try
+        {
+            if (Yii::app()->user->isGuest || !Yii::app()->user->model->instructor_id)
+                return null;
+            if ($id > 0)
+            {
+                $event = UserEvent::model()->findByPk($id);
+                if (!$event)
+                    throw new Exception('event not found');
+            }
+            else
+            {
+                $event = new UserEvent();
+                $event->user_id = $userId;
+            }
+            $event->date = $date;
+            $event->text = $text;
+            if (!$event->save())
+                throw new Exception($event->getErrorsString());
+            $transaction->commit();
+            return $event->getPublicAttributes();
+        } catch (Exception $e)
+        {
+            $transaction->rollback();
+            $this->returnError($e->getMessage());
+        }
+        return null;
+    }
+
+    private function _deleteEvent($id)
+    {
+        $transaction = Yii::app()->db->beginTransaction();
+        try
+        {
+            if (Yii::app()->user->isGuest || !Yii::app()->user->model->instructor_id)
+                return null;
+            $event = UserEvent::model()->findByPk($id);
+            if (!$event)
+                throw new Exception('event not found');
+            $event->delete();
+            $transaction->commit();
+            return [];
+        } catch (Exception $e)
+        {
+            $transaction->rollback();
+            $this->returnError($e->getMessage());
+        }
+        return null;
     }
 
     public function actionUpload()
@@ -160,24 +250,29 @@ class UserController extends Controller
             if (Yii::app()->user->isGuest)
                 throw new Exception("ЭЭ??");
 
-            $user = Yii::app()->user->model;
-            $src = substr(md5(time()),0,10);
+            $userId = Yii::app()->request->getRequiredParam('userId', 0);
+
+            $user = User::model()->findByPk($userId); //Yii::app()->user->model;
+            if ((Yii::app()->user->model->id != '14') && (Yii::app()->user->model->id != '1'))
+                throw new Exception('Permission denied');
+
+            if (!$user)
+                throw new Exception('Пользовватель не найден');
+            $src = substr(md5(time()), 0, 10);
             $file = CUploadedFile::getInstanceByName('file');
-            $newFileName = $user->id.'_'.$src.'.jpg';
-            $oldFileName = $user->id.'_'.$user->img_src.'.jpg';
-            $user->img_src  = $src;
+            $newFileName = $user->id . '_' . $src . '.jpg';
+            $oldFileName = $user->id . '_' . $user->img_src . '.jpg';
+            $user->img_src = $src;
             $image = Yii::app()->image->load($file->tempName);
             $image->resize(200, 200);
-            $image->crop(200,200);
+            $image->crop(200, 200);
+            $image->resize(200, 200);
             $image->save(dirname(Yii::app()->basePath) . '/img/users/' . $newFileName); // or $image->save('images/small.jpg');
             if (file_exists(dirname(Yii::app()->basePath) . '/img/users/' . $oldFileName))
                 unlink(dirname(Yii::app()->basePath) . '/img/users/' . $oldFileName);
             $user->save();
-            //throw new Exception('не могу сохранить файл почему-то...');
-            //if (!$file->saveAs())
             $this->returnSuccess($src);
-        }
-        catch (Exception $e)
+        } catch (Exception $e)
         {
             $this->returnError($e->getMessage());
         }
@@ -193,6 +288,26 @@ class UserController extends Controller
                 throw new Exception('Пользователь не найден');
 
             $user->accept($tsId);
+            $transaction->commit();
+        } catch (Exception $e)
+        {
+            $transaction->rollback();
+            $this->returnError($e->getMessage());
+        }
+        return [];
+    }
+
+    private function _rejectRostered($id)
+    {
+        $transaction = Yii::app()->db->beginTransaction();
+        try
+        {
+            $user = User::model()->findByPk($id);
+            if (!$user)
+                throw new Exception('Пользователь не найден');
+            if ($user->rank_id || $user->ts_id)
+                throw new Exception('Пользователь уже был принят!');
+            $user->delete();
             $transaction->commit();
         } catch (Exception $e)
         {
@@ -345,7 +460,7 @@ class UserController extends Controller
 
     private function _getUserMarks($id)
     {
-        if (Yii::app()->user->isGuest || !Yii::app()->user->model->instructor_id)
+        if (Yii::app()->user->isGuest || (!Yii::app()->user->model->instructor_id && ($id != Yii::app()->user->model->id)))
             return null;
         $user = User::model()->findByPk($id)->getMarkAttributes();
         return $user;
@@ -369,7 +484,7 @@ class UserController extends Controller
         return [];
     }
 
-    private function _promote($userId, $courseId)
+    private function _promote($userId, $courseId, $promoteToOfficer)
     {
         if (Yii::app()->user->isGuest || !Yii::app()->user->model->instructor_id)
             return null;
@@ -381,7 +496,8 @@ class UserController extends Controller
             $user = User::model()->findByPk($userId);
             if (!$user)
                 throw new Exception('Cannot find user');
-            $user->promoteCourse($courseId);
+
+            $user->promoteCourse($courseId, $promoteToOfficer);
             $transaction->commit();
             $user->refresh();
         } catch (Exception $e)

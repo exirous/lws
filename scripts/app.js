@@ -38,7 +38,13 @@ function mainRouteConfig($stateProvider, $urlRouterProvider)
             url: "/user/view/:userId",
             templateUrl: 'UserTmpl',
             controller: "UserCtrl"
-        }).state('roster', {
+        })
+        .state('texts', {
+            url: "/text/:id",
+            templateUrl: 'TextTmpl',
+            controller: "TextCtrl"
+        })
+        .state('roster', {
             url: "/roster",
             templateUrl: 'RosterTmpl',
             controller: "RosterCtrl"
@@ -73,10 +79,40 @@ function mainRouteConfig($stateProvider, $urlRouterProvider)
             templateUrl: 'SchoolTmpl',
             controller: "SchoolCtrl"
         })
+        .state('editmaterial', {
+            url: "/school/edit/:materialId",
+            templateUrl: 'EditMaterialTmpl',
+            controller: "EditMaterialCtrl"
+        })
+        .state('edittext', {
+            url: "/text/edit/:id",
+            templateUrl: 'EditTextTmpl',
+            controller: "EditTextCtrl"
+        })
         .state('pilots', {
             url: "/pilots",
             templateUrl: 'BarracksTmpl',
             controller: "BarracksCtrl"
+        })
+        .state('flood', {
+            url: "/flood",
+            templateUrl: 'FloodTmpl',
+            controller: "FloodCtrl"
+        })
+        .state('newtopic', {
+            url: "/newtopic",
+            templateUrl: 'NewTopicTmpl',
+            controller: "NewTopicCtrl"
+        })
+        .state('topic', {
+            url: "/flood/:topicId",
+            templateUrl: 'TopicTmpl',
+            controller: "TopicCtrl"
+        })
+        .state('topic.page', {
+            url: "/page-:page",
+            templateUrl: 'TopicMessagesTmpl',
+            controller: "TopicPageCtrl"
         })
 }
 lwsApp.config(mainRouteConfig);

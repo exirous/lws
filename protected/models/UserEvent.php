@@ -43,10 +43,13 @@ class UserEvent extends BaseUserEvent
 
     public function getPublicAttributes()
     {
+        $time = strtotime($this->date);
         return [
             'id'=>$this->id,
             'text'=>$this->text,
-            'date'=>strtotime($this->date).'000'
+            'date'=>$time.'000',
+            'dateString' => date('Y-m-d',$time),
+            'userId'=>$this->user_id
         ];
     }
 }

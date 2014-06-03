@@ -60,20 +60,23 @@ class TeamSpeakController extends Controller
                     $lang['name'] = $name[2];
                 }
                 preg_match_all('/\<td class=\'target\'\>(.*?)\<\/td\>/', $row, $rowdata);
-                $lang['rules'][$rowdata[1][0]] = $rowdata[1][1];
+                $lang['forms'][$rowdata[1][0]] = $rowdata[1][1];
             }
         }
-        //die(var_dump($languages));
-        echo nl2br(print_r($languages,true));
-
-        //echo $content;
+        //echo nl2br(print_r($languages,true));
         die();
     }
 
     public function actionTest()
     {
 
-        phpinfo();
+        require_once Yii::app()->basePath . "/vendors/jbbcode/Parser.php";
+        $parser = new JBBCode\Parser();
+        $parser->addCodeDefinitionSet(new JBBCode\DefaultCodeDefinitionSet());
+        $parser->parse(Material::model()->findByPk(2)->text);
+        echo nl2br($parser->getAsHTML());
+
+        //phpinfo();
         die();
         // URL on which we have to post data
         $url = "http://127.0.0.1:3001";

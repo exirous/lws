@@ -15,6 +15,21 @@ lwsServices.factory('News', ['$resource', function ($resource)
     });
 }]);
 
+lwsServices.factory('School', ['$resource', function ($resource)
+{
+    return $resource('/news/item', {}, {
+        materials: {
+            url: '/school/materials',
+            method: 'get'
+        }
+    });
+}]);
+
+lwsServices.factory('Material', ['$resource', function ($resource)
+{
+    return $resource('/school/material', {}, {});
+}]);
+
 lwsServices.factory('TeamSpeak', ['$resource', function ($resource)
 {
     return $resource('/teamSpeak/list', {}, {
@@ -56,6 +71,10 @@ lwsServices.factory('User', ['$resource', function ($resource)
             url: '/user/accept',
             method: 'post'
         },
+        reject:{
+            url: '/user/reject',
+            method: 'post'
+        },
         recover:{
             url: '/user/recover',
             method: 'post'
@@ -71,6 +90,14 @@ lwsServices.factory('User', ['$resource', function ($resource)
         promote:{
             url: '/user/promote',
             method: 'post'
+        },
+        saveEvent:{
+            url: '/user/saveEvent',
+            method: 'post'
+        },
+        deleteEvent:{
+            url: '/user/deleteEvent',
+            method: 'post'
         }
     });
 }]);
@@ -85,6 +112,46 @@ lwsServices.factory('Roster', ['$resource', function ($resource)
 {
     return $resource('/user/getRoster', {}, {
 
+    });
+}]);
+
+lwsServices.factory('Text', ['$resource', function ($resource)
+{
+    return $resource('/text/item', {}, {
+        edit : {
+            method:'GET',
+            url:'/text/edit'
+        },
+        save : {
+            method:'POST',
+            url:'/text/edit'
+        }
+    });
+}]);
+
+lwsServices.factory('Flood', ['$resource', function ($resource)
+{
+    return $resource('/flood/list', {}, {
+        query : {
+            method:'GET'
+        },
+        save : {
+            method:'POST'
+        }
+    });
+}]);
+
+lwsServices.factory('Topic', ['$resource', function ($resource)
+{
+    return $resource('/flood/topic', {}, {
+        page : {
+            method:'GET',
+            url:'/flood/topicPage'
+        },
+        post : {
+            method:'POST',
+            url:'/flood/postMessage'
+        }
     });
 }]);
 

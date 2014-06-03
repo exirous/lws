@@ -92,8 +92,8 @@ class Order extends BaseOrder
         $data['event'] = isset($data['event']) ? $data['event'] : '';
         $data['customText'] = isset($data['customText']) ? $data['customText'] : '';
 
-        $eventText = trim($data['event']) ? $data['event'] . ' ' : '';
-        $customText = trim($data['customText']) ? ' ' . $data['customText'] : '';
+        $eventText = trim($data['event']) ? trim($data['event']) . ' ' : '';
+        $customText = trim($data['customText']) ? ' ' . trim($data['customText']) : '';
 
         foreach ($data['pilots'] as $pilotData)
         {
@@ -102,32 +102,18 @@ class Order extends BaseOrder
                 throw new Exception('Пользователь не найден');
 
             $needSave = false;
-
-            if (isset($pilotData['instructor']) && $pilot->instructor_id != $pilotData['instructor'])
-            {
-                $rank = Rank::model()->findByPk($pilotData['instructor']);
-                if (!$rank)
-                    throw new Exception('Звание не найдено');
-                $event = new UserEvent();
-                $event->user_id = $pilot->id;
-                $event->order_id = $order->id;
-                $event->date = $date;
-                $event->text = $eventText . 'Присвоена должность <a rank="' . $rank->id . '">' . $rank->name . '</a>';
-                if (!$event->save())
-                    throw new Exception('2 ' . $event->getErrorsString());
-                $pilot->instructor_id = $rank->id;
-                $needSave = true;
-            }
+            $eventRankText = $eventInstructorText = $eventAwardText = '';
+            $event = new UserEvent();
+            $event->user_id = $pilot->id;
+            $event->order_id = $order->id;
+            $event->date = $date;
 
             if (isset($pilotData['rank']) && $pilot->rank_id != $pilotData['rank'])
             {
                 $rank = Rank::model()->findByPk($pilotData['rank']);
                 if (!$rank)
                     throw new Exception('Звание не найдено');
-                $event = new UserEvent();
-                $event->user_id = $pilot->id;
-                $event->order_id = $order->id;
-                $event->date = $date;
+
                 $text = 'Присвоено звание ';
                 if ($pilot->rank->order > $rank->order)
                     $text = 'Понижен до ';
@@ -135,9 +121,11 @@ class Order extends BaseOrder
                     $text = 'Переведён на ';
                 if ($rank->id == 7)
                     $text = 'Принят на ';
-                $event->text = $eventText . $text . '<a rank="' . $rank->id . '">' . $rank->name . '</a>';
-                if (!$event->save())
-                    throw new Exception('3 ' . $event->getErrorsString());
+
+                if ($eventText)
+                    $text = strtolower($text);
+
+                $eventRankText = $text . '<a rank="' . $rank->id . '">' . $rank->name . '</a>';
                 $pilot->rank_id = $rank->id;
                 if ($rank->order > 5)
                 {
@@ -148,40 +136,48 @@ class Order extends BaseOrder
                 $needSave = true;
             }
 
-            if ($customText && $customText != '')
+            if (isset($pilotData['instructor']) && $pilot->instructor_id != $pilotData['instructor'])
             {
-                $event = new UserEvent();
-                $event->user_id = $pilot->id;
-                $event->order_id = $order->id;
-                $event->date = $date;
-                $event->text = $eventText .' '. $customText;
-                if (!$event->save())
-                    throw new Exception('5 ' . $event->getErrorsString());
+                $rank = Rank::model()->findByPk($pilotData['instructor']);
+                if (!$rank)
+                    throw new Exception('Звание не найдено');
+
+                $eventInstructorText = (($eventText || $eventRankText) ? 'присвоена' : 'Присвоена').' должность <a rank="' . $rank->id . '">' . $rank->name . '</a>';
+                $pilot->instructor_id = $rank->id;
+                $needSave = true;
             }
 
             if (isset($pilotData['awards']))
             {
+                $eventAwardText = [];
                 foreach ($pilotData['awards'] as $awardId)
                 {
                     $award = Award::model()->findByPk($awardId);
                     if (!$award)
                         throw new Exception('Медаль не найдена');
 
-                    $event = new UserEvent();
-                    $event->user_id = $pilot->id;
-                    $event->order_id = $order->id;
-                    $event->date = $date;
-                    $event->text = $eventText . 'Награждён <a award="' . $award->id . '">' . $award->name . '</a>';
-                    if (!$event->save())
-                        throw new Exception('4 ' . $event->getErrorsString());
+                    $eventAwardText[] = '<a award="' . $award->id . '">' . $award->sub_name . '</a>';
                     $userAward = new UserAward();
                     $userAward->user_id = $pilot->id;
-                    $userAward->event_id = $event->id;
+                    //$userAward->event_id = $event->id;
                     $userAward->award_id = $award->id;
                     if (!$userAward->save())
                         throw new Exception('5 ' . $userAward->getErrorsString());
                 }
+                $eventAwardText = (($eventText || $eventRankText || $eventInstructorText) ? 'награждён ' : 'Награждён ').implode(', ',$eventAwardText);
             }
+
+            $event->text = $eventText.$eventRankText.
+                ($eventRankText && $eventInstructorText ? ' и ' : '').$eventInstructorText.
+                ((($eventRankText || $eventInstructorText) && $eventAwardText) ? ' и ' : '').$eventAwardText.
+                ((($eventRankText || $eventInstructorText || $eventAwardText) && $customText) ? ' и ' : '').$customText;
+
+            if (isset($data['onlyatest']))
+                die($event->text);
+
+            if (trim($event->text))
+                if (!$event->save())
+                    throw new Exception('3 ' . $event->getErrorsString());
 
             if ($needSave && !$pilot->save())
                 throw new Exception('6 ' . $pilot->getErrorsString());

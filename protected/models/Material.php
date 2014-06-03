@@ -33,4 +33,13 @@ class Material extends BaseMaterial
     {
         return parent::model($className);
     }
+
+    public function getRenderAttributes()
+    {
+        return [
+            'id'=>$this->id,
+            'text'=>$this->text,
+            'title'=>$this->title
+        ];
+    }
 }

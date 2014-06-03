@@ -5,14 +5,53 @@ angular.module('app.controllers',
         'ui.bootstrap.buttons',
         'ui.bootstrap.accordion',
         'ui.bootstrap.timepicker',
+        'ui.bootstrap.pagination',
         'ui.select2']);
 var lwsControllers = angular.module('app.controllers');
 
 lwsControllers.controller('AppCtrl',
     ['$scope', '$dialogs', '$stateParams', 'User',
+
+
         function ($scope, $dialogs, $stateParams, User)
         {
             $scope.UserIdentity = UserLoginData;
+            $scope.headerImages = ['/img/header/news.png'];
+            var stateAliases = {
+                'orders': 'news',
+                'makeorder': 'news',
+                'makenews': 'news',
+                'roster': 'pilots',
+                'rosterUser': 'user',
+                'userMarks': 'user',
+                'afterroster': 'user',
+                'edittext': 'news',
+                'editmaterial': 'school',
+                'flood': 'news',
+                'topic': 'news',
+                'newtopic': 'news',
+                'topic.page': 'news'
+            };
+            $scope.$on('$stateChangeStart',
+                function (event, toState, toParams, fromState, fromParams)
+                {
+                    var stateName = toState.name;
+                    var fromStateName = fromState.name;
+
+                    if (fromState.abstract && stateName == 'news')
+                        return;
+
+                    if (stateAliases[stateName])
+                        stateName = stateAliases[stateName];
+
+                    if (stateAliases[fromStateName])
+                        fromStateName = stateAliases[fromStateName];
+
+                    if (fromStateName == stateName)
+                        return;
+                    $scope.headerImages.shift();
+                    $scope.headerImages.push('/img/header/' + stateName + '.png');
+                });
 
             $scope.login = function ()
             {
@@ -27,7 +66,7 @@ lwsControllers.controller('AppCtrl',
             };
             $scope.logout = function ()
             {
-                dlg = $dialogs.confirm('Подтвердите', 'Вы хотите выйти из системы?');
+                var dlg = $dialogs.confirm('Подтвердите', 'Вы хотите выйти из системы?');
                 dlg.result.then(function (btn)
                 {
                     User.logout({}, function (resource)
@@ -37,7 +76,15 @@ lwsControllers.controller('AppCtrl',
                 }, function (btn)
                 {
                 });
+            };
+
+            $scope.vacation = function()
+            {
+
             }
+
+
+
 
         }]);
 
@@ -120,28 +167,64 @@ lwsControllers.controller('OrdersCtrl',
         }]);
 
 lwsControllers.controller('UserCtrl',
-    ['$scope', 'User', '$stateParams',
-        function ($scope, User, $stateParams)
+    ['$scope', 'User', '$stateParams', '$dialogs',
+        function ($scope, User, $stateParams, $dialogs)
         {
             User.get({id: $stateParams.userId},
                 function (resource)
                 {
                     $scope.user = resource.data;
                 });
+
+            $scope.addEvent = function (userId)
+            {
+                var event = {date: '', text: '', id: -1, userId: userId, isNew: true}
+                $scope.editEvent(event);
+            };
+
+            $scope.editEvent = function (event)
+            {
+                var dlg = $dialogs.create('eventDialogTmpl', 'EventDialogCtrl', event,
+                    {key: false, back: 'static'})
+                    .result.then(function (newEvent)
+                    {
+                        angular.extend(event, newEvent);
+                        if (newEvent && event.isNew)
+                        {
+                            $scope.user.events.push(newEvent);
+                        }
+                    }, function ()
+                    {
+
+                    });
+            }
+
+            $scope.deleteEvent = function (event)
+            {
+                $dialogs.confirm('Подтвердите', 'Удалить событие "' + event.text + '"?')
+                    .result.then(function (btn)
+                    {
+                        $scope.user.events.splice($scope.user.events.indexOf(event), 1);
+                        User.deleteEvent({eventId: event.id}, function (resource)
+                        {
+
+                        });
+                    });
+            }
         }]);
 
 
 lwsControllers.controller('BarracksCtrl',
-    ['$scope', 'User', '$stateParams','$timeout',
+    ['$scope', 'User', '$stateParams', '$timeout',
         function ($scope, User, $stateParams, $timeout)
         {
-            $scope.filters = {name:null};
+            $scope.filters = {name: null};
             var firstLoad = true;
 
             $scope.loadData = function ()
             {
                 $scope.isLoading = true
-                User.query({filters:$scope.filters}, function (resource)
+                User.query({filters: $scope.filters}, function (resource)
                 {
                     $scope.pilots = resource.data;
                     firstLoad = false;
@@ -149,19 +232,21 @@ lwsControllers.controller('BarracksCtrl',
                 });
             };
             var timeoutPromise = null;
-            $scope.$watch('filters',function(){
+            $scope.$watch('filters', function ()
+            {
                 if (firstLoad) return;
                 $timeout.cancel(timeoutPromise);
-                timeoutPromise = $timeout(function(){
+                timeoutPromise = $timeout(function ()
+                {
                     $scope.loadData();
-                },600);
-            },true);
+                }, 600);
+            }, true);
             $scope.loadData();
         }]);
 
 lwsControllers.controller('RosterUserCtrl',
-    ['$scope', 'User', '$stateParams', '$rootScope', '$location',
-        function ($scope, User, $stateParams, $rootScope, $location)
+    ['$scope', 'User', '$stateParams', '$rootScope', '$dialogs', '$state',
+        function ($scope, User, $stateParams, $rootScope, $dialogs, $state)
         {
             User.getRoster({userId: $stateParams.userId},
                 function (resource)
@@ -170,14 +255,36 @@ lwsControllers.controller('RosterUserCtrl',
                 });
             $scope.accept = function ()
             {
-                $scope.rosterForm.isSubmitting = true;
-                User.accept({userId: $stateParams.userId, uid: $scope.rosterForm.tsId}, function ()
-                {
-                    $scope.rosterForm.isSubmitting = false;
-                    $rootScope.$broadcast('refreshRosterList');
-                    $scope.pilot.rank = 7;
-                });
-            }
+                $dialogs.confirm('Подтвердите', 'Принять данную заявку?')
+                    .result.then(function (btn)
+                    {
+                        $scope.rosterForm.isSubmitting = true;
+                        User.accept({userId: $stateParams.userId, uid: $scope.rosterForm.tsId}, function ()
+                        {
+                            $scope.rosterForm.isSubmitting = false;
+                            $rootScope.$broadcast('refreshRosterList');
+                            $scope.pilot.rank = 7;
+                        });
+                    }, function (btn)
+                    {
+                    });
+            };
+            $scope.reject = function ()
+            {
+                $dialogs.confirm('Подтвердите', 'Отклонить данную заявку?')
+                    .result.then(function (btn)
+                    {
+                        $scope.rosterForm.isSubmitting = true;
+                        User.reject({userId: $stateParams.userId}, function ()
+                        {
+                            $scope.rosterForm.isSubmitting = false;
+                            $rootScope.$broadcast('refreshRosterList');
+                            $state.go('news');
+                        });
+                    }, function (btn)
+                    {
+                    });
+            };
         }]);
 
 lwsControllers.controller('RosterCtrl',
@@ -237,7 +344,7 @@ lwsControllers.controller('RosterCtrl',
         }]);
 
 lwsControllers.controller('OrderCreatorCtrl',
-    ['$scope', 'OrderGenerator', '$stateParams', '$sce', '$compile' ,'$filter',
+    ['$scope', 'OrderGenerator', '$stateParams', '$sce', '$compile' , '$filter',
         function ($scope, OrderGenerator, $stateParams, $sce, $compile, $filter)
         {
             $scope.initialData = {pilots: {}};
@@ -324,7 +431,7 @@ lwsControllers.controller('OrderCreatorCtrl',
                 var time = new Date();
                 time = $filter('date')(time, "yyyy-MM-dd");
 
-                $scope.updatedData = {pilots: {}, time:time, customText:''};
+                $scope.updatedData = {pilots: {}, time: time, customText: ''};
 
                 OrderGenerator.get({}, function (resource)
                 {
@@ -446,8 +553,10 @@ lwsControllers.controller('OrderCreatorCtrl',
                         var awards = [];
                         angular.forEach(pilot.awards, function (awardId, key)
                         {
-                            awards.push('<a award="' + awardId + '">' + $scope.initialData.awards[awardId].name)
-                            + '</a>';
+                            var name = $scope.initialData.awards[awardId].sub_name;
+                            //name = name.replace('Медаль','медалью').replace('Крест','крестом').replace('Знак','знаком').replace('Шпанга','шпангой').replace('Лента','лентой');
+                            awards.push('<a award="' + awardId + '">' + name);
+                            +'</a>';
                         });
                         awardtext = 'награждается ' + awards.join(', ');
                     }
@@ -467,7 +576,7 @@ lwsControllers.controller('OrderCreatorCtrl',
                     }
                 });
                 var text = ($scope.updatedData.event ? $scope.updatedData.event + '\n' : '') + pilotTexts.join('');
-                text += $scope.updatedData.customText ? ' '+$scope.updatedData.customText : '';
+                text += $scope.updatedData.customText ? ' ' + $scope.updatedData.customText : '';
                 $scope.orderData.complete = text;
                 var linkingFunction = $compile('<div>' + text + '</div>');
                 var elem = linkingFunction($scope);
@@ -498,9 +607,9 @@ lwsControllers.controller("AfterRosterCtrl", ['$scope', function ($scope)
 
 }]);
 
-lwsControllers.controller("NewsCreatorCtrl", ['$scope','News', function ($scope, News)
+lwsControllers.controller("NewsCreatorCtrl", ['$scope', 'News', function ($scope, News)
 {
-    $scope.save = function()
+    $scope.save = function ()
     {
         $scope.newsRecord.newsAdded = false;
         $scope.newsRecord.isSubmitting = true;
@@ -594,16 +703,33 @@ lwsControllers.controller("UserMarksCtrl",
 
             $scope.promote = function (courseId)
             {
-                $dialogs.confirm('Подтвердите', 'Продвинуть курсанта на следующий курс?')
-                    .result.then(function (btn)
-                    {
-                        User.promote({userId: $scope.user.id, courseId: courseId}, function (resource)
+                if (courseId == 3)
+                {
+                    $dialogs.create('promoteDialogTmpl', 'PromoteDialogCtrl', {is_clanner: $scope.user.is_clanner}, {key: false, back: 'static'})
+                        .result.then(function (toOfficer)
                         {
-                            angular.extend($scope.user, resource.data);
+                            User.promote({userId: $scope.user.id, courseId: courseId, promoteToOfficer: toOfficer}, function (resource)
+                            {
+                                angular.extend($scope.user, resource.data);
+                            });
+                        }, function ()
+                        {
+
                         });
-                    }, function (btn)
-                    {
-                    });
+                }
+                else
+                {
+                    $dialogs.confirm('Подтвердите', 'Продвинуть курсанта на следующий курс?')
+                        .result.then(function (btn)
+                        {
+                            User.promote({userId: $scope.user.id, courseId: courseId, promoteToOfficer: false}, function (resource)
+                            {
+                                angular.extend($scope.user, resource.data);
+                            });
+                        }, function (btn)
+                        {
+                        });
+                }
             };
 
             $scope.$watch('user.marks', function ()
@@ -650,3 +776,230 @@ lwsControllers.controller('MarkDialogCtrl',
                     });
             }; // end save
         }]);
+
+
+lwsControllers.controller('EventDialogCtrl',
+    ['$scope', '$modalInstance', 'data', 'User',
+        function ($scope, $modalInstance, data, User)
+        {
+            $scope.event = {};
+            angular.extend($scope.event, data);
+
+            $scope.cancel = function ()
+            {
+                $modalInstance.dismiss('canceled');
+            }; // end cancel
+
+            $scope.saveEvent = function ()
+            {
+                $scope.event.isSubmitting = true;
+                User.saveEvent($scope.event, function (resource)
+                    {
+                        $scope.event.isSubmitting = false;
+                        $modalInstance.close(resource.data);
+                    },
+                    function (resource)
+                    {
+                        $scope.event.isSubmitting = false;
+                        $modalInstance.close(resource.data);
+                    });
+            }; // end save
+        }]);
+
+
+lwsControllers.controller('PromoteDialogCtrl',
+    ['$scope', '$modalInstance', 'data',
+        function ($scope, $modalInstance, data)
+        {
+            $scope.is_clanner = data.is_clanner;
+            $scope.cancel = function ()
+            {
+                $modalInstance.dismiss('canceled');
+            }; // end cancel
+
+            $scope.promote = function (promoteToOfficer)
+            {
+                $modalInstance.close(promoteToOfficer);
+            }; // end save
+        }]);
+
+lwsControllers.controller('SchoolCtrl',
+    ['$scope', 'School', '$location', '$anchorScroll',
+        function ($scope, School, $location, $anchorScroll)
+        {
+            $scope.scrollTo = function (id)
+            {
+                $location.hash(id);
+                $anchorScroll();
+            };
+
+
+            $scope.sceditor = {text: ''};
+            School.materials({}, function (res)
+            {
+                $scope.materials = res.data;
+                setTimeout($anchorScroll, 500);
+            });
+        }]);
+
+
+lwsControllers.controller('EditMaterialCtrl',
+    ['$scope', 'Material', '$stateParams',
+        function ($scope, Material, $stateParams)
+        {
+            $scope.sceditor = {text: ''};
+            $scope.material = {};
+            if ($stateParams.materialId)
+            {
+                Material.get({id: $stateParams.materialId}, function (res)
+                {
+                    angular.extend($scope.material, res.data);
+                    $scope.sceditor.text = $scope.material.text;
+                    $scope.material.isLoaded = true;
+                });
+            }
+            else
+            {
+                $scope.material.id = -1;
+                $scope.material.isLoaded = true;
+            }
+            $scope.save = function ()
+            {
+                $scope.material.text = $scope.sceditor.text;
+                $scope.material.isLoaded = false;
+                Material.save($scope.material, function (res)
+                {
+                    angular.extend($scope.material, res.data);
+                    $scope.sceditor.text = $scope.material.text;
+                    $scope.material.isLoaded = true;
+                });
+            }
+        }]);
+
+
+lwsControllers.controller('TextCtrl',
+    ['$scope', 'Text', '$location', '$stateParams',
+        function ($scope, Text, $location, $stateParams)
+        {
+            Text.get({id: $stateParams.id}, function (res)
+            {
+                $scope.text = res.data;
+            });
+        }]);
+
+
+lwsControllers.controller('EditTextCtrl',
+    ['$scope', 'Text', '$stateParams',
+        function ($scope, Text, $stateParams)
+        {
+            $scope.sceditor = {text: ''};
+            $scope.material = {};
+            if ($stateParams.id)
+            {
+                Text.edit({id: $stateParams.id}, function (res)
+                {
+                    angular.extend($scope.material, res.data);
+                    $scope.sceditor.text = $scope.material.text;
+                    $scope.material.isLoaded = true;
+                });
+            }
+            else
+            {
+                $scope.material.id = -1;
+                $scope.material.isLoaded = true;
+            }
+            $scope.save = function ()
+            {
+                $scope.material.text = $scope.sceditor.text;
+                $scope.material.isLoaded = false;
+                Text.save($scope.material, function (res)
+                {
+                    angular.extend($scope.material, res.data);
+                    $scope.sceditor.text = $scope.material.text;
+                    $scope.material.isLoaded = true;
+                });
+            }
+        }]);
+
+lwsControllers.controller('FloodCtrl',
+    ['$scope', 'Flood',
+        function ($scope, Flood)
+        {
+            Flood.query({}, function (res)
+            {
+                $scope.topics = res.data;
+            });
+        }]);
+
+lwsControllers.controller('TopicCtrl',
+    ['$scope', 'Topic', '$location', '$stateParams', '$state',
+        function ($scope, Topic, $location, $stateParams, $state)
+        {
+            $scope.topic = {currentPage: 1};
+            var lastNewId = 1;
+            $scope.sceditor = {text: ''};
+            Topic.get({topicId: $stateParams.topicId}, function (res)
+            {
+                angular.extend($scope.topic, res.data);
+            });
+            $scope.$watch('topic.currentPage', function (newValue, oldValue)
+            {
+                if (oldValue != newValue)
+                    $state.go('topic.page', {topicId: $stateParams.topicId, page: newValue});
+            });
+            $scope.post = function ()
+            {
+                var message = {
+                    id: 'new_' + lastNewId,
+                    isNew: true,
+                    author: $scope.UserIdentity
+                };
+                lastNewId++;
+
+                $scope.topic.messages.push(message);
+                Topic.post({topicId: $scope.topic.id, text: $scope.sceditor.text}, function (res)
+                {
+                    message.isNew = false;
+                    angular.extend(message, res.data);
+                    $scope.topic.itemCount++;
+                }, function (res)
+                {
+                    $scope.topic.messages.splice($scope.topic.messages.indexOf(message), 1);
+                });
+
+
+                $scope.sceditor.text = '';
+            }
+
+        }]);
+
+lwsControllers.controller('TopicPageCtrl',
+    ['$scope', 'Topic', '$location', '$stateParams',
+        function ($scope, Topic, $location, $stateParams)
+        {
+            $scope.isLoading = true;
+            $scope.topic.currentPage = parseInt($stateParams.page);
+            Topic.page({topicId: $stateParams.topicId, page: $stateParams.page}, function (res)
+            {
+                $scope.isLoading = false;
+                $scope.topic.messages = res.data;
+            });
+        }]);
+
+lwsControllers.controller("NewTopicCtrl", ['$scope', 'Topic', '$state', function ($scope, Topic, $state)
+{
+    $scope.sceditor = {text: ''};
+
+    $scope.save = function ()
+    {
+
+        $scope.topicRecord.isSubmitting = true;
+        Topic.save({title: $scope.topicRecord.title, text: $scope.sceditor.text}, function (resource)
+        {
+            $state.go('topic.page', {topicId: resource.data.id, page: 1});
+        }, function (res)
+        {
+            $scope.topicRecord.isSubmitting = false;
+        });
+    }
+}]);

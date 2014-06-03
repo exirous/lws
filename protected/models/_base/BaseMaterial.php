@@ -12,6 +12,7 @@
  * @property string $id
  * @property string $subject_id
  * @property string $text
+ * @property string $title
  *
  * @property Subject $subject
  */
@@ -42,9 +43,10 @@ abstract class BaseMaterial extends AActiveRecord
     {
         return array(
             array('subject_id', 'length', 'max'=>10),
+            array('title', 'length', 'max'=>256),
             array('text', 'safe'),
-            array('subject_id, text', 'default', 'setOnEmpty' => true, 'value' => null),
-            array('id, subject_id, text', 'safe', 'on' => 'search'),
+            array('subject_id, text, title', 'default', 'setOnEmpty' => true, 'value' => null),
+            array('id, subject_id, text, title', 'safe', 'on' => 'search'),
         );
     }
 
@@ -67,6 +69,7 @@ abstract class BaseMaterial extends AActiveRecord
             'id' => Yii::t('app', 'ID'),
             'subject_id' => null,
             'text' => Yii::t('app', 'Text'),
+            'title' => Yii::t('app', 'Title'),
             'subject' => null,
         );
     }
@@ -78,6 +81,7 @@ abstract class BaseMaterial extends AActiveRecord
         $criteria->compare('id', $this->id, true);
         $criteria->compare('subject_id', $this->subject_id);
         $criteria->compare('text', $this->text, true);
+        $criteria->compare('title', $this->title, true);
 
         return new CActiveDataProvider($this, array(
             'criteria' => $criteria,

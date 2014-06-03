@@ -39,6 +39,7 @@ class Award extends BaseAward
     {
         return [
             'name' => $this->name,
+            'sub_name' => $this->sub_name,
             'id' => $this->id,
             'only_one_allowed' => $this->only_one_allowed,
             'top' => $this->top,
