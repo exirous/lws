@@ -98,6 +98,18 @@ lwsServices.factory('User', ['$resource', function ($resource)
         deleteEvent:{
             url: '/user/deleteEvent',
             method: 'post'
+        },
+        sync:{
+            url: '/user/sync',
+            method: 'post'
+        },
+        update:{
+            url: '/user/update',
+            method: 'post'
+        },
+        saveMedalPosition:{
+            url: '/user/saveMedalPosition',
+            method: 'post'
         }
     });
 }]);
@@ -153,6 +165,11 @@ lwsServices.factory('Topic', ['$resource', function ($resource)
             url:'/flood/postMessage'
         }
     });
+}]);
+
+lwsServices.factory('Vacation', ['$resource', function ($resource)
+{
+    return $resource('/user/vacation', {}, {});
 }]);
 
 lwsServices.factory('socket', function ($rootScope) {

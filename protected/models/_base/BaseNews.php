@@ -14,6 +14,7 @@
  * @property string $issuer_id
  * @property string $time
  * @property string $title
+ * @property integer $only_for_registered
  *
  * @property User $issuer
  */
@@ -44,11 +45,12 @@ abstract class BaseNews extends AActiveRecord
     {
         return array(
             array('time', 'required'),
+            array('only_for_registered', 'numerical', 'integerOnly'=>true),
             array('issuer_id', 'length', 'max'=>10),
             array('title', 'length', 'max'=>256),
             array('text', 'safe'),
-            array('text, issuer_id, title', 'default', 'setOnEmpty' => true, 'value' => null),
-            array('id, text, issuer_id, time, title', 'safe', 'on' => 'search'),
+            array('text, issuer_id, title, only_for_registered', 'default', 'setOnEmpty' => true, 'value' => null),
+            array('id, text, issuer_id, time, title, only_for_registered', 'safe', 'on' => 'search'),
         );
     }
 
@@ -73,6 +75,7 @@ abstract class BaseNews extends AActiveRecord
             'issuer_id' => null,
             'time' => Yii::t('app', 'Time'),
             'title' => Yii::t('app', 'Title'),
+            'only_for_registered' => Yii::t('app', 'Only For Registered'),
             'issuer' => null,
         );
     }
@@ -86,6 +89,7 @@ abstract class BaseNews extends AActiveRecord
         $criteria->compare('issuer_id', $this->issuer_id);
         $criteria->compare('time', $this->time, true);
         $criteria->compare('title', $this->title, true);
+        $criteria->compare('only_for_registered', $this->only_for_registered);
 
         return new CActiveDataProvider($this, array(
             'criteria' => $criteria,

@@ -306,10 +306,10 @@ img
     top:0;
     left:0;
     margin-top: 0px;
-    -webkit-transition:all linear 0.1s;
-    -moz-transition:all linear 0.1s;
-    -o-transition:all linear 0.1s;
-    transition:all linear 0.1s;
+    -webkit-transition:-webkit-transform linear 0.1s,margin linear 0.1s;
+    -moz-transition:transform linear 0.1s,margin linear 0.1s;
+    -o-transition:transform linear 0.1s,margin linear 0.1s;
+    transition:transform linear 0.1s,margin linear 0.1s;
 }
 
 .uniform img:hover
@@ -610,4 +610,80 @@ ol li
 .with-underline
 {
     border-bottom: 1px solid #bbb;
+}
+
+div.vacation
+{
+    position: relative;
+    text-align: center;
+    text-transform: uppercase;
+    color: #fff;
+    font-weight: bold;
+    margin-top: -20px;
+    text-decoration: none;
+    background: #ff0000;
+    -webkit-animation: red_blink 2000ms linear infinite;
+    -moz-animation:    red_blink 2000ms linear infinite;
+    -ms-animation:     red_blink 2000ms linear infinite;
+    -o-animation:      red_blink 2000ms linear infinite;
+    animation:         red_blink 2000ms linear infinite;
+}
+
+
+@-webkit-keyframes red_blink {
+    0%
+    { opacity: 0.0 }
+    40%
+    { opacity: 1.0 }
+    60%
+    { opacity: 1.0 }
+    100%
+    { opacity: 0.0 }
+}
+@-moz-keyframes red_blink {
+    0%
+    { opacity: 0.0 }
+    40%
+    { opacity: 1.0 }
+    60%
+    { opacity: 1.0 }
+    100%
+    { opacity: 0.0 }
+}
+@-o-keyframes red_blink {
+    0%
+    { opacity: 0.0 }
+    40%
+    { opacity: 1.0 }
+    60%
+    { opacity: 1.0 }
+    100%
+    { opacity: 0.0 }
+}
+@-ms-keyframes red_blink {
+    0%
+    { opacity: 0.0 }
+    40%
+    { opacity: 1.0 }
+    60%
+    { opacity: 1.0 }
+    100%
+    { opacity: 0.0 }
+}
+@keyframes red_blink {
+    0%
+    { opacity: 0.0 }
+    40%
+    { opacity: 1.0 }
+    60%
+    { opacity: 1.0 }
+    100%
+    { opacity: 0.0 }
+}
+
+
+.caption span
+{
+    overflow: hidden;
+    white-space: nowrap;
 }

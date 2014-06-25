@@ -10,10 +10,10 @@ angular.module('app.controllers',
 var lwsControllers = angular.module('app.controllers');
 
 lwsControllers.controller('AppCtrl',
-    ['$scope', '$dialogs', '$stateParams', 'User',
+    ['$scope', '$dialogs', '$stateParams', 'User','$rootScope',
 
 
-        function ($scope, $dialogs, $stateParams, User)
+        function ($scope, $dialogs, $stateParams, User, $rootScope)
         {
             $scope.UserIdentity = UserLoginData;
             $scope.headerImages = ['/img/header/news.png'];
@@ -30,7 +30,10 @@ lwsControllers.controller('AppCtrl',
                 'flood': 'news',
                 'topic': 'news',
                 'newtopic': 'news',
-                'topic.page': 'news'
+                'topic.page': 'news',
+                'reportvacation': 'news',
+                'vacation': 'news',
+                'editUser': 'user'
             };
             $scope.$on('$stateChangeStart',
                 function (event, toState, toParams, fromState, fromParams)
@@ -58,6 +61,7 @@ lwsControllers.controller('AppCtrl',
                 var dlg = $dialogs.create('loginDialogTmpl', 'UserLoginCtrl', {}, {key: false, back: 'static'});
                 dlg.result.then(function (user)
                 {
+                    $rootScope.$broadcast('refreshUserLogin');
                     $scope.UserIdentity = user;
                 }, function ()
                 {
@@ -71,6 +75,7 @@ lwsControllers.controller('AppCtrl',
                 {
                     User.logout({}, function (resource)
                     {
+                        $rootScope.$broadcast('refreshUserLogin');
                         $scope.UserIdentity = {isGuest: true, fullname: 'Неизвестный Гость'};
                     });
                 }, function (btn)
@@ -147,12 +152,19 @@ lwsControllers.controller('UserLoginCtrl',
         }]);
 
 lwsControllers.controller('NewsCtrl',
-    ['$scope', 'News',
-        function ($scope, News)
+    ['$scope', 'News', '$rootScope',
+        function ($scope, News, $rootScope)
         {
-            News.last({}, function (res)
+            function reloadNews()
             {
-                $scope.news = res.data;
+                News.last({}, function (res)
+                {
+                    $scope.news = res.data;
+                });
+            }
+            reloadNews();
+            $rootScope.$on('refreshUserLogin', function(){
+                reloadNews();
             });
         }]);
 
@@ -176,6 +188,16 @@ lwsControllers.controller('UserCtrl',
                     $scope.user = resource.data;
                 });
 
+            $scope.medalDrop = function (element, medal)
+            {
+                medal.top = element[0].offsetTop +3;
+                medal.left = element[0].offsetLeft;
+                medal.userId = $scope.user.id;
+                User.saveMedalPosition(medal, function(res){
+
+                });
+            };
+
             $scope.addEvent = function (userId)
             {
                 var event = {date: '', text: '', id: -1, userId: userId, isNew: true}
@@ -197,7 +219,8 @@ lwsControllers.controller('UserCtrl',
                     {
 
                     });
-            }
+            };
+
 
             $scope.deleteEvent = function (event)
             {
@@ -211,6 +234,43 @@ lwsControllers.controller('UserCtrl',
                         });
                     });
             }
+
+            $scope.sync = function()
+            {
+                User.sync({id:$scope.user.id},function(){
+
+                });
+            }
+        }]);
+
+
+lwsControllers.controller('EditUserCtrl',
+    ['$scope', 'User', '$stateParams', '$dialogs','dateFilter',
+        function ($scope, User, $stateParams, $dialogs, dateFilter)
+        {
+            User.get({id: $stateParams.userId, noMedals:true},
+                function (resource)
+                {
+                    $scope.user = resource.data;
+                    var date = new Date();
+                    date.setTime($scope.user.birthDate);
+                    $scope.user.birthDate = dateFilter($scope.user.birthDate, 'yyyy-MM-dd')
+                });
+
+            $scope.sync = function()
+            {
+                User.sync({id:$scope.user.id},function(){
+
+                });
+            };
+
+            $scope.save = function()
+            {
+                User.update({user:$scope.user}, function(res){
+
+                })
+            }
+
         }]);
 
 
@@ -598,7 +658,7 @@ lwsControllers.controller("TSViewCtrl", ['$scope', 'TeamSpeak', '$timeout', func
             $timeout(refreshTsView, 60 * 1000);
         });
     };
-    refreshTsView();
+    $timeout(refreshTsView, 20);
     $scope.tree = [];
 }]);
 
@@ -616,6 +676,8 @@ lwsControllers.controller("NewsCreatorCtrl", ['$scope', 'News', function ($scope
         News.save($scope.newsRecord, function (resource)
         {
             $scope.newsRecord.text = '';
+            $scope.newsRecord.title = '';
+            $scope.newsRecord.onlyRegistered = false;
             $scope.newsRecord.newsAdded = true;
             $scope.newsRecord.isSubmitting = false;
         });
@@ -634,7 +696,9 @@ lwsControllers.controller("RosterViewCtrl", ['$scope', '$timeout', 'Roster', fun
             rosterTimeout = $timeout(refreshRosterView, 60 * 1000);
         });
     };
-    refreshRosterView();
+
+    $timeout(refreshRosterView, 20);
+
     $scope.$on('refreshRosterList', function (event, args)
     {
         refreshRosterView();
@@ -655,7 +719,7 @@ lwsControllers.controller("BirthdayViewCtrl", ['$scope', '$timeout', 'User', fun
             rosterTimeout = $timeout(refreshBirthdayView, 720 * 1000);
         });
     };
-    refreshBirthdayView();
+    $timeout(refreshBirthdayView, 20);
     $scope.$on('refreshRosterList', function (event, args)
     {
         refreshBirthdayView();
@@ -1000,6 +1064,23 @@ lwsControllers.controller("NewTopicCtrl", ['$scope', 'Topic', '$state', function
         }, function (res)
         {
             $scope.topicRecord.isSubmitting = false;
+        });
+    }
+}]);
+
+lwsControllers.controller("ReportVacationCtrl", ['$scope', 'Vacation', '$state', function ($scope, Vacation, $state)
+{
+    $scope.vacation = {};
+    $scope.save = function ()
+    {
+        Vacation.save($scope.vacation, function (resource)
+        {
+            $scope.vacationForm.isSubmitting = true;
+            $scope.vacation = {isSaved:true};
+
+        }, function (res)
+        {
+            $scope.vacationForm.isSubmitting = false;
         });
     }
 }]);

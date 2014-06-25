@@ -1,11 +1,28 @@
 var lwsDirectives = angular.module('app.directives', []);
 lwsDirectives.directive("rank", function ()
 {
-    return function (scope, element, iAttrs)
+    return function (scope, element, attrs)
     {
-        //console.log('!!');
+        console.log("rank!");
     }
 });
+lwsDirectives.directive("pilot", function ()
+{
+    return function (scope, element, attrs)
+    {
+        element.attr('href','/#/user/view/'+attrs.pilot);
+    }
+});
+
+lwsDirectives.directive("award", function ()
+{
+    return function (scope, element, attrs)
+    {
+        console.log("award!");
+    }
+});
+
+
 lwsDirectives.directive('fileUploadBox', ['$fileUploader', function ($fileUploader)
 {
     return {
@@ -78,4 +95,23 @@ lwsDirectives.directive('sceditor', [function ()
             editor.bind('nodechanged blur', refreshScope);
         }
     }
+}]);
+
+lwsDirectives.directive("bindCompiledHtml", ['$compile',function($compile) {
+    return {
+        template: '<div></div>',
+        scope: {
+            rawHtml: '=bindCompiledHtml'
+        },
+        link: function(scope, elem, attrs) {
+            scope.$watch('rawHtml', function(value) {
+                if (!value) return;
+                // we want to use the scope OUTSIDE of this directive
+                // (which itself is an isolate scope).
+                var newElem = $compile('<span>'+value+'</span>')(scope.$parent);
+                elem.contents().remove();
+                elem.append(newElem);
+            });
+        }
+    };
 }]);

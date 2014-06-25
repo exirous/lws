@@ -91,7 +91,7 @@ return array(
 
         'log'          => array(
             'class'  => 'CLogRouter',
-            'routes' => array(/*array(
+            'routes' => array(array(
                     'class' => 'CWebLogRoute',
                     'levels' => 'error, warning, notice',
                 ),
@@ -99,7 +99,7 @@ return array(
                     'class' => 'CProfileLogRoute',
                     'enabled' => false,
                     'report' => 'summary',
-                )*/
+                )
                 // uncomment the following to show log messages on web pages
 
 /*                    array(

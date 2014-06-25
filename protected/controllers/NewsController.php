@@ -29,7 +29,8 @@ class NewsController extends Controller
             case AHttpRequest::METHOD_POST:
                 $text = $request->getRequiredRawBodyParam('text','',AHttpRequest::PARAM_TYPE_STRING);
                 $title = $request->getRequiredRawBodyParam('title','',AHttpRequest::PARAM_TYPE_STRING);
-                $this->returnSuccess($this->_addNews($title, $text));
+                $onlyForRegistered = $request->getRawBodyParam('onlyRegistered', false);
+                $this->returnSuccess($this->_addNews($title, $text, $onlyForRegistered));
                 break;
             default:
                 $this->returnError();
@@ -65,12 +66,12 @@ class NewsController extends Controller
         }
     }
 
-    private function _addNews($title,$text)
+    private function _addNews($title,$text, $onlyForRegistered)
     {
         $transaction = Yii::app()->db->beginTransaction();
         try
         {
-            News::add($title,$text);
+            News::add($title,$text,$onlyForRegistered);
             $transaction->commit();
         } catch (Exception $e)
         {

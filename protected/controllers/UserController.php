@@ -51,9 +51,31 @@ class UserController extends Controller
     {
         $request = Yii::app()->request;
         $id = $request->getParam('id', 0, AHttpRequest::PARAM_TYPE_NUMERIC);
+        $noMedals = $request->getParam('noMedals', false);
         switch ($request->method)
         {
             case AHttpRequest::METHOD_GET:
+                if ($id)
+                    $this->returnSuccess($this->_renderUser($id, $noMedals));
+                else
+                {
+                    $filters = $request->getParam('filters', '', AHttpRequest::PARAM_TYPE_STRING);
+                    $filters = @json_decode($filters, true);
+                    $this->returnSuccess($this->_renderUserList($filters));
+                }
+                break;
+            default:
+                $this->returnError();
+        }
+    }
+
+    public function actionVacation()
+    {
+        $request = Yii::app()->request;
+        switch ($request->method)
+        {
+            case AHttpRequest::METHOD_GET:
+                $id = $request->getParam('id', 0, AHttpRequest::PARAM_TYPE_NUMERIC);
                 if ($id)
                     $this->returnSuccess($this->_renderUser($id));
                 else
@@ -62,6 +84,13 @@ class UserController extends Controller
                     $filters = @json_decode($filters, true);
                     $this->returnSuccess($this->_renderUserList($filters));
                 }
+                break;
+
+            case AHttpRequest::METHOD_POST:
+                $dateFrom = $request->getRequiredRawBodyParam('dateFrom', '');
+                $dateTo = $request->getRequiredRawBodyParam('dateTo', '');
+                $reason = $request->getRequiredRawBodyParam('reason', '');
+                $this->returnSuccess($this->_saveVacation($dateFrom, $dateTo, $reason));
                 break;
             default:
                 $this->returnError();
@@ -105,6 +134,21 @@ class UserController extends Controller
         {
             case AHttpRequest::METHOD_POST:
                 $this->returnSuccess($this->_recoverUser($email));
+                break;
+            default:
+                $this->returnError();
+        }
+    }
+
+
+    public function actionUpdate()
+    {
+        $request = Yii::app()->request;
+        $user = $request->getRequiredRawBodyParam('user', [], AHttpRequest::PARAM_TYPE_ARRAY);
+        switch ($request->method)
+        {
+            case AHttpRequest::METHOD_POST:
+                $this->returnSuccess($this->_updateUser($user));
                 break;
             default:
                 $this->returnError();
@@ -158,7 +202,7 @@ class UserController extends Controller
         $request = Yii::app()->request;
         $userId = $request->getRequiredRawBodyParam('userId', 0);
         $courseId = $request->getRequiredRawBodyParam('courseId', 0);
-        $promoteToOfficer = $request->getRequiredRawBodyParam('promoteToOfficer', false);
+        $promoteToOfficer = $request->getRawBodyParam('promoteToOfficer', false);
         $this->returnSuccess($this->_promote($userId, $courseId, $promoteToOfficer));
     }
 
@@ -177,6 +221,22 @@ class UserController extends Controller
         }
     }
 
+    public function actionSaveMedalPosition()
+    {
+        $request = Yii::app()->request;
+        if ($request->method != AHttpRequest::METHOD_POST)
+            $this->returnError();
+        else
+        {
+            $awardId = $request->getRequiredRawBodyParam('id', 0);
+            $userId = $request->getRequiredRawBodyParam('userId', 0);
+
+            $top = $request->getRequiredRawBodyParam('top', '');
+            $left = $request->getRequiredRawBodyParam('left', '');
+            $this->returnSuccess($this->_updateMedalPosition($awardId, $userId, $top, $left));
+        }
+    }
+
     public function actionDeleteEvent()
     {
         $request = Yii::app()->request;
@@ -186,6 +246,20 @@ class UserController extends Controller
         {
             $eventId = $request->getRequiredRawBodyParam('eventId', 0);
             $this->returnSuccess($this->_deleteEvent($eventId));
+        }
+    }
+
+    public function actionSync()
+    {
+        $request = Yii::app()->request;
+        if ($request->method != AHttpRequest::METHOD_POST)
+            $this->returnError();
+        else
+        {
+            $id = $request->getRequiredRawBodyParam('id', 0);
+            $User = User::model()->findByPk($id);
+            $User->syncWithTeamSpeak();
+            $this->returnSuccess(['result' => 'OK']);
         }
     }
 
@@ -214,6 +288,47 @@ class UserController extends Controller
                 throw new Exception($event->getErrorsString());
             $transaction->commit();
             return $event->getPublicAttributes();
+        } catch (Exception $e)
+        {
+            $transaction->rollback();
+            $this->returnError($e->getMessage());
+        }
+        return null;
+    }
+
+    private function _updateUser($userData)
+    {
+        $transaction = Yii::app()->db->beginTransaction();
+        try
+        {
+            if (Yii::app()->user->isGuest || !Yii::app()->user->model->instructor_id)
+                return null;
+
+            if (!$userData['id'] ||
+                !$userData['nickname'] ||
+                !$userData['firstname'] ||
+                !$userData['ts_id'] ||
+                !$userData['birthDate']
+            )
+                throw new Exception('Чего-то не хватает!');
+            $user = User::model()->findByPk($userData['id']);
+            if (!$user)
+                throw new Exception('Не найден!!');
+
+            $user->firstname = $userData['firstname'];
+            $user->nickname = $userData['nickname'];
+            $user->ts_id = $userData['ts_id'];
+            $user->is_clanner = $userData['is_clanner'];
+
+            if (!$user->validate())
+                throw new Exception($user->getErrorsString());
+            if (!$user->save())
+                throw new Exception('Ошибка!');
+
+            $user->syncWithTeamSpeak();
+
+            $transaction->commit();
+            return $user->getEditAttributes();
         } catch (Exception $e)
         {
             $transaction->rollback();
@@ -317,14 +432,17 @@ class UserController extends Controller
         return [];
     }
 
-    private function _renderUser($id)
+    private function _renderUser($id, $noMedals = false)
     {
         try
         {
             $user = User::model()->findByPk($id);
             if (!$user)
                 throw new Exception("User not found!");
-            return $user->publicAttributes;
+            if ($noMedals)
+                return $user->getEditAttributes();
+            else
+                return $user->getPublicAttributes();
         } catch (Exception $e)
         {
             $this->returnError($e->getMessage());
@@ -341,7 +459,7 @@ class UserController extends Controller
                 $users = $users->scopeName($filters['name']);
 
             $usersOut = [];
-            $users = $users->scopeWithRank()->findAll(['condition' => 'rank_id>0', 'order' => 'rank.order desc, nickname']);
+            $users = $users->scopeWithRank()->with('activeVacation')->findAll(['condition' => 'rank_id>0', 'order' => 'rank.order desc, nickname']);
 
             foreach ($users as $user)
                 $usersOut[] = $user->listAttributes;
@@ -466,6 +584,14 @@ class UserController extends Controller
         return $user;
     }
 
+    private function _getUserVacations($id)
+    {
+        if (Yii::app()->user->isGuest || (!Yii::app()->user->model->instructor_id && ($id != Yii::app()->user->model->id)))
+            return null;
+        $user = User::model()->findByPk($id)->getVacationAttributes();
+        return $user;
+    }
+
     private function _saveUserMark($userId, $subjectId, $mark)
     {
         if (Yii::app()->user->isGuest || !Yii::app()->user->model->instructor_id)
@@ -476,6 +602,31 @@ class UserController extends Controller
         {
             UserMark::saveMark($userId, $subjectId, $mark);
             $transaction->commit();
+        } catch (Exception $e)
+        {
+            $transaction->rollback();
+            $this->returnError($e->getMessage());
+        }
+        return [];
+    }
+
+    private function _saveVacation($dateFrom, $dateTo, $reason)
+    {
+        if (Yii::app()->user->isGuest)
+            return null;
+
+        $transaction = Yii::app()->db->beginTransaction();
+        try
+        {
+            $vacation = new Vacation();
+            $vacation->reason = $reason;
+            $vacation->date_from = $dateFrom;
+            $vacation->date_to = $dateTo;
+            $vacation->user_id = Yii::app()->user->model->id;
+            if (!$vacation->save())
+                throw new Exception("Ошибка сохранения");
+            $transaction->commit();
+            return $vacation->getPublicAttributes();
         } catch (Exception $e)
         {
             $transaction->rollback();
@@ -506,6 +657,31 @@ class UserController extends Controller
             $this->returnError($e->getMessage());
         }
         return $user->getShortMarkAttributes();
+    }
+
+
+    private function _updateMedalPosition($awardId, $userId, $top, $left)
+    {
+        if (Yii::app()->user->isGuest || (Yii::app()->user->id != '1' && Yii::app()->user->id != '14'))
+            return null;
+        $transaction = Yii::app()->db->beginTransaction();
+        try
+        {
+            $userAward = UserAward::model()->find(['condition' => 'user_id=:userId AND award_id=:awardId', 'params' => ['userId' => $userId, 'awardId' => $awardId]]);
+            if (!$userAward)
+                throw new Exception('Cannot find Award');
+
+            $userAward->top = $top;
+            $userAward->left = $left;
+            $userAward->save();
+            $transaction->commit();
+
+        } catch (Exception $e)
+        {
+            $transaction->rollback();
+            $this->returnError($e->getMessage());
+        }
+        return 'OK';
     }
 
 

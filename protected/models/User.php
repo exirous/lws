@@ -25,6 +25,7 @@ Yii::import('application.models._base.BaseUser');
  * @property Array publicAttributes
  * @property Array privateAttributes
  * @property Array shortAttributes
+ * @property Vacation activeVacation
  */
 class User extends BaseUser
 {
@@ -46,7 +47,17 @@ class User extends BaseUser
                 'value' => gmdate("Y-m-d H:i:s")
             ]
         ];
+
         return CMap::mergeArray($defaults, parent::rules());
+    }
+
+
+    public function relations()
+    {
+        $relations = [
+            'activeVacation' => array(self::HAS_ONE, 'Vacation', 'user_id', 'on' => 'NOW() BETWEEN activeVacation.date_from And activeVacation.date_to')
+        ];
+        return CMap::mergeArray($relations, parent::relations());
     }
 
     public function scopeJustRostered()
@@ -85,30 +96,29 @@ class User extends BaseUser
 
     public function getPublicAttributes()
     {
-        $medals = [];
-        if ($this->id == '0')
-            foreach (Award::model()->findAll(['condition' => 'type="medal"', 'order' => '`order`']) as $award)
-                $medals[$award->award_replace_id ? $award->award_replace_id : $award->id] = $award->shortAttributes;
-        else
-            foreach ($this->awards(['condition' => 'type="medal"', 'order' => '`order`']) as $award)
-                $medals[$award->award_replace_id ? $award->award_replace_id : $award->id] = $award->shortAttributes;
-
-        $medals = array_values($medals);
-
-        $crosses = [];
-
-        if ($this->id == '0')
-            foreach (Award::model()->findAll(['condition' => 'type="cross"', 'order' => '`order`']) as $award)
-                $crosses[$award->award_replace_id ? $award->award_replace_id : $award->id] = $award->shortAttributes;
-        else
-            foreach ($this->awards(['condition' => 'type="cross"', 'order' => '`order`']) as $award)
-                $crosses[$award->award_replace_id ? $award->award_replace_id : $award->id] = $award->shortAttributes;
-
-        $crosses = array_values($crosses);
-
+        $awards = [];
         $events = [];
-        foreach ($this->userEvents as $event)
-            $events[] = $event->publicAttributes;
+        /*if ($this->id == '1')
+            foreach (Award::model()->findAll(['order' => '`order`']) as $award)
+                $awards[$award->award_replace_id ? $award->award_replace_id : $award->id] = $award->shortAttributes;
+        */
+            foreach (UserAward::model()->with('award')->findAll(['condition' => 'user_id=:userId', 'params' => ['userId' => $this->id]]) as $userAward)
+            {
+                $award = $userAward->award;
+                $attributes = $award->shortAttributes;
+                if ($userAward->top)
+                {
+                    $attributes['top'] = $userAward->top;
+                    $attributes['left'] = $userAward->left;
+                }
+                $awards[$award->award_replace_id ? $award->award_replace_id : $award->id] = $attributes;
+            }
+            $awards = array_values($awards);
+
+            foreach ($this->userEvents as $event)
+                $events[] = $event->publicAttributes;
+
+        $qualifications = str_replace(['fighter','bomber',','],['Истребитель','Бомбардировщик',', '], $this->qualifications);
 
         return [
             'nickname' => $this->nickname,
@@ -120,9 +130,25 @@ class User extends BaseUser
             'rank' => $this->rank_id ? $this->rank->getShortAttributes() : null,
             'instructor' => $this->instructor_id ? $this->instructor->getShortAttributes() : null,
             'is_clanner' => intval($this->is_clanner),
-            'medals' => $medals,
-            'crosses' => $crosses,
+            'activeVacation' => $this->activeVacation,
+            'qualifications' => $qualifications,
+            'medals' => $awards,
             'events' => $events
+
+        ];
+    }
+
+
+    public function getEditAttributes()
+    {
+        return [
+            'nickname' => $this->nickname,
+            'firstname' => $this->firstname,
+            'birthDate' => strtotime($this->birth_date) . '000',
+            'id' => $this->id,
+            'is_clanner' => intval($this->is_clanner),
+            'ts_id' => $this->ts_id,
+            'possibleUsers'=>Yii::app()->ts->findUsersLike($this->nickname, $this->ip)
         ];
     }
 
@@ -159,6 +185,18 @@ class User extends BaseUser
             'rank_order' => $this->rank->order,
             'marks' => $marks,
             'courses' => $courses
+        ];
+    }
+
+    public function  getVacationAttributes()
+    {
+        $vacations = [];
+        foreach ($this->vacations as $vacation)
+            $vacations[] = $vacation->getPublicAttributes();
+        return [
+            'id' => $this->id,
+            'nickname' => $this->nickname,
+            'vacations' => $vacations,
         ];
     }
 
@@ -203,6 +241,7 @@ class User extends BaseUser
             'rank' => $this->rank_id,
             'rank_name' => $this->rank->name,
             'instructor' => $this->instructor_id,
+            'activeVacation' => $this->activeVacation,
             'is_clanner' => intval($this->is_clanner),
         ];
     }
@@ -225,10 +264,12 @@ class User extends BaseUser
     {
         return ($this->rank_id && $this->rank->order > 6);
     }
+
     public function canMakeNews()
     {
         return ($this->rank_id && $this->rank->order > 6);
     }
+
     public function isInstructor()
     {
         return $this->instructor_id ? true : false;
@@ -365,7 +406,7 @@ class User extends BaseUser
         }
 
         $data = [
-            'event'=> $eventText,
+            'event' => $eventText,
             'complete' => '<p><a pilot="' . $this->id . '">Курсант ' . $this->nickname
                 . '</a>' . $text . $afterText . '</p>',
             'pilots' =>

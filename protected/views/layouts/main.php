@@ -29,6 +29,7 @@
     <script src="/scripts/lib/socket.io.js"></script>
     <script src="/scripts/loading-bar.js"></script>
     <script src="/scripts/lib/angular-file-upload.js"></script>
+    <script src="/scripts/lib/angular-dnd.js"></script>
     <link rel="stylesheet" href="/css/bootstrap/bootstrap.css" type="text/css">
     <!--<link rel="stylesheet" href="/css/bootstrap.css" type="text/css">-->
     <link rel="stylesheet" href="/css/style.css" type="text/css">
@@ -91,13 +92,18 @@
                             </li>
                         </ul>
                     </div>
+                    <div class="main_menu"><a href="">Социалки</a>
+                    </div>
+                    <div class="left_content">
+                        <div class="g-page" data-width="215" data-href="//plus.google.com/u/0/108457946413274910426" data-showtagline="false" data-showcoverphoto="false" data-rel="publisher"></div>
+                    </div>
                 </td>
                 <td class="mr"></td>
                 <td class="ml"></td>
                 <td class="mm">
                     <div class="main_menu">
                         <a ui-sref="news">Новости</a>
-                        <a ui-sref="orders" ng-if="!UserIdentity.canMakeOrders">Приказы</a>
+                        <a ui-sref="orders" ng-if="!UserIdentity.canMakeOrders && !UserIdentity.isGuest" >Приказы</a>
                         <span class="dropdown dropdown-hover" ng-if="UserIdentity.canMakeOrders">
                         <a href="">Приказы</a>
                         <ul class="dropdown-menu" style="top: 20px;left: -7px;">
@@ -112,8 +118,7 @@
                         <ul class="dropdown-menu" style="top: 20px;left: -7px;">
                             <li><a ui-sref="texts({id:1})">Устав</a></li>
                             <li><a ui-sref="texts({id:2})">Приложения к уставу</a></li>
-                            <li><a ui-sref="texts({id:3})" ng-if="UserIdentity.canMakeOrders">Настваление
-                                    инструктору</a></li>
+                            <li><a ui-sref="texts({id:3})" ng-if="UserIdentity.isInstructor">Настваление инструктору</a></li>
                         </ul>
                         </span>
                         <a ui-sref="roster" ng-if="UserIdentity.isGuest">Вступить в школу</a>
@@ -123,19 +128,16 @@
                             <li><a ui-sref="school">Наставление по лётной подготовке</a></li>
                             <li><a>Расписание занятий</a></li>
                             <li><a>Программа курсового обучения</a></li>
+                            <li><a ui-sref="texts({id:4})">Наставление по мировой войне</a></li>
                         </ul>
                         </span>
-
-
                         <a ui-sref="pilots">Казарма</a>
-                        <a ui-sref="flood">Курилка</a>
-
+                        <a ui-sref="flood" ng-if="!UserIdentity.isGuest">Курилка</a>
                         <a href="" style="float:right" ng-click="login()" ng-if="UserIdentity.isGuest">Вход</a>
-
                         <span ng-if="!UserIdentity.isGuest" class="dropdown dropdown-hover" style="float:right">
                         <a href="">{{UserIdentity.nickname}} <span class="glyphicon glyphicon-user"></span></a>
                         <ul class="dropdown-menu" style="top: 20px;left: -7px;">
-                            <li><a ng-click="vacation()" href="">Рапорт на отпуск</a></li>
+                            <li><a ui-sref="reportvacation">Рапорт на отпуск</a></li>
                             <li><a ng-click="logout()" href="">Выход</a></li>
                         </ul>
                         </span>
@@ -158,6 +160,7 @@
             </tbody>
         </table>
     </div>
+    <a href="https://plus.google.com/108457946413274910426" rel="publisher"></a>
 </div>
 
 <script type="text/ng-template" id="NewsTmpl">
@@ -167,7 +170,7 @@
     </div>
     <div ng-repeat="newsRec in news" class="news-row panel panel-default">
         <div class="panel-heading">{{newsRec.title}}</div>
-        <div class="panel-body" ng-bind-html="newsRec.text"></div>
+        <div class="panel-body" ng-bind-html="newsRec.text | to_trusted"></div>
         <div class="panel-footer">
             <span>{{newsRec.time}}</span> <img
                 ng-src="/img/users/{{newsRec.issuer.img_src ? newsRec.issuer.id+'_'+newsRec.issuer.img_src+'.jpg' : 'no_image.png'}}"
@@ -202,9 +205,9 @@
             <span ng-if="topic.lastMessage" class="pull-right">
              Последнее сообщение:
              <img
-                 ng-src="/img/users/{{topic.lastMessage.author.img_src ? topic.author.id+'_'+topic.lastMessage.author.img_src+'.jpg' : 'no_image.png'}}"
+                 ng-src="/img/users/{{topic.lastMessage.author.img_src ? topic.lastMessage.author.id+'_'+topic.lastMessage.author.img_src+'.jpg' : 'no_image.png'}}"
                  style="width:16px;height:16px;border-radius: 50%">
-            <a href="#/user/view/{{topic.lastMessage.author.id}}">{{topic.author.nickname}}</a> <span>{{topic.lastMessage.time | date:'dd.MM.yyyy, hh:mm'}}</span>
+            <a href="#/user/view/{{topic.lastMessage.author.id}}">{{topic.lastMessage.author.nickname}}</a> <span>{{topic.lastMessage.time | date:'dd.MM.yyyy, hh:mm'}}</span>
             </span>
             </div>
         </div>
@@ -224,7 +227,7 @@
                     class="pagination-sm" boundary-links="true" rotate="false"></pagination>
 
     <ng-form name="messageForm" role="form">
-    <textarea sceditor="1" style="width: 100%;resize: none" rows="10" required></textarea>
+    <textarea sceditor="1" style="width: 100%;resize: none" rows="20" required></textarea>
     <div class="well">
         <a href="" class="btn btn-primary" ng-disabled="sceditor.text.length == 0" ng-click="post()">Отправить</a>
     </div>
@@ -244,7 +247,7 @@
         <div class="media-body">
             <span class="pull-right">{{message.time | date:'dd.MM.yyyy, hh:mm'}}</span>
             <h4 class="media-heading with-underline">{{message.author.nickname}}</h4>
-            <div ng-bind-html="message.text"></div>
+            <div bind-compiled-html="message.text"></div>
         </div>
         <div ng-if="message.isNew" class="small-spinner">
             <div class="spinner-icon"></div>
@@ -349,7 +352,7 @@
     </div>
     <div ng-repeat="newsRec in news" class="news-row panel panel-default">
         <div class="panel-heading">{{newsRec.title}}</div>
-        <div class="panel-body" ng-bind-html="newsRec.text"></div>
+        <div class="panel-body" bind-compiled-html="newsRec.text"></div>
         <div class="panel-footer">
             <span>{{newsRec.time}}</span> <img
                 ng-src="/img/users/{{newsRec.issuer.img_src ? newsRec.issuer.id+'_'+newsRec.issuer.img_src+'.jpg' : 'no_image.png'}}"
@@ -357,6 +360,40 @@
             <a href="#/user/view/{{newsRec.issuer.id}}">{{newsRec.issuer.nickname}}</a>
         </div>
     </div>
+</script>
+
+<script type="text/ng-template" id="ReportVacationTmpl">
+    <h2>Рапорт на отпуск</h2>
+    <div ng-if="vacation.isSaved" class="alert alert-success">Рапорт успешно отправлен</div>
+    <ng-form name="vacationForm" role="form">
+    <div>
+        <label>Даты отпуска</label>
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="input-group">
+                    <span class="input-group-addon">Начало</span>
+                    <input type="date" class="form-control" required ng-model="vacation.dateFrom">
+                </div><!-- /input-group -->
+            </div><!-- /.col-lg-6 -->
+            <div class="col-lg-6">
+                <div class="input-group">
+                    <span class="input-group-addon">Конец</span>
+                    <input type="date" class="form-control" required ng-model="vacation.dateTo">
+                </div><!-- /input-group -->
+            </div><!-- /.col-lg-6 -->
+        </div><!-- /.row -->
+    </div>
+        <br>
+    <label>Причина</label>
+    <textarea style="width: 100%;resize: none;" ng-model="vacation.reason" rows="5" class="form-control" required></textarea>
+    <div style="margin-top:5px;">
+        <p class="well">
+            <button type="button" ng-click="save()"
+                    ng-disabled="(vacationForm.$dirty && vacationForm.$invalid) || vacationForm.$pristine || vacationForm.isSubmitting"
+                    class="btn btn-primary">Отправить</button>
+        </p>
+    </div>
+    </ng-form>
 </script>
 
 <script type="text/ng-template" id="fileUploadBoxTemplate">
@@ -379,6 +416,8 @@
         <div class="spinner-icon"></div>
     </div>
     <div ng-show="user">
+        <button type="button" ui-sref="editUser({userId:user.id})" class="btn btn-sm btn-default pull-right" ng-if="(UserIdentity.id == 14) || (UserIdentity.id == 1)"><span class="glyphicon glyphicon-pencil"></span></button>
+        <!--<button type="button" ng-click="sync()" class="btn btn-sm btn-default pull-right" ng-if="(UserIdentity.id == 14) || (UserIdentity.id == 1)"><span class="glyphicon glyphicon-refresh"></span></button>-->
         <h2>{{user.rank.name}} "{{user.nickname}}" {{user.firstname}}</h2>
         <br>
         <table style="width: 100%">
@@ -387,6 +426,7 @@
                     <div style="margin-right:10px;position: relative">
                         <img ng-src="/img/users/{{user.img_src ? user.id+'_'+user.img_src+'.jpg' : 'no_image.png'}}"
                              style="width: 200px;display:block">
+                        <div ng-if="user.activeVacation" class="vacation" title="{{user.activeVacation.reason}}, с {{user.activeVacation.date_from | date : 'dd.MM.yyyy'}} по {{user.activeVacation.date_to | date : 'dd.MM.yyyy'}}">В Отпуске!</div>
                         <div ng-if="(UserIdentity.id == 14) || (UserIdentity.id == 1)" file-upload-box></div>
                     </div>
                 </td>
@@ -410,6 +450,10 @@
                             <th>Степень</th>
                             <td>{{user.instructor.name}}</td>
                         </tr>
+                        <tr ng-if="user.qualifications">
+                            <th>Специальность</th>
+                            <td>{{user.qualifications}}</td>
+                        </tr>
                         <tr ng-if="UserIdentity.isInstructor">
                             <th>Заявка</th>
                             <td><a ui-sref="rosterUser({userId:user.id})">Посмотреть</a></td>
@@ -428,9 +472,9 @@
                              title="{{user.rank.name}}">
                         </div>
                         <img title="{{medal.name}}" ng-repeat="medal in user.medals"
-                             style="top:{{medal.top}}px;left:{{medal.left}}px;" ng-src="/img/awards/{{medal.id}}.png">
-                        <img title="{{cross.name}}" ng-repeat="cross in user.crosses"
-                             style="top: {{cross.top}}px;left:{{cross.left}}px;" ng-src="/img/awards/{{cross.id}}.png">
+                             style="top:{{medal.top}}px;left:{{medal.left}}px;" ng-src="/img/awards/{{medal.id}}.png"
+                             dnd-draggable="UserIdentity.id == 1 || UserIdentity.id == 14"
+                             dnd-on-dragend="medalDrop($element, medal)">
                         <img ng-if="user.instructor" title="{{user.instructor.name}}"
                              class="identifier_{{user.instructor.id}}"
                              ng-src="/img/identifiers/ident_{{user.instructor.id}}.png">
@@ -449,7 +493,7 @@
                         <table class="table">
                             <tbody>
                             <tr ng-repeat="event in user.events">
-                                <td ng-bind-html="event.text"></td>
+                                <td bind-compiled-html="event.text"></td>
                                 <td style="width: 5%">{{event.date | date : "dd.MM.yyyy"}}</td>
                                 <td ng-if="UserIdentity.canMakeOrders" style="min-width: 68px;">
                                     <button type="button" ng-click="editEvent(event)" class="btn btn-xs btn-default">
@@ -468,6 +512,7 @@
         </table>
     </div>
 </script>
+
 <script type="text/ng-template" id="TreeItemTmpl">
     <img src="/img/design/bullets/channel_icon.png"><span> {{channel.name}}</span>
     <ul>
@@ -645,12 +690,81 @@
     </div>
 </script>
 
+<script type="text/ng-template" id="EditUserTmpl">
+    <div class="big-spinner" ng-if="!user.id">
+        <div class="spinner-icon"></div>
+    </div>
+    <div ng-show="user.id">
+        <h2>Редактировать профиль</h2>
+        <br>
+
+        <div class="alert alert-danger" ng-show="userForm.error">{{userForm.error}}</div>
+        <ng-form name="rosterForm" role="form">
+            <div>
+                <div class="form-group input-group">
+                    <label for="user_birthdate">Дата рождения</label>
+
+                    <p class="input-group"
+                       ng-class="{true: 'has-error'}[(rosterForm.birthdate.$dirty && rosterForm.birthdate.$invalid)]">
+                        <input type="date" placeholder="Например: 09.05.1945" name="birthDate" class="form-control"
+                               ng-model="user.birthDate" ng-required="true"/>
+                    </p>
+                </div>
+                <label>Состоит в другом Полку</label>
+                <div class="form-group input-group">
+                    <p class="btn-group">
+                        <button type="button" class="btn btn-default" ng-model="user.is_clanner" btn-radio="1" required>
+                            Да
+                        </button>
+                        <button type="button" class="btn btn-default" ng-model="user.is_clanner" btn-radio="0">
+                            Нет
+                        </button>
+                    </p>
+                </div>
+                <div class="form-group input-group"
+                     ng-class="{true: 'has-error'}[(rosterForm.nickname.$dirty && rosterForm.nickname.$invalid)]">
+                    <label>Никнейм</label>
+                    <input type="text"
+                           style="margin-bottom: 10px" name="nickname" class="form-control" ng-model="user.nickname"
+                           required/>
+                </div>
+                <div class="form-group input-group"
+                     ng-class="{true: 'has-error'}[(rosterForm.firstname.$dirty && rosterForm.firstname.$invalid)]">
+                    <label>Имя</label>
+                    <input type="text"
+                           name="firstname"
+                           style="margin-bottom: 10px"
+                           placeholder="Например: Женя, Паша, Виталий, и.т.д" class="form-control"
+                           ng-model="user.firstname"
+                           required/>
+                </div>
+                <div class="form-group input-group">
+                    <label>Тимспик</label><br>
+                    <select ng-model="user.ts_id" style="width:350px"
+                            required
+                            data-placeholder="Привязка к TeamSpeak"
+                            ui-select2>
+                        <option></option>
+                        <option ng-repeat="option in user.possibleUsers" value="{{option.uid}}">[{{$index+1}}] {{option.name}}</option>
+                    </select>
+                </div>
+        </ng-form>
+        <div class="alert alert-danger" ng-show="userForm.error">{{userForm.error}}</div>
+        <div>
+            <p class="well">
+                <button type="button" ng-click="save()"
+                        ng-disabled="userForm.isSubmitting" class="btn btn-primary">Сохранить</button>
+            </p>
+        </div>
+    </div>
+</script>
+
 <script type="text/ng-template" id="AfterRosterTmpl">
-    <h2>Заявка принята</h2>
+    <h2>Заявка отправлена</h2>
     <br>
-    <div class="alert alert-success">
-        Пожалуйста зайдите на наш <a href="ts3server://lws.exirous.com/?nickname={{UserIdentity.fullname}}">сервер
-            TeamSpeak</a> и ожидайте в приёмной.
+    <div class="alert alert-warning" style="font-size:20px">
+        Что-бы вас приняли, пожалуйста зайдите на наш <a href="ts3server://lws.exirous.com/?nickname={{UserIdentity.fullname}}">сервер
+            TeamSpeak</a> для собеседования и ожидайте в приёмной. Кто-то из инструкторов к вам обязательно подойдёт.
         <br>
         TeamSpeak можно скачать пройдя по <a href="http://www.teamspeak.com/?page=downloads" target="_blank">этой</a>
         ссылке.
@@ -674,13 +788,13 @@
             <a class="thumbnail isRelative" ui-sref="user({userId:pilot.id})" title="{{pilot.rank_name}}">
                 <img ng-src="/img/users/{{pilot.img_src ? pilot.id+'_'+pilot.img_src+'.jpg' : 'no_image.png'}}" alt=""
                      style="width:182px; height:182px">
-
+                <div ng-if="pilot.activeVacation" class="vacation" title="{{pilot.activeVacation.reason}}, c {{pilot.activeVacation.date_from | date : 'dd.MM.yyyy'}} по {{pilot.activeVacation.date_to | date : 'dd.MM.yyyy'}}">В Отпуске!</div>
                 <div class="floating_rank"><img
                         ng-src="/img/groups/{{pilot.rank}}{{pilot.is_clanner ? '_clanner' : ''}}.png"></div>
                 <div ng-if="pilot.instructor" class="floating_rank" style="left:40px"><img
                         ng-src="/img/groups/{{pilot.instructor}}.png"></div>
                 <div class="caption">
-                    <b>{{pilot.nickname}}</b><br>{{pilot.firstname}}
+                    <b>{{pilot.nickname}}</b><br><span>{{pilot.firstname}}</span>
                 </div>
             </a>
         </div>
@@ -694,6 +808,7 @@
     <div ng-show="pilot.id">
         <h2>Заявка на вступление от {{pilot.nickname}} ({{pilot.firstname}})</h2>
         <br>
+        <a href="http://warthunder.ru/ru/community/userinfo/?nick={{pilot.nickname}}"><img src="http://warthunder.ru/favicon.ico" height="40px">Профиль WT</a><br>
         <label>Дата рождения:</label><br>
         <span>{{pilot.roster.birthdate | date : "dd.MM.yyyy"}}</span>
         (<span>{{pilot.roster.birthdate | age}}</span> лет)<br>
@@ -888,7 +1003,6 @@
         <div class="form-group">
             <input type="text" placeholder="Впишите заголовок" class="form-control"
                    ng-model="newsRecord.title" ng-required="true"/>
-
             <div style="height: 5px"></div>
             <textarea style="resize: none;width: 100%;"
                       rows="6"
@@ -897,6 +1011,11 @@
                       ng-required="true"
                       ng-model="newsRecord.text">
             </textarea>
+            <div class="form-group input-group" style="margin-top:10px">
+                <p class="btn-group">
+                    <button type="button" class="btn btn-default" ng-model="newsRecord.onlyRegistered" btn-checkbox><input type="checkbox" ng-model="newsRecord.onlyRegistered" style="margin:0;vertical-align:middle;"><span style="vertical-align:middle;"> Только для зарегистрированных пилотов</span></button>
+                </p>
+            </div>
         </div>
         <div>
             <p class="well">
@@ -1011,7 +1130,6 @@
     </div>
 </script>
 
-
 <script type="text/ng-template" id="eventDialogTmpl">
     <div class="modal-content">
         <div class="modal-header">
@@ -1060,6 +1178,13 @@
         </div>
     </div>
 </script>
-
+<script type="text/javascript">
+    window.___gcfg = {lang: 'ru'};
+    (function() {
+        var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
+        po.src = 'https://apis.google.com/js/platform.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
+    })();
+</script>
 </body>
 </html>

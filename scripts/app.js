@@ -13,7 +13,8 @@ var lwsApp = angular.module('app', [
     'ui.router.stateHelper',
     'ngAnimate',
     'chieffancypants.loadingBar',
-    'angularFileUpload'
+    'angularFileUpload',
+    'dnd'
 ]);
 
 function mainRouteConfig($stateProvider, $urlRouterProvider)
@@ -38,6 +39,11 @@ function mainRouteConfig($stateProvider, $urlRouterProvider)
             url: "/user/view/:userId",
             templateUrl: 'UserTmpl',
             controller: "UserCtrl"
+        })
+        .state('editUser', {
+            url: "/user/edit/:userId",
+            templateUrl: 'EditUserTmpl',
+            controller: "EditUserCtrl"
         })
         .state('texts', {
             url: "/text/:id",
@@ -113,6 +119,11 @@ function mainRouteConfig($stateProvider, $urlRouterProvider)
             url: "/page-:page",
             templateUrl: 'TopicMessagesTmpl',
             controller: "TopicPageCtrl"
+        })
+        .state('reportvacation', {
+            url: "/vacation/report",
+            templateUrl: 'ReportVacationTmpl',
+            controller: "ReportVacationCtrl"
         })
 }
 lwsApp.config(mainRouteConfig);

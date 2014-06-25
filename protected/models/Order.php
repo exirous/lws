@@ -126,6 +126,7 @@ class Order extends BaseOrder
                     $text = strtolower($text);
 
                 $eventRankText = $text . '<a rank="' . $rank->id . '">' . $rank->name . '</a>';
+
                 $pilot->rank_id = $rank->id;
                 if ($rank->order > 5)
                 {
@@ -164,7 +165,10 @@ class Order extends BaseOrder
                     if (!$userAward->save())
                         throw new Exception('5 ' . $userAward->getErrorsString());
                 }
-                $eventAwardText = (($eventText || $eventRankText || $eventInstructorText) ? 'награждён ' : 'Награждён ').implode(', ',$eventAwardText);
+                if (count($eventAwardText))
+                  $eventAwardText = (($eventText || $eventRankText || $eventInstructorText) ? 'награждён ' : 'Награждён ').implode(', ',$eventAwardText);
+                else
+                    $eventAwardText = false;
             }
 
             $event->text = $eventText.$eventRankText.

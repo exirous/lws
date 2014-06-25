@@ -45,6 +45,10 @@ class DefaultCodeDefinitionSet implements CodeDefinitionSet
         $builder = new CodeDefinitionBuilder('li', '<li>{param}</li>');
         array_push($this->definitions, $builder->build());
 
+        /* [sup] tag */
+        $builder = new CodeDefinitionBuilder('sup', '<sup>{param}</sup>');
+        array_push($this->definitions, $builder->build());
+
         /* [i] italics tag */
         $builder = new CodeDefinitionBuilder('i', '<em>{param}</em>');
         array_push($this->definitions, $builder->build());
@@ -64,6 +68,17 @@ class DefaultCodeDefinitionSet implements CodeDefinitionSet
         $builder = new CodeDefinitionBuilder('url', '<a href="{option}">{param}</a>');
         $builder->setUseOption(true)->setParseContent(true)->setOptionValidator($urlValidator);
         array_push($this->definitions, $builder->build());
+
+        /* [pilot=1][/pilot] pilot tag */
+        $builder = new CodeDefinitionBuilder('pilot', '<a pilot="{option}">{param}</a>');
+        $builder->setUseOption(true);
+        array_push($this->definitions, $builder->build());
+
+        /* [img] image tag */
+        $builder = new CodeDefinitionBuilder('youtube', '<iframe width="812" height="600" src="http://www.youtube.com/embed/{param}?wmode=opaque" data-youtube-id="{param}" frameborder="0" allowfullscreen=""></iframe>');
+        $builder->setUseOption(false)->setParseContent(false);
+        array_push($this->definitions, $builder->build());
+
 
         /* [img] image tag */
         $builder = new CodeDefinitionBuilder('img', '<img src="{param}" />');

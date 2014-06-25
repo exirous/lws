@@ -49,9 +49,18 @@ class News extends BaseNews
 
     public static function getLast()
     {
+        require_once Yii::app()->basePath . "/vendors/jbbcode/Parser.php";
+        $parser = new JBBCode\Parser();
+        $parser->addCodeDefinitionSet(new JBBCode\DefaultCodeDefinitionSet());
+
         $lastNews = [];
-        foreach (News::model()->findAll(['order' => 'time desc', 'limit' => 8]) as $news)
-            $lastNews[] = $news->renderAttributes();
+        foreach (News::model()->with('issuer')->findAll(['condition'=>(Yii::app()->user->isGuest ? 'only_for_registered=0' : '') ,'order' => 'time desc', 'limit' => 8]) as $news)
+        {
+            $newsAttributes = $news->renderAttributes();
+            $parser->parse($newsAttributes['text']);
+            $newsAttributes['text'] = nl2br($parser->getAsHTML());
+            $lastNews[] = $newsAttributes;
+        }
 
         /*usort($lastNews, function ($a, $b)
         {
@@ -61,13 +70,14 @@ class News extends BaseNews
         return $lastNews;
     }
 
-    public static function add($title, $text)
+    public static function add($title, $text, $onlyForRegistered)
     {
         if (Yii::app()->user->isGuest || Yii::app()->user->model->rank->order < 6)
             throw new Exception('Вы пока не можете создавать новости!');
         $news = new News();
         $news->text = $text;
         $news->title = $title;
+        $news->only_for_registered = $onlyForRegistered ? 1 : 0;
         $news->issuer_id = Yii::app()->user->model->id;
         if (!$news->save())
             throw new Exception($news->getErrorsString());

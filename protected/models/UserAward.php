@@ -21,6 +21,7 @@ Yii::import('application.models._base.BaseUserAward');
  * @method UserAward scopeAllColumns
  * @method UserAward scopeSelect
  * @method UserAward byName
+ * @property Award award
  */
 class UserAward extends BaseUserAward
 {
@@ -33,4 +34,12 @@ class UserAward extends BaseUserAward
     {
         return parent::model($className);
     }
+
+    public function relations()
+    {
+        return array(
+            'award'=>array(self::BELONGS_TO, 'Award', 'award_id'),
+        );
+    }
+
 }

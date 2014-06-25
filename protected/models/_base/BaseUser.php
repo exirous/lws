@@ -24,6 +24,7 @@
  * @property string $is_clanner
  * @property string $is_technician
  * @property string $img_src
+ * @property string $qualifications
  *
  * @property BattleEvent[] $battleEvents
  * @property ForumMessage[] $forumMessages
@@ -41,6 +42,23 @@
  */
 abstract class BaseUser extends AActiveRecord
 {
+    const QUALIFICATIONS_FIGHTER = 'fighter';
+    const QUALIFICATIONS_BOMBER = 'bomber';
+
+    public function getSetValueText($column, $value = null)
+    {
+        $texts = array(
+            'qualifications' => array(
+                'fighter' => Yii::t('app', 'Fighter'),
+                'bomber' => Yii::t('app', 'Bomber'),
+            ),
+        );
+
+        if ($value)
+            return $texts[$column][$value];
+
+        return $texts[$column];
+    }
 
     public function getTextColumns()
     {
@@ -70,9 +88,9 @@ abstract class BaseUser extends AActiveRecord
             array('email, ts_id', 'length', 'max'=>64),
             array('rank_id, instructor_id, img_src', 'length', 'max'=>10),
             array('is_clanner, is_technician', 'length', 'max'=>1),
-            array('join_date, birth_date, roster', 'safe'),
-            array('nickname, firstname, email, password, ts_id, join_date, birth_date, roster, rank_id, instructor_id, ip, is_clanner, is_technician, img_src', 'default', 'setOnEmpty' => true, 'value' => null),
-            array('id, nickname, firstname, email, password, ts_id, join_date, birth_date, roster, rank_id, instructor_id, ip, is_clanner, is_technician, img_src', 'safe', 'on' => 'search'),
+            array('join_date, birth_date, roster, qualifications', 'safe'),
+            array('nickname, firstname, email, password, ts_id, join_date, birth_date, roster, rank_id, instructor_id, ip, is_clanner, is_technician, img_src, qualifications', 'default', 'setOnEmpty' => true, 'value' => null),
+            array('id, nickname, firstname, email, password, ts_id, join_date, birth_date, roster, rank_id, instructor_id, ip, is_clanner, is_technician, img_src, qualifications', 'safe', 'on' => 'search'),
         );
     }
 
@@ -121,6 +139,7 @@ abstract class BaseUser extends AActiveRecord
             'is_clanner' => Yii::t('app', 'Is Clanner'),
             'is_technician' => Yii::t('app', 'Is Technician'),
             'img_src' => Yii::t('app', 'Img Src'),
+            'qualifications' => Yii::t('app', 'Qualifications'),
             'battleEvents' => null,
             'forumMessages' => null,
             'forumTopics' => null,
@@ -156,6 +175,7 @@ abstract class BaseUser extends AActiveRecord
         $criteria->compare('is_clanner', $this->is_clanner, true);
         $criteria->compare('is_technician', $this->is_technician, true);
         $criteria->compare('img_src', $this->img_src, true);
+        $criteria->compare('qualifications', $this->qualifications, true);
 
         return new CActiveDataProvider($this, array(
             'criteria' => $criteria,

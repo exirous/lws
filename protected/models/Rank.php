@@ -1,6 +1,7 @@
 <?php
 
 Yii::import('application.models._base.BaseRank');
+
 /**
  * @method Rank find
  * @method Rank[] findAll
@@ -40,15 +41,15 @@ class Rank extends BaseRank
         return [
             'name' => $this->name,
             'id' => $this->id,
-            'order'=>intval($this->order)
+            'order' => intval($this->order)
         ];
     }
 
     public function defaultScope()
     {
-        return array(
-            'order'=>'`order`',
-        );
+        //if ($this->getTableAlias())
+        //    return ['order' => $this->tableAlias . '.`order`',];
+        return [];
     }
 
     /**
@@ -57,8 +58,8 @@ class Rank extends BaseRank
     public function scopeRanks()
     {
         $this->dbCriteria->mergeWith([
-            'condition'=>'type=:type',
-            'params'=>['type'=>self::TYPE_RANK]
+            'condition' => 'type=:type',
+            'params' => ['type' => self::TYPE_RANK]
         ]);
         return $this;
     }
@@ -66,7 +67,7 @@ class Rank extends BaseRank
     public function scopeCorrectOrder()
     {
         $this->dbCriteria->mergeWith([
-            'order'=>'`order`'
+            'order' => '`order`'
         ]);
         return $this;
     }
@@ -75,8 +76,8 @@ class Rank extends BaseRank
     public function scopeInstructors()
     {
         $this->dbCriteria->mergeWith([
-            'condition'=>'type=:type',
-            'params'=>['type'=>self::TYPE_INSTRUCTOR]
+            'condition' => 'type=:type',
+            'params' => ['type' => self::TYPE_INSTRUCTOR]
         ]);
         return $this;
     }
