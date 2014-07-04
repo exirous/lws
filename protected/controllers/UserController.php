@@ -68,6 +68,16 @@ class UserController extends Controller
                 $this->returnError();
         }
     }
+    public function actionGetIdFromUid()
+    {
+        $request = Yii::app()->request;
+        $uid = $request->getParam('uid','NOUID');
+        $user = User::model()->findByAttributes(['ts_id'=>$uid]);
+        if (!$user)
+          $this->returnSuccess([]);
+        else
+            $this->returnSuccess(['id'=>$user->id]);
+    }
 
     public function actionVacation()
     {

@@ -74,21 +74,21 @@ class DefaultCodeDefinitionSet implements CodeDefinitionSet
         $builder->setUseOption(true);
         array_push($this->definitions, $builder->build());
 
-        /* [img] image tag */
+        /* [youtube] tag */
         $builder = new CodeDefinitionBuilder('youtube', '<iframe width="812" height="600" src="http://www.youtube.com/embed/{param}?wmode=opaque" data-youtube-id="{param}" frameborder="0" allowfullscreen=""></iframe>');
         $builder->setUseOption(false)->setParseContent(false);
         array_push($this->definitions, $builder->build());
 
 
         /* [img] image tag */
-        $builder = new CodeDefinitionBuilder('img', '<img src="{param}" />');
+        $builder = new CodeDefinitionBuilder('img', '<img style="max-width:812px" src="{param}"/>');
         $builder->setUseOption(false)->setParseContent(false)->setBodyValidator($urlValidator);
         array_push($this->definitions, $builder->build());
 
         /* [img=alt text] image tag */
-        $builder = new CodeDefinitionBuilder('img', '<img src="{param} alt="{option}" />');
+        /*$builder = new CodeDefinitionBuilder('img', '<img src="{param} alt="{option}" />');
         $builder->setUseOption(true);
-        array_push($this->definitions, $builder->build());
+        array_push($this->definitions, $builder->build());*/
 
         /* [color] color tag */
         $builder = new CodeDefinitionBuilder('color', '<font color="{option}">{param}</font>');

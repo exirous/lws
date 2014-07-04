@@ -25,7 +25,7 @@ class TeamSpeakController extends Controller
         switch ($request->method)
         {
             case AHttpRequest::METHOD_GET:
-                $this->returnSuccess(Yii::app()->ts->channelTree());
+                $this->returnSuccess([]);
                 break;
             default:
                 $this->returnError();

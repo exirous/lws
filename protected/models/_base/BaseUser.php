@@ -77,7 +77,7 @@ abstract class BaseUser extends AActiveRecord
 
     public static function representingColumn()
     {
-        return 'nickname';
+        return 'qualifications';
     }
 
     public function rules()

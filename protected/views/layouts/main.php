@@ -6,40 +6,11 @@
 <html>
 <head>
     <meta charset='utf-8'>
-    <title><?= $this->pageTitle ?></title>
-    <!--<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.12/angular.min.js"></script>-->
+    <title>Школа виртуального пилотирования LuftwaffeSchule</title>
     <script type="text/javascript">var UserLoginData = <?=json_encode(Yii::app()->user->privateAttributes)?>;</script>
-    <script src="/scripts/jquery.js"></script>
-    <!--<script src="/scripts/chosen.jquery.js"></script>-->
-    <script src="/scripts/lib/select2.min.js"></script>
-    <script src="/scripts/lib/angular.min.js"></script>
-    <script src="/scripts/lib/angular-ui-router.js"></script>
-    <script src="/scripts/lib/angular-resource.js"></script>
-    <script src="/scripts/lib/angular-sanitize.js"></script>
-    <script src="/scripts/lib/animate.js"></script>
-    <script src="/scripts/lib/select2.js"></script>
-    <script src="/scripts/lib/ui-bootstrap-tpls.js"></script>
-    <script src="/scripts/lib/statehelper.js"></script>
-    <script src="/scripts/lib/dialogs.js"></script>
-    <script src="/scripts/app.js"></script>
-    <script src="/scripts/services/services.js"></script>
-    <script src="/scripts/filters/filters.js"></script>
-    <script src="/scripts/directives/directives.js"></script>
-    <script src="/scripts/controllers/controllers.js"></script>
-    <script src="/scripts/lib/socket.io.js"></script>
-    <script src="/scripts/loading-bar.js"></script>
-    <script src="/scripts/lib/angular-file-upload.js"></script>
-    <script src="/scripts/lib/angular-dnd.js"></script>
-    <link rel="stylesheet" href="/css/bootstrap/bootstrap.css" type="text/css">
-    <!--<link rel="stylesheet" href="/css/bootstrap.css" type="text/css">-->
-    <link rel="stylesheet" href="/css/style.css" type="text/css">
-    <link rel="stylesheet" href="/css/select2.css" type="text/css">
-    <link rel="stylesheet" href="/css/select2-bootstrap.css" type="text/css">
-    <link rel="stylesheet" href="/css/loading-bar.css" type="text/css">
-
-    <link rel="stylesheet" href="/scripts/sceditor/minified/themes/default.min.css" type="text/css" media="all"/>
-    <script type="text/javascript" src="/scripts/sceditor/minified/jquery.sceditor.bbcode.min.js"></script>
-
+    <script src="/scripts.js"></script>
+    <script src="http://lws.exirous.com:3000/socket.io/socket.io.js"></script>
+    <link rel="stylesheet" href="/style.css" type="text/css">
     <!--[if lt IE 8]>
     <script type="text/javascript">
         alert('Ваш броузер не поддерживается, пожалуйста обновите! :)');
@@ -118,16 +89,18 @@
                         <ul class="dropdown-menu" style="top: 20px;left: -7px;">
                             <li><a ui-sref="texts({id:1})">Устав</a></li>
                             <li><a ui-sref="texts({id:2})">Приложения к уставу</a></li>
-                            <li><a ui-sref="texts({id:3})" ng-if="UserIdentity.isInstructor">Настваление инструктору</a></li>
+                            <li><a ui-sref="materials({slug:'instructor_training'})" ng-if="UserIdentity.isInstructor">Настваление инструктору</a></li>
                         </ul>
                         </span>
                         <a ui-sref="roster" ng-if="UserIdentity.isGuest">Вступить в школу</a>
                         <span class="dropdown dropdown-hover" ng-if="!UserIdentity.isGuest">
                         <a href="">Учебный класс</a>
                         <ul class="dropdown-menu" style="top: 20px;left: -7px;">
-                            <li><a ui-sref="school">Наставление по лётной подготовке</a></li>
                             <li><a>Расписание занятий</a></li>
-                            <li><a>Программа курсового обучения</a></li>
+                            <li><a ui-sref="materials({slug:'flight_basics'})">Наставление по лётной подготовке</a></li>
+                            <li><a ui-sref="materials({slug:'fighter_course'})">Программа обучения истребителей</a></li>
+                            <li><a ui-sref="materials({slug:'bomber_basics'})">Наставление по лётной подготовке бомбардировщиков</a></li>
+                            <li><a ui-sref="materials({slug:'bomber_course'})">Программа обучения бомбардировщиков</a></li>
                             <li><a ui-sref="texts({id:4})">Наставление по мировой войне</a></li>
                         </ul>
                         </span>
@@ -267,29 +240,29 @@
 
 
 <script type="text/ng-template" id="SchoolTmpl">
-    <h2>Наставление по лётной подготовке</h2>
+    <h2>{{subject.name}}</h2>
     <div class="well" ng-if="UserIdentity.canMakeOrders">
-        <a class="btn btn-success" ui-sref="editmaterial(0)">Добавить новый материал <span
+        <a class="btn btn-success" ui-sref="editmaterial({materialId:0, slug:subject.slug})">Добавить новый материал <span
                 class="glyphicon glyphicon-plus-sign"></span></a>
     </div>
-    <div class="big-spinner" ng-if="!materials.length">
+    <div class="big-spinner" ng-if="!subject.id">
         <div class="spinner-icon"></div>
     </div>
     <div class="news-row panel panel-danger">
         <div class="panel-heading">Содержание</div>
         <div class="panel-body">
             <ul>
-                <li ng-repeat="material in materials"><a ng-click="scrollTo('material_'+material.id)" href="">{{material.title}}</a>
+                <li ng-repeat="material in subject.materials"><a ng-click="scrollTo('material_'+material.id)" href="">{{material.title}}</a>
                 </li>
             </ul>
         </div>
     </div>
-    <div ng-repeat="material in materials" id="material_{{material.id}}" class="panel panel-primary">
+    <div ng-repeat="material in subject.materials" id="material_{{material.id}}" class="panel panel-primary">
         <div class="panel-heading">{{material.title}}<a ng-if="UserIdentity.canMakeOrders" title="Редактировать"
                                                         class="btn btn-xs btn-default pull-right"
-                                                        ui-sref="editmaterial({materialId:material.id})"><span
+                                                        ui-sref="editmaterial({materialId:material.id, slug:subject.slug})"><span
                     class="glyphicon glyphicon-pencil"></span></a></div>
-        <div class="panel-body" ng-bind-html="material.text"></div>
+        <div class="panel-body" bind-compiled-html="material.text"></div>
     </div>
 </script>
 
@@ -517,11 +490,9 @@
     <img src="/img/design/bullets/channel_icon.png"><span> {{channel.name}}</span>
     <ul>
         <li ng-repeat="channel in channel.channels" ng-include="'TreeItemTmpl'"></li>
-        <li ng-repeat="client in channel.clients"><img class="ts_group_icon" ng-repeat="group in client.groups"
-                                                       ng-src="/img/groups/{{group.id}}{{client.is_clanner ? '_clanner' : ''}}.png"
-                                                       title="{{group.name}}"/><a
-                ng-if="client.id" href="#/user/view/{{client.id}}"> {{client.name | clearNickname}}</a><span
-                ng-if="!client.id"> {{client.name | clearNickname}}</span>
+        <li ng-repeat="client in channel.clients"><img class="ts_group_icon" ng-repeat="group in client.groups" ng-if="group != 6"
+                                                       ng-src="/img/groups/{{group}}{{client.is_clanner ? '_clanner' : ''}}.png"/><a
+                href="" ng-if="client.uid" ng-click="getByUid(client.uid)"> {{client.name | clearNickname}}</a>
         </li>
     </ul>
 </script>
@@ -777,14 +748,36 @@
     <div class="well well-sm">
         <div class="input-group">
             <span class="input-group-addon glyphicon glyphicon glyphicon-search" style="top:0"></span>
-            <input type="text" class="form-control" placeholder="Найти по имени или никнейму" ng-model="filters.name">
+            <input type="text" class="form-control" placeholder="Найти по имени или никнейму" ng-model="filters.name" style="width:740px">
+                <p class="btn-group" style="float:right">
+                    <button type="button" class="btn btn-default" ng-model="dataSize" btn-radio="2">
+                        <span class="glyphicon glyphicon-list"></span>
+                    </button>
+                    <button type="button" class="btn btn-default" ng-model="dataSize" btn-radio="1">
+                        <span class="glyphicon glyphicon-th-large"></span>
+                    </button>
+                </p>
         </div>
     </div>
     <div style="min-height: 550px">
         <div class="big-spinner" ng-if="isLoading">
             <div class="spinner-icon"></div>
         </div>
-        <div class="col-sm-6 col-md-3 user-cell" ng-repeat="pilot in pilots">
+        <div ng-if="(dataSize == 2)" class="" ng-repeat="pilot in pilots">
+            <a style="height: 90px;margin-bottom: 10px" class="thumbnail isRelative" ui-sref="user({userId:pilot.id})" title="{{pilot.rank_name}}">
+                <img ng-src="/img/users/{{pilot.img_src ? pilot.id+'_'+pilot.img_src+'.jpg' : 'no_image.png'}}" alt=""
+                     style="width:80px; height:80px; float:left">
+                <!--<div ng-if="pilot.activeVacation" class="vacation" title="{{pilot.activeVacation.reason}}, c {{pilot.activeVacation.date_from | date : 'dd.MM.yyyy'}} по {{pilot.activeVacation.date_to | date : 'dd.MM.yyyy'}}">В Отпуске!</div>-->
+                <div class="floating_rank small"><img
+                        ng-src="/img/groups/{{pilot.rank}}{{pilot.is_clanner ? '_clanner' : ''}}.png"></div>
+                <div ng-if="pilot.instructor" class="floating_rank small" style="left:23px"><img
+                        ng-src="/img/groups/{{pilot.instructor}}.png"></div>
+                <div class="caption" style="padding-left: 90px;padding-top:18px">
+                    <b>{{pilot.nickname}}</b><br><span>{{pilot.firstname}}</span>
+                </div>
+            </a>
+        </div>
+        <div ng-if="(dataSize == 1)" class="col-sm-6 col-md-3 user-cell" ng-repeat="pilot in pilots">
             <a class="thumbnail isRelative" ui-sref="user({userId:pilot.id})" title="{{pilot.rank_name}}">
                 <img ng-src="/img/users/{{pilot.img_src ? pilot.id+'_'+pilot.img_src+'.jpg' : 'no_image.png'}}" alt=""
                      style="width:182px; height:182px">
@@ -870,7 +863,7 @@
                            ng-keyup="hitEnter($event)"
                            required>
                     <input type="password"
-                           style="margin-top: 10px"
+                           style="margin-top: 10px;ASD"
                            placeholder="Ваш пароль"
                            class="form-control"
                            name="password"
@@ -879,7 +872,7 @@
                            ng-keyup="hitEnter($event)"
                            required>
                     <span class="help-block" ng-show="user.error">{{user.error}}</span>
-                    <span class="help-block"> <b><a href="" ng-click="userForm.forgotPass=true">Упс, я Забыл пароль
+                    <span class="help-block" style="display: none;"> <b><a href="" ng-click="userForm.forgotPass=true">Упс, я Забыл пароль
                                 :(</a></b></span>
                 </div>
             </ng-form>

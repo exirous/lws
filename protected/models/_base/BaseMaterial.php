@@ -14,7 +14,7 @@
  * @property string $text
  * @property string $title
  *
- * @property Subject $subject
+ * @property MaterialSubject $subject
  */
 abstract class BaseMaterial extends AActiveRecord
 {
@@ -53,7 +53,7 @@ abstract class BaseMaterial extends AActiveRecord
     public function relations()
     {
         return array(
-            'subject' => array(self::BELONGS_TO, 'Subject', 'subject_id'),
+            'subject' => array(self::BELONGS_TO, 'MaterialSubject', 'subject_id'),
         );
     }
 

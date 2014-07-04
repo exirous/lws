@@ -88,6 +88,8 @@ class SiteController extends Controller
     {
         //Yii::beginProfile('blockID');
 
+        mailer::send('luftwaffeschule@gmail.com','Новый пользователь','<html>Зарегистрирован новый пользователь: <a href="http://lws.exirous.com/#/user/roster/1">ASD</a></html>');
+
         echo ini_get('memory_limit').'!!';
 
         //$value = Property::model()->findAll();
@@ -97,12 +99,12 @@ class SiteController extends Controller
          * @var Property[] $model
          * */
         //$model = $value;
-        $model = Yii::app()->cache->get('testCache');
+        //$model = Yii::app()->cache->get('testCache');
         //Yii::endProfile('blockID');
-        foreach ($model as $property)
+        /*foreach ($model as $property)
         {
             echo $property->view_id.'!<br>';
-        }
+        }*/
         //Yii::app()->cache->delete('testCache');
         //die(var_dump(Yii::app()->cache->get('testCache')));
     }

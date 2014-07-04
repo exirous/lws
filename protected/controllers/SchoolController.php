@@ -6,8 +6,7 @@ class SchoolController extends Controller
     public function actionItem()
     {
         $request = Yii::app()->request;
-        switch ($request->method)
-        {
+        switch ($request->method) {
             case AHttpRequest::METHOD_POST:
                 $text = $request->getRequiredRawBodyParam('text', '', AHttpRequest::PARAM_TYPE_STRING);
                 $title = $request->getRequiredRawBodyParam('title', '', AHttpRequest::PARAM_TYPE_STRING);
@@ -22,10 +21,10 @@ class SchoolController extends Controller
     public function actionMaterials()
     {
         $request = Yii::app()->request;
-        switch ($request->method)
-        {
+        switch ($request->method) {
             case AHttpRequest::METHOD_GET:
-                $this->returnSuccess($this->_getMaterials());
+                $subjectSlug = $request->getParam('slug', 'flight_basics');
+                $this->returnSuccess($this->_getMaterials($subjectSlug));
                 break;
             default:
                 $this->returnError();
@@ -35,8 +34,7 @@ class SchoolController extends Controller
     public function actionMaterial()
     {
         $request = Yii::app()->request;
-        switch ($request->method)
-        {
+        switch ($request->method) {
             case AHttpRequest::METHOD_GET:
                 $id = $request->getRequiredParam('id');
                 $this->returnSuccess($this->_getMaterial($id));
@@ -45,7 +43,8 @@ class SchoolController extends Controller
                 $id = $request->getRequiredRawBodyParam('id');
                 $text = $request->getRequiredRawBodyParam('text');
                 $title = $request->getRequiredRawBodyParam('title');
-                $this->returnSuccess($this->_saveMaterial($id, $title, $text));
+                $slug = $request->getRequiredRawBodyParam('slug');
+                $this->returnSuccess($this->_saveMaterial($id, $title, $text, $slug));
                 break;
 
             default:
@@ -69,18 +68,23 @@ class SchoolController extends Controller
         return $material->renderAttributes;
     }
 
-    public function _saveMaterial($id, $title, $text)
+    public function _saveMaterial($id, $title, $text, $slug)
     {
         if (Yii::app()->user->isGuest || !Yii::app()->user->model->canMakeOrders())
             return null;
 
         $transaction = Yii::app()->db->beginTransaction();
-        try
-        {
+        try {
+            $subject = MaterialSubject::model()->findByAttributes(['slug' => $slug]);
+            if (!$subject)
+                throw new Exception('Такого предмета нету');
+
             if ($id > 0)
                 $material = Material::model()->findByPk($id);
-            else
+            else {
                 $material = new Material();
+                $material->subject_id = $subject->id;
+            }
 
             $material->text = $text;
             $material->title = $title;
@@ -88,29 +92,22 @@ class SchoolController extends Controller
                 throw new Exception($material->getErrorsString());
             $transaction->commit();
             return $material->renderAttributes;
-        } catch (Exception $e)
-        {
+        } catch (Exception $e) {
             $transaction->rollback();
             $this->returnError($e->getMessage());
         }
         return null;
     }
 
-    public function _getMaterials()
+    public function _getMaterials($subjectSlug)
     {
-        require_once Yii::app()->basePath . "/vendors/jbbcode/Parser.php";
-        $parser = new JBBCode\Parser();
-        $parser->addCodeDefinitionSet(new JBBCode\DefaultCodeDefinitionSet());
-        $materials = [];
-        foreach (Material::model()->findAll() as $material)
-        {
-            $materialAttributes = $material->renderAttributes;
-            $parser->parse($materialAttributes['text']);
-            $materialAttributes['text'] = nl2br($parser->getAsHTML());
 
-            $materials[] = $materialAttributes;
-        }
-        return $materials;
+        $subject = MaterialSubject::model()->findByAttributes(['slug' => $subjectSlug]);
+        if (!$subject)
+            return [];
+
+
+        return $subject->getRenderAttributes();
     }
 
     /**
@@ -118,8 +115,7 @@ class SchoolController extends Controller
      */
     public function actionError()
     {
-        if ($error = Yii::app()->errorHandler->error)
-        {
+        if ($error = Yii::app()->errorHandler->error) {
             if (Yii::app()->request->isAjaxRequest)
                 echo $error['message'];
             else

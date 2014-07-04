@@ -18,6 +18,7 @@ return array(
         'application.components.*',
         'application.extensions.helpers.*',
         'ext.giix-components.*', // giix components
+        'ext.yii-mail.YiiMailMessage'
     ),
 
     'modules'    => array(

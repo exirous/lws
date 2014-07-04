@@ -110,6 +110,10 @@ lwsServices.factory('User', ['$resource', function ($resource)
         saveMedalPosition:{
             url: '/user/saveMedalPosition',
             method: 'post'
+        },
+        getIdFromUid:{
+            url: '/user/getIdFromUid',
+            method: 'get'
         }
     });
 }]);

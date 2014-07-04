@@ -352,6 +352,14 @@ img
     box-shadow:         0px 0px 3px 0px rgba(50, 50, 50, 0.75);
 }
 
+
+.floating_rank.small img
+{
+    width:15px;
+    height: 15px;
+    border:1px solid #eee;
+}
+
 .big-spinner {
     display: block;
     position: absolute;

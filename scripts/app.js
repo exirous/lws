@@ -85,8 +85,13 @@ function mainRouteConfig($stateProvider, $urlRouterProvider)
             templateUrl: 'SchoolTmpl',
             controller: "SchoolCtrl"
         })
+        .state('materials', {
+            url: "/school/:slug",
+            templateUrl: 'SchoolTmpl',
+            controller: "SchoolCtrl"
+        })
         .state('editmaterial', {
-            url: "/school/edit/:materialId",
+            url: "/school/:slug/edit/:materialId",
             templateUrl: 'EditMaterialTmpl',
             controller: "EditMaterialCtrl"
         })

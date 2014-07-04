@@ -13,7 +13,6 @@
  * @property string $name
  * @property string $course_id
  *
- * @property Material[] $materials
  * @property Course $course
  * @property UserMark[] $userMarks
  */
@@ -54,7 +53,6 @@ abstract class BaseSubject extends AActiveRecord
     public function relations()
     {
         return array(
-            'materials' => array(self::HAS_MANY, 'Material', 'subject_id'),
             'course' => array(self::BELONGS_TO, 'Course', 'course_id'),
             'userMarks' => array(self::HAS_MANY, 'UserMark', 'subject_id'),
         );
@@ -72,7 +70,6 @@ abstract class BaseSubject extends AActiveRecord
             'id' => Yii::t('app', 'ID'),
             'name' => Yii::t('app', 'Name'),
             'course_id' => null,
-            'materials' => null,
             'course' => null,
             'userMarks' => null,
         );

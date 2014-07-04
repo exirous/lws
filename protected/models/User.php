@@ -298,6 +298,8 @@ class User extends BaseUser
         if (!$newUser->save())
             throw new Exception('Возникла непредвиденная ошибка, мы над этим работаем...');
 
+        mailer::send('luftwaffeschule@gmail.com','Новый пользователь','<html>Зарегистрирован новый пользователь: <a href="http://lws.exirous.com/#/user/roster/'.$newUser->id.'">'.$newUser->nickname.'</a></html>');
+
         return $newUser;
     }
 

@@ -12,7 +12,6 @@ var lwsControllers = angular.module('app.controllers');
 lwsControllers.controller('AppCtrl',
     ['$scope', '$dialogs', '$stateParams', 'User','$rootScope',
 
-
         function ($scope, $dialogs, $stateParams, User, $rootScope)
         {
             $scope.UserIdentity = UserLoginData;
@@ -27,6 +26,7 @@ lwsControllers.controller('AppCtrl',
                 'afterroster': 'user',
                 'edittext': 'news',
                 'editmaterial': 'school',
+                'materials': 'school',
                 'flood': 'news',
                 'topic': 'news',
                 'newtopic': 'news',
@@ -61,8 +61,11 @@ lwsControllers.controller('AppCtrl',
                 var dlg = $dialogs.create('loginDialogTmpl', 'UserLoginCtrl', {}, {key: false, back: 'static'});
                 dlg.result.then(function (user)
                 {
-                    $rootScope.$broadcast('refreshUserLogin');
-                    $scope.UserIdentity = user;
+                    if (user && user.id)
+                    {
+                        $rootScope.$broadcast('refreshUserLogin');
+                        $scope.UserIdentity = user;
+                    }
                 }, function ()
                 {
 
@@ -278,12 +281,13 @@ lwsControllers.controller('BarracksCtrl',
     ['$scope', 'User', '$stateParams', '$timeout',
         function ($scope, User, $stateParams, $timeout)
         {
+            $scope.dataSize = 1;
             $scope.filters = {name: null};
             var firstLoad = true;
 
             $scope.loadData = function ()
             {
-                $scope.isLoading = true
+                $scope.isLoading = true;
                 User.query({filters: $scope.filters}, function (resource)
                 {
                     $scope.pilots = resource.data;
@@ -648,22 +652,31 @@ lwsControllers.controller('OrderCreatorCtrl',
 
         }]);
 
-lwsControllers.controller("TSViewCtrl", ['$scope', 'TeamSpeak', '$timeout', function ($scope, TeamSpeak, $timeout)
+lwsControllers.controller("TSViewCtrl", ['$scope','User','$state','$dialogs', function ($scope, User, $state, $dialogs)
 {
-    var refreshTsView = function ()
-    {
-        TeamSpeak.tree({}, function (res)
-        {
-            $scope.tree = res.data;
-            $timeout(refreshTsView, 60 * 1000);
-        });
-    };
-    $timeout(refreshTsView, 20);
     $scope.tree = [];
+
+    var socket = io.connect('http://lws.exirous.com:3000');
+    socket.on('ts_clients', function (data) {
+        $scope.tree = data;
+        $scope.$apply();
+    });
+
+    $scope.getByUid = function (uid) {
+        User.getIdFromUid({uid: uid}, function (res) {
+            if (res.data.id) {
+                $state.go('user', {userId: res.data.id});
+            }
+            else
+                $dialogs.notify('Этого пользователя нету в базе','Наверное его ТС ещё не подключен к сайту');
+        })
+    }
+
 }]);
 
 lwsControllers.controller("AfterRosterCtrl", ['$scope', function ($scope)
 {
+
 
 }]);
 
@@ -693,7 +706,7 @@ lwsControllers.controller("RosterViewCtrl", ['$scope', '$timeout', 'Roster', fun
         Roster.get({}, function (res)
         {
             $scope.roster = res.data;
-            rosterTimeout = $timeout(refreshRosterView, 60 * 1000);
+            rosterTimeout = $timeout(refreshRosterView, 60* 5 * 1000);
         });
     };
 
@@ -888,8 +901,8 @@ lwsControllers.controller('PromoteDialogCtrl',
         }]);
 
 lwsControllers.controller('SchoolCtrl',
-    ['$scope', 'School', '$location', '$anchorScroll',
-        function ($scope, School, $location, $anchorScroll)
+    ['$scope', 'School', '$location', '$anchorScroll','$stateParams',
+        function ($scope, School, $location, $anchorScroll, $stateParams)
         {
             $scope.scrollTo = function (id)
             {
@@ -897,11 +910,10 @@ lwsControllers.controller('SchoolCtrl',
                 $anchorScroll();
             };
 
-
             $scope.sceditor = {text: ''};
-            School.materials({}, function (res)
+            School.materials({slug:$stateParams.slug}, function (res)
             {
-                $scope.materials = res.data;
+                $scope.subject = res.data;
                 setTimeout($anchorScroll, 500);
             });
         }]);
@@ -913,7 +925,7 @@ lwsControllers.controller('EditMaterialCtrl',
         {
             $scope.sceditor = {text: ''};
             $scope.material = {};
-            if ($stateParams.materialId)
+            if ($stateParams.materialId > 0)
             {
                 Material.get({id: $stateParams.materialId}, function (res)
                 {
@@ -931,6 +943,7 @@ lwsControllers.controller('EditMaterialCtrl',
             {
                 $scope.material.text = $scope.sceditor.text;
                 $scope.material.isLoaded = false;
+                $scope.material.slug = $stateParams.slug;
                 Material.save($scope.material, function (res)
                 {
                     angular.extend($scope.material, res.data);
