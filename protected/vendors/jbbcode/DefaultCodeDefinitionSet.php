@@ -36,9 +36,17 @@ class DefaultCodeDefinitionSet implements CodeDefinitionSet
         $builder = new CodeDefinitionBuilder('left', '<left>{param}</left>');
         array_push($this->definitions, $builder->build());
 
+        /* [right] tag */
+        $builder = new CodeDefinitionBuilder('right', '<right>{param}</right>');
+        array_push($this->definitions, $builder->build());
+
 
         /* [ol] tag */
         $builder = new CodeDefinitionBuilder('ol', '<ol>{param}</ol>');
+        array_push($this->definitions, $builder->build());
+
+        /* [ol] tag */
+        $builder = new CodeDefinitionBuilder('ul', '<ul>{param}</ul>');
         array_push($this->definitions, $builder->build());
 
         /* [li] tag */

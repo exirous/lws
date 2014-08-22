@@ -74,7 +74,7 @@ abstract class BaseRank extends AActiveRecord
     {
         return array(
             array('order', 'numerical', 'integerOnly'=>true),
-            array('name', 'length', 'max'=>32),
+            array('name', 'length', 'max'=>64),
             array('parent_group_id, ts_group_id, type', 'length', 'max'=>10),
             array('permissions', 'safe'),
             array('name, permissions, parent_group_id, ts_group_id, type, order', 'default', 'setOnEmpty' => true, 'value' => null),

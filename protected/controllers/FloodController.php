@@ -2,7 +2,7 @@
 
 class FloodController extends Controller
 {
-    const MESSAGE_LIMIT = 5;
+    const MESSAGE_LIMIT = 12;
 
     public function actionTopic()
     {

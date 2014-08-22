@@ -43,8 +43,8 @@ abstract class BaseSubject extends AActiveRecord
     {
         return array(
             array('course_id', 'required'),
-            array('name', 'length', 'max'=>128),
             array('course_id', 'length', 'max'=>10),
+            array('name', 'safe'),
             array('name', 'default', 'setOnEmpty' => true, 'value' => null),
             array('id, name, course_id', 'safe', 'on' => 'search'),
         );

@@ -40,7 +40,7 @@ module.exports = function (grunt)
                 ],
                 dest: 'scripts.js'
             }
-        },
+        },/*
         cssmin: {
             css: {
                 src: 'style.css',
@@ -56,7 +56,7 @@ module.exports = function (grunt)
                     'scripts.js': ['scripts.js']
                 }
             }
-        },
+        },*/
         watch: {
             files: [
                 "scripts/jquery.js",
@@ -87,12 +87,12 @@ module.exports = function (grunt)
                 "css/loading-bar.css",
                 "scripts/sceditor/minified/themes/default.min.css"
             ],
-            tasks: ['concat', 'cssmin', 'uglify']
+            tasks: ['concat'/*, 'cssmin', 'uglify'*/]
         }
     });
     grunt.loadNpmTasks('grunt-contrib-concat');
-    grunt.loadNpmTasks('grunt-contrib-uglify');
+    //grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-watch');
-    grunt.loadNpmTasks('grunt-contrib-cssmin');
-    grunt.registerTask('default', ['concat:css', 'cssmin:css', 'concat:js', 'uglify:js']);
+    //grunt.loadNpmTasks('grunt-contrib-cssmin');
+    grunt.registerTask('default', ['concat:css',/* 'cssmin:css',*/ 'concat:js'/*, 'uglify:js'*/]);
 };

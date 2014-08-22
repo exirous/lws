@@ -88,9 +88,9 @@ class SiteController extends Controller
     {
         //Yii::beginProfile('blockID');
 
-        mailer::send('luftwaffeschule@gmail.com','Новый пользователь','<html>Зарегистрирован новый пользователь: <a href="http://lws.exirous.com/#/user/roster/1">ASD</a></html>');
+        //mailer::send('luftwaffeschule@gmail.com','Новый пользователь','<html>Зарегистрирован новый пользователь: <a href="http://lws.exirous.com/#/user/roster/1">ASD</a></html>');
 
-        echo ini_get('memory_limit').'!!';
+        //echo ini_get('memory_limit').'!!';
 
         //$value = Property::model()->findAll();
         //Yii::app()->cache->set('testCache', $value);
