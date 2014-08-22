@@ -4,19 +4,6 @@ class TeamSpeakController extends Controller
 {
     public function actions()
     {
-        Yii::t('forms', 'cate');
-        return array(
-            // captcha action renders the CAPTCHA image displayed on the contact page
-            'captcha' => array(
-                'class' => 'CCaptchaAction',
-                'backColor' => 0xFFFFFF,
-            ),
-            // page action renders "static" pages stored under 'protected/views/site/pages'
-            // They can be accessed via: index.php?r=site/page&view=FileName
-            'page' => array(
-                'class' => 'CViewAction',
-            ),
-        );
     }
 
     public function actionViewTree()
@@ -67,24 +54,23 @@ class TeamSpeakController extends Controller
         die();
     }
 
+    public function actionRedirect($id)
+    {
+        $user = User::model()->findByPk($id);
+        if ($user)
+            $this->redirect('ts3server://lws.exirous.com/?nickname=' . urlencode($user->nickname . ' (' . $user->firstname . ')'), true);
+        else
+            $this->redirect('http://lws.exirous.com', true);
+    }
+
     public function actionTest()
     {
 
-        require_once Yii::app()->basePath . "/vendors/jbbcode/Parser.php";
-        $parser = new JBBCode\Parser();
-        $parser->addCodeDefinitionSet(new JBBCode\DefaultCodeDefinitionSet());
-        $parser->parse(Material::model()->findByPk(2)->text);
-        echo nl2br($parser->getAsHTML());
-
-        //phpinfo();
-        die();
         // URL on which we have to post data
-        $url = "http://127.0.0.1:3001";
+        $url = "http://127.0.0.1:3000";
 
         // Any other field you might want to post
-        $json_data = json_encode(array("name" => "PHP Rockstart", "age" => 29));
-        $post_data['json_data'] = $json_data;
-        $post_data['secure_hash'] = mktime();
+        $json_data = json_encode(["room"=>"","event" => "test_ev", "data" => ["hello"=>"123"]]);
 
         // Initialize cURL
         $ch = curl_init();

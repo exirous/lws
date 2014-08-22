@@ -10,11 +10,42 @@ angular.module('app.controllers',
 var lwsControllers = angular.module('app.controllers');
 
 lwsControllers.controller('AppCtrl',
-    ['$scope', '$dialogs', '$stateParams', 'User','$rootScope',
+    ['$scope', '$dialogs', '$stateParams', 'User','$rootScope', '$state',
 
-        function ($scope, $dialogs, $stateParams, User, $rootScope)
+        function ($scope, $dialogs, $stateParams, User, $rootScope, $state)
         {
             $scope.UserIdentity = UserLoginData;
+
+            $scope.notifications = [];
+
+            $scope.addNotification = function(data, callback)
+            {
+                var notification = {};
+                notification.text = data.text;
+                notification.type = data.type;
+                notification.callback = callback;
+
+                if (data.timeout)
+                {
+                    setTimeout(function(){
+                        var index = $scope.notifications.indexOf(notification);
+                        if (index >= 0)
+                          $scope.notifications.splice(index, 1);
+                    },data.timeout*1000);
+                }
+                $scope.$apply(function(){
+                    $scope.notifications.push(notification);
+                });
+            };
+
+            $scope.closeNotification = function(index)
+            {
+                if ($scope.notifications[index].callback)
+                    $scope.notifications[index].callback();
+                $scope.notifications.splice(index, 1);
+            };
+
+
             $scope.headerImages = ['/img/header/news.png'];
             var stateAliases = {
                 'orders': 'news',
@@ -33,8 +64,60 @@ lwsControllers.controller('AppCtrl',
                 'topic.page': 'news',
                 'reportvacation': 'news',
                 'vacation': 'news',
-                'editUser': 'user'
+                'editUser': 'user',
+                'conversation': 'user',
+                'conversation.page': 'user',
+                'messenger': 'user'
             };
+
+            $scope.unRegisterForNotifications = function(){};
+            $scope.registerForNotifications = function(){};
+            $scope.io_socket = false;
+            if (typeof io != 'undefined') {
+                $scope.registerForNotifications = function(){
+                    $scope.io_socket.on('new_message', function (data) {
+                        SoundAlert.play();
+                        if (!$state.is('conversation.page', {
+                                senderId: data.sender.id + '',
+                                page: '1'
+                            }) && !$state.is('messenger', {})) {
+
+                            NotificationsAllowed = false;
+                            if (NotificationsAllowed) {
+                                var messageNotification = new Notification(data.sender.nickname, {
+                                    tag: false,
+                                    body: $('<i>' + data.text + '</i>').text(),
+                                    icon: '/img/users/' + (data.sender.img_src ? data.sender.id + '_' + data.sender.img_src + '.jpg' : (data.sender.is_clanner ? 'no_image_clanner.png' : 'no_image.png'))
+                                });
+                                messageNotification.onclick = function () {
+                                    $state.go('conversation.page', {senderId: data.sender.id + '', page: '1'});
+                                };
+                            }
+                            else {
+                                var html = '<img  class="avatar" ng-src="/img/users/' + (data.sender.img_src ? data.sender.id + '_' + data.sender.img_src + '.jpg' : (data.sender.is_clanner ? 'no_image_clanner.png' : 'no_image.png')) +
+                                    '"><div class="message-content"><a class="user" >' + data.sender.nickname + '</a><span class="text">' + data.text + '</span></div>';
+                                $scope.addNotification({type: 'message', text: html}, function(){
+                                    $state.go('conversation.page', {senderId: data.sender.id + '', page: '1'});
+                                });
+                            }
+                        }
+                        else
+                            $scope.$broadcast('new_message', data);
+                    });
+                    $scope.io_socket.emit('register', {token: $scope.UserIdentity.broadcast_token, uid:$scope.UserIdentity.uid});
+                };
+                $scope.unRegisterForNotifications = function()
+                {
+                    $scope.io_socket.emit('unregister', {token: $scope.UserIdentity.broadcast_token});
+                }
+
+                $scope.io_socket = io.connect('http://lws.exirous.com:3000');
+                $scope.io_socket.on('ready', function (data) {
+                    if (!$scope.UserIdentity.isGuest)
+                        $scope.registerForNotifications();
+                });
+            }
+
             $scope.$on('$stateChangeStart',
                 function (event, toState, toParams, fromState, fromParams)
                 {
@@ -65,6 +148,7 @@ lwsControllers.controller('AppCtrl',
                     {
                         $rootScope.$broadcast('refreshUserLogin');
                         $scope.UserIdentity = user;
+                        $scope.registerForNotifications();
                     }
                 }, function ()
                 {
@@ -78,6 +162,7 @@ lwsControllers.controller('AppCtrl',
                 {
                     User.logout({}, function (resource)
                     {
+                        $scope.unRegisterForNotifications();
                         $rootScope.$broadcast('refreshUserLogin');
                         $scope.UserIdentity = {isGuest: true, fullname: 'Неизвестный Гость'};
                     });
@@ -126,7 +211,7 @@ lwsControllers.controller('UserLoginCtrl',
                 $scope.userForm.errorPass = '';
                 User.recover({email: $scope.user.email}, function (resource)
                     {
-                        $dialogs.notify('Something Happened!', 'Something happened that I need to tell you.');
+                        $dialogs.notify('Восстановление пароля', 'Скоро к вам прийдёт письмо по э-почте что вы указали<br>Следуйте инструкциям в письме для смены пароля');
                         $modalInstance.close(resource.data);
                     },
                     function (resource)
@@ -197,7 +282,6 @@ lwsControllers.controller('UserCtrl',
                 medal.left = element[0].offsetLeft;
                 medal.userId = $scope.user.id;
                 User.saveMedalPosition(medal, function(res){
-
                 });
             };
 
@@ -255,9 +339,7 @@ lwsControllers.controller('EditUserCtrl',
                 function (resource)
                 {
                     $scope.user = resource.data;
-                    var date = new Date();
-                    date.setTime($scope.user.birthDate);
-                    $scope.user.birthDate = dateFilter($scope.user.birthDate, 'yyyy-MM-dd')
+                    $scope.user.birthDate = dateFilter($scope.user.birthDate, 'yyyy-MM-dd');
                 });
 
             $scope.sync = function()
@@ -335,25 +417,62 @@ lwsControllers.controller('RosterUserCtrl',
             };
             $scope.reject = function ()
             {
-                $dialogs.confirm('Подтвердите', 'Отклонить данную заявку?')
-                    .result.then(function (btn)
+                var dlg = $dialogs.create('rejectDialogTmpl', 'RejectDialogCtrl', {}, {key: false, back: 'static'});
+                dlg.result.then(function (reason)
+                {
+                    alert(reason);
+                    return;
+                    $scope.rosterForm.isSubmitting = true;
+                    User.reject({userId: $stateParams.userId, reason:reason}, function ()
                     {
-                        $scope.rosterForm.isSubmitting = true;
-                        User.reject({userId: $stateParams.userId}, function ()
-                        {
-                            $scope.rosterForm.isSubmitting = false;
-                            $rootScope.$broadcast('refreshRosterList');
-                            $state.go('news');
-                        });
-                    }, function (btn)
-                    {
+                        $scope.rosterForm.isSubmitting = false;
+                        $rootScope.$broadcast('refreshRosterList');
+                        $state.go('news');
                     });
+                }, function (reason)
+                {
+
+                });
+            };
+        }]);
+
+lwsControllers.controller('RecoverUserCtrl',
+    ['$scope', 'User', '$stateParams', '$rootScope', '$dialogs', '$state',
+        function ($scope, User, $stateParams, $rootScope, $dialogs, $state)
+        {
+            $scope.recoverForm = {};
+            $scope.recovery = {token:$stateParams.token, password:null};
+            $scope.recoverForm.isSubmitting = true;
+            $scope.recoverForm.error = false;
+
+            User.checkRecoveryToken({token:$stateParams.token}, function(res){
+                    if (res.data.result != 'OK')
+                        $state.go('news');
+                },
+            function(){
+                $state.go('news');
+            });
+
+            $scope.recover = function(){
+                $scope.recoverForm.isSubmitting = true;
+                User.recoverPassword({token:$scope.recovery.token,password:$scope.recovery.password}, function(res){
+                    if (res.data && res.data.id) {
+                        $rootScope.$broadcast('refreshUserLogin');
+                        $scope.UserIdentity = res.data;
+                        $scope.registerForNotifications();
+                        $state.go('news');
+                    }
+                }, function(res){
+                    $scope.recoverForm.isSubmitting = false;
+                    $scope.recoverForm.error = res.data.message
+                });
+                $scope.recovery.password = '';
             };
         }]);
 
 lwsControllers.controller('RosterCtrl',
-    ['$scope', 'User', '$stateParams',
-        function ($scope, User, $stateParams)
+    ['$scope', 'User', '$stateParams' ,'$rootScope',
+        function ($scope, User, $stateParams, $rootScope)
         {
 
             var dfrom = new Date();
@@ -393,7 +512,9 @@ lwsControllers.controller('RosterCtrl',
                 User.roster({user: $scope.user}, function (resource)
                 {
                     $scope.userForm.isSubmitting = false;
-                    angular.extend($scope.UserIdentity, resource.data);
+                    $rootScope.$broadcast('refreshUserLogin');
+                    $scope.UserIdentity = resource.data;
+                    $scope.registerForNotifications();
                     setTimeout(function ()
                     {
                         document.location.href = "/#/afterroster"
@@ -655,12 +776,13 @@ lwsControllers.controller('OrderCreatorCtrl',
 lwsControllers.controller("TSViewCtrl", ['$scope','User','$state','$dialogs', function ($scope, User, $state, $dialogs)
 {
     $scope.tree = [];
-
-    var socket = io.connect('http://lws.exirous.com:3000');
-    socket.on('ts_clients', function (data) {
-        $scope.tree = data;
-        $scope.$apply();
-    });
+    if ($scope.io_socket)
+        $scope.io_socket.on('ts_clients', function (data) {
+            if (data) {
+                $scope.tree = data;
+                $scope.$apply();
+            }
+        });
 
     $scope.getByUid = function (uid) {
         User.getIdFromUid({uid: uid}, function (res) {
@@ -750,9 +872,13 @@ lwsControllers.controller("UserMarksCtrl",
         function ($scope, $stateParams, User, $dialogs)
         {
             $scope.user = {};
+
             User.getMarks({userId: $stateParams.userId}, function (resource)
             {
+                $scope.tabs = {activeTab: 'fighter'};
                 angular.extend($scope.user, resource.data);
+                if (!$scope.user.programs.fighter)
+                    $scope.tabs.activeTab = 'bomber';
             });
 
             $scope.mark = function (subjectId, courseId)
@@ -809,20 +935,25 @@ lwsControllers.controller("UserMarksCtrl",
                 }
             };
 
+
             $scope.$watch('user.marks', function ()
             {
                 if (!$scope.user) return;
-                angular.forEach($scope.user.courses, function (course, key)
+                angular.forEach($scope.user.programs, function (program, programKey)
                 {
-                    var count = 0;
-                    var average = 0;
-                    angular.forEach($scope.user.marks[course.id], function (mark, key2)
+                    angular.forEach(program.courses, function (course, key)
                     {
-                        count++;
-                        average += parseInt(mark.mark);
+                        var count = 0;
+                        var average = 0;
+                        angular.forEach($scope.user.marks[course.id], function (mark, key2)
+                        {
+                            count++;
+                            average += parseInt(mark.mark);
+                        }, this);
+
+                        $scope.user.programs[programKey].courses[key].average = count ? average / count : 0;
+                        $scope.user.programs[programKey].courses[key].complete = (count == course.subjects.length);
                     }, this);
-                    $scope.user.courses[key].average = count ? average / count : 0;
-                    $scope.user.courses[key].complete = (count == course.subjects.length);
                 }, this);
             }, true);
 
@@ -899,6 +1030,23 @@ lwsControllers.controller('PromoteDialogCtrl',
                 $modalInstance.close(promoteToOfficer);
             }; // end save
         }]);
+
+lwsControllers.controller('RejectDialogCtrl',
+    ['$scope', '$modalInstance', 'data',
+        function ($scope, $modalInstance, data)
+        {
+            $scope.reject = {text:''};
+            $scope.cancel = function ()
+            {
+                $modalInstance.dismiss('canceled');
+            }; // end cancel
+
+            $scope.saveReject = function ()
+            {
+                $modalInstance.close($scope.reject.text);
+            }; // end save
+        }]);
+
 
 lwsControllers.controller('SchoolCtrl',
     ['$scope', 'School', '$location', '$anchorScroll','$stateParams',
@@ -1097,3 +1245,90 @@ lwsControllers.controller("ReportVacationCtrl", ['$scope', 'Vacation', '$state',
         });
     }
 }]);
+
+
+lwsControllers.controller('MessengerCtrl',
+    ['$scope', 'Messenger',
+        function ($scope, Messenger)
+        {
+            Messenger.query({}, function (res)
+            {
+                $scope.conversations = res.data;
+            });
+            $scope.$on('new_message',function(event, data){
+
+
+                $scope.conversations.messages.unshift(data);
+                $scope.$apply();
+            });
+
+        }]);
+
+lwsControllers.controller('ConversationCtrl',
+    ['$scope', 'Messenger', '$location', '$stateParams', '$state',
+        function ($scope, Messenger, $location, $stateParams, $state)
+        {
+            $scope.conversation = {currentPage: 1};
+            var lastNewId = 1;
+            $scope.sceditor = {text: ''};
+            Messenger.get({senderId: $stateParams.senderId}, function (res)
+            {
+                angular.extend($scope.conversation, res.data);
+            });
+            $scope.$watch('conversation.currentPage', function (newValue, oldValue)
+            {
+                if (oldValue != newValue)
+                    $state.go('conversation.page', {senderId: $stateParams.senderId, page: newValue});
+            });
+
+
+            function trimMessages()
+            {
+                var toTrim = $scope.conversation.messages.length - $scope.conversation.limit;
+                if (toTrim > 0)
+                    $scope.conversation.messages.splice($scope.conversation.messages.length-toTrim,toTrim);
+            }
+
+            $scope.post = function ()
+            {
+                var message = {
+                    id: 'new_' + lastNewId,
+                    isNew: true,
+                    sender: $scope.UserIdentity
+                };
+                lastNewId++;
+
+                $scope.conversation.messages.unshift(message);
+                Messenger.post({recieverId: $scope.conversation.sender.id, text: $scope.sceditor.text}, function (res)
+                {
+                    message.isNew = false;
+                    angular.extend(message, res.data);
+                    $scope.conversation.itemCount++;
+                    trimMessages()
+
+                }, function (res)
+                {
+                    $scope.conversation.messages.splice($scope.conversation.messages.indexOf(message), 1);
+                });
+                $scope.sceditor.text = '';
+            };
+            $scope.$on('new_message',function(event, data){
+                $scope.conversation.messages.unshift(data);
+                $scope.conversation.itemCount++;
+                trimMessages();
+                $scope.$apply();
+            });
+        }]);
+
+lwsControllers.controller('ConversationPageCtrl',
+    ['$scope', 'Messenger', '$location', '$stateParams',
+        function ($scope, Messenger, $location, $stateParams)
+        {
+            $scope.isLoading = true;
+            $scope.conversation.currentPage = parseInt($stateParams.page);
+            Messenger.page({senderId: $stateParams.senderId, page: $stateParams.page}, function (res)
+            {
+                $scope.isLoading = false;
+                $scope.conversation.messages = res.data;
+            });
+        }]);

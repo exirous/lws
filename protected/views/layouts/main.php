@@ -20,6 +20,12 @@
 <body ng-app="app">
 <div id="main_content">
     <div class="main_wrapper" ng-controller="AppCtrl">
+
+        <div class="notification_bank">
+            <div ng-repeat="notification in notifications" class="alert alert-{{notification.type}} alert-notification shadowed" ng-click="closeNotification($index)">
+                <div bind-compiled-html="notification.text"></div>
+            </div>
+        </div>
         <div class="photostack" id="main_header">
             <img ng-repeat="image in headerImages" class="header-image" ng-src="{{image}}">
         </div>
@@ -37,7 +43,7 @@
                             <div class="left_content">
                                 <a ui-sref="user({userId:pilot.id})"
                                    ng-repeat="pilot in birthdays  | orderBy:'birthday'"
-                                   class="list-group-item">{{pilot.nickname}} ({{pilot.birthday | date : "dd.MM"}})</a>
+                                   class="list-group-item" ng-class="{'list-group-item-danger' : pilot.today, 'list-group-item-info' : pilot.tomorow}">{{pilot.nickname}} ({{pilot.birthday | date : "dd.MM.yyyy"}})</a>
                             </div>
                         </div>
                     </div>
@@ -56,9 +62,12 @@
                     </div>
                     <div class="left_content ts_channels">
                         <ul ng-controller="TSViewCtrl" style="padding:0">
-                            <li ng-repeat="channel in tree" ng-include="'TreeItemTmpl'">
+                            <li ng-show="tree.length" ng-repeat="channel in tree" ng-include="'TreeItemTmpl'">
                             </li>
-                            <li ng-show="!tree.length">
+                            <li ng-show="!tree.length && !tree.empty">
+                                Помойму что-то сломалось :(
+                            </li>
+                            <li ng-show="tree.empty">
                                 Никого нету :)
                             </li>
                         </ul>
@@ -89,6 +98,7 @@
                         <ul class="dropdown-menu" style="top: 20px;left: -7px;">
                             <li><a ui-sref="texts({id:1})">Устав</a></li>
                             <li><a ui-sref="texts({id:2})">Приложения к уставу</a></li>
+                            <li role="presentation" ng-if="UserIdentity.isInstructor" class="divider"></li>
                             <li><a ui-sref="materials({slug:'instructor_training'})" ng-if="UserIdentity.isInstructor">Настваление инструктору</a></li>
                         </ul>
                         </span>
@@ -97,20 +107,29 @@
                         <a href="">Учебный класс</a>
                         <ul class="dropdown-menu" style="top: 20px;left: -7px;">
                             <li><a>Расписание занятий</a></li>
+                            <li role="presentation" class="divider"></li>
                             <li><a ui-sref="materials({slug:'flight_basics'})">Наставление по лётной подготовке</a></li>
                             <li><a ui-sref="materials({slug:'fighter_course'})">Программа обучения истребителей</a></li>
+                            <li role="presentation" class="divider"></li>
                             <li><a ui-sref="materials({slug:'bomber_basics'})">Наставление по лётной подготовке бомбардировщиков</a></li>
                             <li><a ui-sref="materials({slug:'bomber_course'})">Программа обучения бомбардировщиков</a></li>
-                            <li><a ui-sref="texts({id:4})">Наставление по мировой войне</a></li>
+                            <li role="presentation" class="divider"></li>
+                            <li><a ui-sref="materials({slug:'war_basics'})">Боевой устав</a></li>
+                            <!--<li role="presentation" class="divider"></li>
+                            <li><a ui-sref="texts({id:'6'})">Техническая эксплуатационная часть</a></li>-->
                         </ul>
                         </span>
                         <a ui-sref="pilots">Казарма</a>
                         <a ui-sref="flood" ng-if="!UserIdentity.isGuest">Курилка</a>
+                        <a ui-sref="texts({id:5})">О школе</a>
                         <a href="" style="float:right" ng-click="login()" ng-if="UserIdentity.isGuest">Вход</a>
                         <span ng-if="!UserIdentity.isGuest" class="dropdown dropdown-hover" style="float:right">
                         <a href="">{{UserIdentity.nickname}} <span class="glyphicon glyphicon-user"></span></a>
-                        <ul class="dropdown-menu" style="top: 20px;left: -7px;">
+                        <ul class="dropdown-menu" style="top: 27px;left: -10px;">
+                            <li><a ui-sref="user({userId:UserIdentity.id})">Посмотреть профиль</a></li>
                             <li><a ui-sref="reportvacation">Рапорт на отпуск</a></li>
+                            <li><a ui-sref="messenger">Личные сообщения</a></li>
+                            <li role="presentation" class="divider"></li>
                             <li><a ng-click="logout()" href="">Выход</a></li>
                         </ul>
                         </span>
@@ -146,7 +165,7 @@
         <div class="panel-body" ng-bind-html="newsRec.text | to_trusted"></div>
         <div class="panel-footer">
             <span>{{newsRec.time}}</span> <img
-                ng-src="/img/users/{{newsRec.issuer.img_src ? newsRec.issuer.id+'_'+newsRec.issuer.img_src+'.jpg' : 'no_image.png'}}"
+                ng-src="/img/users/{{newsRec.issuer.img_src ? newsRec.issuer.id+'_'+newsRec.issuer.img_src+'.jpg' : (newsRec.issuer.is_clanner ? 'no_image_clanner.png' : 'no_image.png')}}"
                 style="width:16px;height:16px;border-radius: 50%">
             <a href="#/user/view/{{newsRec.issuer.id}}">{{newsRec.issuer.nickname}}</a>
         </div>
@@ -164,7 +183,7 @@
     <div ng-repeat="topic in topics | orderBy:'lastMessageTime':'true'">
         <div class="forumTopicHeader">
             <img
-                ng-src="/img/users/{{topic.author.img_src ? topic.author.id+'_'+topic.author.img_src+'.jpg' : 'no_image.png'}}"
+                ng-src="/img/users/{{topic.author.img_src ? topic.author.id+'_'+topic.author.img_src+'.jpg' : (topic.author.is_clanner ? 'no_image_clanner.png' : 'no_image.png')}}"
                 style=""><a href="#/user/view/{{topic.author.id}}">{{topic.author.nickname}}</a>
         </div>
         <div class="news-row panel panel-primary">
@@ -178,9 +197,9 @@
             <span ng-if="topic.lastMessage" class="pull-right">
              Последнее сообщение:
              <img
-                 ng-src="/img/users/{{topic.lastMessage.author.img_src ? topic.lastMessage.author.id+'_'+topic.lastMessage.author.img_src+'.jpg' : 'no_image.png'}}"
+                 ng-src="/img/users/{{topic.lastMessage.author.img_src ? topic.lastMessage.author.id+'_'+topic.lastMessage.author.img_src+'.jpg' : (topic.lastMessage.author.is_clanner ? 'no_image_clanner.png' : 'no_image.png')}}"
                  style="width:16px;height:16px;border-radius: 50%">
-            <a href="#/user/view/{{topic.lastMessage.author.id}}">{{topic.lastMessage.author.nickname}}</a> <span>{{topic.lastMessage.time | date:'dd.MM.yyyy, hh:mm'}}</span>
+            <a href="#/user/view/{{topic.lastMessage.author.id}}">{{topic.lastMessage.author.nickname}}</a> <span>{{topic.lastMessage.time | date:'dd.MM.yyyy, HH:mm'}}</span>
             </span>
             </div>
         </div>
@@ -215,11 +234,84 @@
         <a class="pull-left" href="#/user/view/{{message.author.id}}">
             <img class="media-object"
                  style="width: 64px;height: 64px;border-radius: 50%;"
-                 ng-src="/img/users/{{message.author.img_src ? message.author.id+'_'+message.author.img_src+'.jpg' : 'no_image.png'}}">
+                 ng-src="/img/users/{{message.author.img_src ? message.author.id+'_'+message.author.img_src+'.jpg' : (message.author.is_clanner ? 'no_image_clanner.png' : 'no_image.png')}}">
         </a>
         <div class="media-body">
-            <span class="pull-right">{{message.time | date:'dd.MM.yyyy, hh:mm'}}</span>
+            <span class="pull-right">{{message.time | date:'dd.MM.yyyy, HH:mm'}}</span>
             <h4 class="media-heading with-underline">{{message.author.nickname}}</h4>
+            <div bind-compiled-html="message.text"></div>
+        </div>
+        <div ng-if="message.isNew" class="small-spinner">
+            <div class="spinner-icon"></div>
+        </div>
+    </div>
+</script>
+
+
+<script type="text/ng-template" id="MessengerTmpl">
+    <h2>Личные сообщения</h2>
+    <div class="big-spinner" ng-if="!conversations.length">
+        <div class="spinner-icon"></div>
+    </div>
+    <div ng-repeat="conversation in conversations | orderBy:'lastMessageTime':'true'">
+        <div class="forumTopicHeader">
+            <img
+                ng-src="/img/users/{{conversation.sender.img_src ? conversation.sender.id+'_'+conversation.sender.img_src+'.jpg' : (conversation.sender.is_clanner ? 'no_image_clanner.png' : 'no_image.png')}}"
+                style=""><a href="#/user/view/{{conversation.sender.id}}">{{conversation.sender.nickname}}</a>
+        </div>
+        <div class="news-row panel panel-primary">
+            <a ui-sref="conversation.page({senderId:conversation.sender.id,page:1})" class="panel-body" style="display: block;margin-top: 10px;white-space: nowrap;position: relative;">
+                <b>{{conversation.lastMessage.sender.nickname}}: </b>
+                <span style="color:#aaa">{{conversation.lastMessage.text}}</span>
+                <div class="tinter"></div>
+            </a>
+            <div class="panel-footer">
+                &nbsp;
+            <span ng-if="conversation.lastMessage" class="pull-right">
+             Последнее сообщение:
+             <img
+                 ng-src="/img/users/{{conversation.lastMessage.sender.img_src ? conversation.lastMessage.sender.id+'_'+conversation.lastMessage.sender.img_src+'.jpg' : (conversation.lastMessage.sender.is_clanner ? 'no_image_clanner.png' : 'no_image.png')}}"
+                 style="width:16px;height:16px;border-radius: 50%">
+            <a href="#/user/view/{{conversation.lastMessage.sender.id}}">{{conversation.lastMessage.sender.nickname}}</a> <span>{{conversation.lastMessage.time | date:'dd.MM.yyyy, HH:mm'}}</span>
+            </span>
+            </div>
+        </div>
+    </div>
+</script>
+
+<script type="text/ng-template" id="ConversationTmpl">
+    <div class="big-spinner" ng-if="!conversation.sender">
+        <div class="spinner-icon"></div>
+    </div>
+    <div ng-if="conversation.sender">
+        <h2>Беседа с {{conversation.sender.nickname}}</h2>
+        <div ui-view>
+        </div>
+    </div>
+        <pagination total-items="conversation.itemCount" items-per-page="conversation.limit" page="conversation.currentPage" max-size="7"
+                    class="pagination-sm" boundary-links="true" rotate="false"></pagination>
+
+    <ng-form name="messageForm" role="form">
+    <textarea sceditor="1" style="width: 100%;resize: none" rows="20" required></textarea>
+    <div class="well">
+        <a href="" class="btn btn-primary" ng-disabled="sceditor.text.length == 0" ng-click="post()">Отправить</a>
+    </div>
+    </ng-form>
+</script>
+
+<script type="text/ng-template" id="ConversationMessagesTmpl">
+    <div class="big-spinner" ng-if="!conversation.messages || isLoading">
+        <div class="spinner-icon"></div>
+    </div>
+    <div ng-repeat="message in conversation.messages | orderBy:'time'" class="media news-row" ng-class="{'alert-success':message.sender.id!=UserIdentity.id && !message.is_read}" style="position: relative">
+        <a class="pull-left" href="#/user/view/{{message.sender.id}}">
+            <img class="media-object"
+                 style="width: 64px;height: 64px;border-radius: 50%;"
+                 ng-src="/img/users/{{message.sender.img_src ? message.sender.id+'_'+message.sender.img_src+'.jpg' : (message.sender.is_clanner ? 'no_image_clanner.png' : 'no_image.png')}}">
+        </a>
+        <div class="media-body">
+            <span class="pull-right">{{message.time | date:'dd.MM.yyyy, HH:mm'}}</span>
+            <h4 class="media-heading with-underline">{{message.sender.nickname}}</h4>
             <div bind-compiled-html="message.text"></div>
         </div>
         <div ng-if="message.isNew" class="small-spinner">
@@ -328,7 +420,7 @@
         <div class="panel-body" bind-compiled-html="newsRec.text"></div>
         <div class="panel-footer">
             <span>{{newsRec.time}}</span> <img
-                ng-src="/img/users/{{newsRec.issuer.img_src ? newsRec.issuer.id+'_'+newsRec.issuer.img_src+'.jpg' : 'no_image.png'}}"
+                ng-src="/img/users/{{newsRec.issuer.img_src ? newsRec.issuer.id+'_'+newsRec.issuer.img_src+'.jpg' : (newsRec.issuer.is_clanner ? 'no_image_clanner.png' : 'no_image.png')}}"
                 style="width:16px;height:16px;border-radius: 50%">
             <a href="#/user/view/{{newsRec.issuer.id}}">{{newsRec.issuer.nickname}}</a>
         </div>
@@ -397,10 +489,13 @@
             <tr>
                 <td style="height: 210px;width: 210px">
                     <div style="margin-right:10px;position: relative">
-                        <img ng-src="/img/users/{{user.img_src ? user.id+'_'+user.img_src+'.jpg' : 'no_image.png'}}"
+                        <img ng-src="/img/users/{{user.img_src ? user.id+'_'+user.img_src+'.jpg' : (user.is_clanner ? 'no_image_clanner.png' : 'no_image.png')}}"
                              style="width: 200px;display:block">
                         <div ng-if="user.activeVacation" class="vacation" title="{{user.activeVacation.reason}}, с {{user.activeVacation.date_from | date : 'dd.MM.yyyy'}} по {{user.activeVacation.date_to | date : 'dd.MM.yyyy'}}">В Отпуске!</div>
                         <div ng-if="(UserIdentity.id == 14) || (UserIdentity.id == 1)" file-upload-box></div>
+                    </div>
+                    <div class="btn-group" ng-if="!UserIdentity.isGuest && (UserIdentity.id != user.id)">
+                      <button class="button btn btn-success" style="margin-bottom:10px;width:200px" ui-sref="conversation.page({senderId:user.id,page:1})"><span class="glyphicon glyphicon-envelope"></span> Отправить сообщение</button>
                     </div>
                 </td>
                 <td>
@@ -439,7 +534,7 @@
                     </table>
                 </td>
                 <td ng-if="user.rank" rowspan="2" style="width: 380px;padding-left: 5px;max-width: 380px;">
-                    <div class="uniform {{user.is_clanner ? 'clanner' : ''}}">
+                    <div class="uniform {{user.is_clanner ? 'clanner' : ''}}" dnd-container="true">
                         <div class="unform_rank"
                              style="background: url(/img/uniform/{{user.is_clanner ? 'clanner/' : ''}}{{user.rank.id}}.png) no-repeat"
                              title="{{user.rank.name}}">
@@ -709,6 +804,18 @@
                            ng-model="user.firstname"
                            required/>
                 </div>
+                <div class="form-group input-group"
+                     ng-class="{true: 'has-error'}[(rosterForm.qualifications.$dirty && rosterForm.qualifications.$invalid)]">
+                    <label>Специальности</label>
+                    <div class="form-group input-group">
+                        <p class="btn-group">
+                            <button type="button" class="btn btn-default" ng-model="user.qualifications.fighter" btn-checkbox>Истребитель
+                            </button>
+                            <button type="button" class="btn btn-default" ng-model="user.qualifications.bomber" btn-checkbox>Бомбардировщик
+                            </button>
+                        </p>
+                    </div>
+                </div>
                 <div class="form-group input-group">
                     <label>Тимспик</label><br>
                     <select ng-model="user.ts_id" style="width:350px"
@@ -724,7 +831,7 @@
         <div>
             <p class="well">
                 <button type="button" ng-click="save()"
-                        ng-disabled="userForm.isSubmitting" class="btn btn-primary">Сохранить</button>
+                        ng-disabled="userForm.isSubmitting || (!user.qualifications.bomber && !user.qualifications.fighter)" class="btn btn-primary">Сохранить</button>
             </p>
         </div>
     </div>
@@ -765,13 +872,12 @@
         </div>
         <div ng-if="(dataSize == 2)" class="" ng-repeat="pilot in pilots">
             <a style="height: 90px;margin-bottom: 10px" class="thumbnail isRelative" ui-sref="user({userId:pilot.id})" title="{{pilot.rank_name}}">
-                <img ng-src="/img/users/{{pilot.img_src ? pilot.id+'_'+pilot.img_src+'.jpg' : 'no_image.png'}}" alt=""
+                <img ng-src="/img/users/{{pilot.img_src ? pilot.id+'_'+pilot.img_src+'.jpg' : (pilot.is_clanner ? 'no_image_clanner.png' : 'no_image.png')}}" alt=""
                      style="width:80px; height:80px; float:left">
-                <!--<div ng-if="pilot.activeVacation" class="vacation" title="{{pilot.activeVacation.reason}}, c {{pilot.activeVacation.date_from | date : 'dd.MM.yyyy'}} по {{pilot.activeVacation.date_to | date : 'dd.MM.yyyy'}}">В Отпуске!</div>-->
                 <div class="floating_rank small"><img
                         ng-src="/img/groups/{{pilot.rank}}{{pilot.is_clanner ? '_clanner' : ''}}.png"></div>
-                <div ng-if="pilot.instructor" class="floating_rank small" style="left:23px"><img
-                        ng-src="/img/groups/{{pilot.instructor}}.png"></div>
+                <div ng-if="pilot.instructor || pilot.isBomber" class="floating_rank small" style="left:23px"><img
+                        ng-src="/img/groups/{{pilot.instructor ? pilot.instructor : 36}}.png"></div>
                 <div class="caption" style="padding-left: 90px;padding-top:18px">
                     <b>{{pilot.nickname}}</b><br><span>{{pilot.firstname}}</span>
                 </div>
@@ -779,13 +885,13 @@
         </div>
         <div ng-if="(dataSize == 1)" class="col-sm-6 col-md-3 user-cell" ng-repeat="pilot in pilots">
             <a class="thumbnail isRelative" ui-sref="user({userId:pilot.id})" title="{{pilot.rank_name}}">
-                <img ng-src="/img/users/{{pilot.img_src ? pilot.id+'_'+pilot.img_src+'.jpg' : 'no_image.png'}}" alt=""
+                <img ng-src="/img/users/{{pilot.img_src ? pilot.id+'_'+pilot.img_src+'.jpg' : (pilot.is_clanner ? 'no_image_clanner.png' : 'no_image.png')}}" alt=""
                      style="width:182px; height:182px">
                 <div ng-if="pilot.activeVacation" class="vacation" title="{{pilot.activeVacation.reason}}, c {{pilot.activeVacation.date_from | date : 'dd.MM.yyyy'}} по {{pilot.activeVacation.date_to | date : 'dd.MM.yyyy'}}">В Отпуске!</div>
                 <div class="floating_rank"><img
                         ng-src="/img/groups/{{pilot.rank}}{{pilot.is_clanner ? '_clanner' : ''}}.png"></div>
-                <div ng-if="pilot.instructor" class="floating_rank" style="left:40px"><img
-                        ng-src="/img/groups/{{pilot.instructor}}.png"></div>
+                <div ng-if="pilot.instructor || pilot.isBomber" class="floating_rank" style="left:40px"><img
+                        ng-src="/img/groups/{{pilot.instructor ? pilot.instructor : 36}}.png"></div>
                 <div class="caption">
                     <b>{{pilot.nickname}}</b><br><span>{{pilot.firstname}}</span>
                 </div>
@@ -851,7 +957,7 @@
                     ng-show="!userForm.forgotPass"> Вход</span><span
                     ng-show="userForm.forgotPass"> Восстановить пароль</span></h4></div>
         <div class="modal-body">
-            <ng-form name="nameDialog" novalidate role="form" ng-show="!userForm.forgotPass">
+            <ng-form name="nameDialog" novalidate role="form" ng-if="!userForm.forgotPass">
                 <div class="form-group input-group-lg"
                      ng-class="{true: 'has-error'}[(nameDialog.email.$dirty && nameDialog.email.$invalid) || (nameDialog.password.$dirty && nameDialog.password.$invalid)]">
                     <input type="email"
@@ -863,7 +969,7 @@
                            ng-keyup="hitEnter($event)"
                            required>
                     <input type="password"
-                           style="margin-top: 10px;ASD"
+                           style="margin-top: 10px;"
                            placeholder="Ваш пароль"
                            class="form-control"
                            name="password"
@@ -872,11 +978,11 @@
                            ng-keyup="hitEnter($event)"
                            required>
                     <span class="help-block" ng-show="user.error">{{user.error}}</span>
-                    <span class="help-block" style="display: none;"> <b><a href="" ng-click="userForm.forgotPass=true">Упс, я Забыл пароль
+                    <span class="help-block"> <b><a href="" ng-click="userForm.forgotPass=true">Упс, я Забыл пароль
                                 :(</a></b></span>
                 </div>
             </ng-form>
-            <ng-form name="forgotDialog" novalidate role="form" ng-show="userForm.forgotPass">
+            <ng-form name="forgotDialog" novalidate role="form" ng-if="userForm.forgotPass">
                 <div class="form-group input-group-lg"
                      ng-class="{true: 'has-error'}[(forgotDialog.email2.$dirty && forgotDialog.email2.$invalid)]">
                     <input type="email"
@@ -893,13 +999,13 @@
                 </div>
             </ng-form>
         </div>
-        <div class="modal-footer" ng-show="!userForm.forgotPass">
+        <div class="modal-footer" ng-if="!userForm.forgotPass">
             <button type="button" class="btn btn-default" ng-click="cancel()">Отмена</button>
             <button type="button" class="btn btn-primary" ng-click="save()"
                     ng-disabled="(nameDialog.$dirty && nameDialog.$invalid) || nameDialog.$pristine">Вход
             </button>
         </div>
-        <div class="modal-footer" ng-show="userForm.forgotPass">
+        <div class="modal-footer" ng-if="userForm.forgotPass">
             <button type="button" class="btn btn-default" ng-click="cancel()">Отмена</button>
             <button type="button" class="btn btn-primary" ng-click="sendPass()"
                     ng-disabled="(forgotDialog.$dirty && forgotDialog.$invalid) || forgotDialog.$pristine">Выслать новый
@@ -1021,6 +1127,34 @@
     </ng-form>
 </script>
 
+<script type="text/ng-template" id="RecoverUserTmpl">
+    <h2>Востановление пароля</h2>
+    <br>
+    <div class="alert alert-danger" ng-show="recoverForm.error">{{recoverForm.error}}</div>
+    <ng-form name="recoverForm" role="form">
+            <div class="form-group input-group"
+                 ng-class="{true: 'has-error'}[(recoverForm.password.$dirty && recoverForm.password.$invalid)]">
+                <label>Укажите новый пароль который будет использоватся для входа в систему</label>
+                <input type="password"
+                       style="margin-bottom: 10px"
+                       placeholder="Укажите новый пароль"
+                       class="form-control"
+                       name="password"
+                       id="password"
+                       ng-model="recovery.password"
+                       required>
+            </div>
+    </ng-form>
+    <div>
+        <p class="well">
+            <button type="button" ng-click="recover()"
+                    ng-disabled="(recoverForm.$dirty && recoverForm.$invalid) || recoverForm.$pristine || recoverForm.isSubmitting"
+                    class="btn btn-primary">Обновить
+            </button>
+        </p>
+    </div>
+</script>
+
 
 <script type="text/ng-template" id="NewTopicTmpl">
     <h2>Добавить Тему</h2>
@@ -1054,27 +1188,34 @@
     </div>
     <div ng-show="user.id">
         <h2>Оценочный лист пилота {{user.nickname}}</h2>
-
-        <div class="panel panel-{{course.complete ? 'success' : 'primary'}}" ng-repeat="course in user.courses">
-            <!-- ng-if="(course.rank_order <= user.rank_order)"-->
-            <div class="panel-heading">{{course.name}}<span class="label label-danger pull-right"
-                                                            style="font-size: 14px;">{{course.average | number : 1}}</span></div>
-            <table class="table">
-                <tr ng-repeat="subject in course.subjects">
-                    <td>{{subject.name}}</td>
-                    <td style="width:80px;text-align: right;vertical-align: middle">
-                        <button type="button" ng-if="UserIdentity.isInstructor" ng-click="mark(subject.id,course.id)"
-                                class="btn btn-xs btn-default"><span
-                                class="glyphicon glyphicon-pencil"></span></button>
+        <ul class="nav nav-tabs" role="tablist">
+            <li ng-class="{'active':(tabs.activeTab=='fighter')}" ng-if="user.programs.fighter"><a href="" ng-click="tabs.activeTab='fighter'">Истребитель</a></li>
+            <li ng-class="{'active':(tabs.activeTab=='bomber')}" ng-if="user.programs.bomber"><a href="" ng-click="tabs.activeTab='bomber'">Бомбардировщик</a></li>
+        </ul>
+        <div ng-repeat="program in user.programs"  ng-if="tabs.activeTab==program.id">
+            <div class="panel panel-{{course.complete ? 'success' : 'primary'}}" ng-repeat="course in program.courses">
+                <div class="panel-heading">{{course.name}}<span class="label label-danger pull-right"
+                                                                style="font-size: 14px;">{{course.average | number : 1}}</span>
+                </div>
+                <table class="table">
+                    <tr ng-repeat="subject in course.subjects">
+                        <td bind-compiled-html="subject.name"></td>
+                        <td style="width:80px;text-align: right;vertical-align: middle">
+                            <button type="button" ng-if="UserIdentity.isInstructor"
+                                    ng-click="mark(subject.id,course.id)"
+                                    class="btn btn-xs btn-default"><span
+                                    class="glyphicon glyphicon-pencil"></span></button>
                         <span class="label label-primary" style="font-size: 14px;"
                               ng-show="user.marks[course.id][subject.id]">{{user.marks[course.id][subject.id].mark}}</span>
-                    </td>
-                </tr>
-            </table>
-            <button type="button" ng-click="promote(course.id)"
-                    ng-if="(course.rank_order == user.rank_order) && course.complete" class="btn btn-sm btn-success"
-                    style="width: 100%"><span class="glyphicon glyphicon-hand-down"></span> Перевести на следующий курс
-            </button>
+                        </td>
+                    </tr>
+                </table>
+                <button type="button" ng-click="promote(course.id)"
+                        ng-if="(course.rank_order == user.rank_order) && course.complete" class="btn btn-sm btn-success"
+                        style="width: 100%"><span class="glyphicon glyphicon-hand-down"></span> Перевести на следующий
+                    курс
+                </button>
+            </div>
         </div>
     </div>
 </script>
@@ -1132,9 +1273,9 @@
         <div class="modal-body">
             <ng-form name="eventDialog" novalidate role="form">
                 <textarea style="width: 100%;resize: none;" rows="5" ng-model="event.text"
-                          class="form-control"></textarea>
+                          class="form-control" placeholder="Событие"></textarea>
                 <br>
-                <input type="date" ng-model="event.dateString" class="form-control">
+                <input type="date" ng-model="event.dateString" class="form-control" placeholder="Дата">
             </ng-form>
         </div>
         <div class="modal-footer">
@@ -1171,6 +1312,31 @@
         </div>
     </div>
 </script>
+
+<script type="text/ng-template" id="rejectDialogTmpl">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h4 class="modal-title"><span class="glyphicon glyphicon-plane"></span>
+                <span>Укажите причину отклонения заявки</span></h4>
+        </div>
+        <div class="modal-body">
+            <ng-form name="rejectDialog" novalidate role="form">
+                <textarea style="width: 100%;resize: none;" rows="5" ng-model="reject.text"
+                          class="form-control" placeholder="Причина"></textarea>
+            </ng-form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-default" ng-disabled="reject.isSubmitting" ng-click="cancel()">
+                Отмена
+            </button>
+            <button type="button" class="btn btn-primary" ng-disabled="reject.isSubmitting" ng-click="saveReject()">
+                Отклонить заявку
+            </button>
+        </div>
+    </div>
+</script>
+
+
 <script type="text/javascript">
     window.___gcfg = {lang: 'ru'};
     (function() {

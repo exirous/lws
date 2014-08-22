@@ -65,6 +65,11 @@ function mainRouteConfig($stateProvider, $urlRouterProvider)
             templateUrl: 'userMarksTmpl',
             controller: "UserMarksCtrl"
         })
+        .state('recoverUser', {
+            url: "/user/recover/:token",
+            templateUrl: 'RecoverUserTmpl',
+            controller: "RecoverUserCtrl"
+        })
         .state('afterroster', {
             url: "/afterroster",
             templateUrl: 'AfterRosterTmpl',
@@ -130,6 +135,22 @@ function mainRouteConfig($stateProvider, $urlRouterProvider)
             templateUrl: 'ReportVacationTmpl',
             controller: "ReportVacationCtrl"
         })
+        .state('messenger', {
+            url: "/messenger",
+            templateUrl: 'MessengerTmpl',
+            controller: "MessengerCtrl"
+        })
+        .state('conversation', {
+            url: "/conversation/:senderId",
+            templateUrl: 'ConversationTmpl',
+            controller: "ConversationCtrl"
+        })
+        .state('conversation.page', {
+            url: "/page-:page",
+            templateUrl: 'ConversationMessagesTmpl',
+            controller: "ConversationPageCtrl"
+        })
+
 }
 lwsApp.config(mainRouteConfig);
 lwsApp.config( [
@@ -140,3 +161,17 @@ lwsApp.config( [
             // Angular before v1.2 uses $compileProvider.urlSanitizationWhitelist(...)
         }
     ]);
+
+var SoundAlert = {
+    _sound: new Audio("/alert.mp3"),
+    play: function () {
+        this._sound.currentTime = 0;
+        this._sound.play();
+    }
+};
+
+var NotificationsAllowed = false;
+if (typeof Notification != 'undefined' && Notification.requestPermission)
+    Notification.requestPermission(function (state) {
+        NotificationsAllowed = (state == 'granted')
+    });

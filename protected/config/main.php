@@ -69,7 +69,7 @@ return array(
             'username'         => 'lws',
             'password'         => 'lwsrulez',
             'charset'          => 'utf8',
-            'enableProfiling'  => true,
+            //'enableProfiling'  => true,
         ),
 
         'clientScript' => array(
@@ -102,8 +102,7 @@ return array(
                     'report' => 'summary',
                 )
                 // uncomment the following to show log messages on web pages
-
-/*                    array(
+/*,                    array(
                         'class'=>'CWebLogRoute',
                     ),*/
 

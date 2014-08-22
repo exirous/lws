@@ -18,8 +18,7 @@ class UserController extends Controller
         $request = Yii::app()->request;
         $email = $request->getRequiredRawBodyParam('email', null, AHttpRequest::PARAM_TYPE_STRING);
         $password = $request->getRequiredRawBodyParam('password', null, AHttpRequest::PARAM_TYPE_STRING);
-        switch ($request->method)
-        {
+        switch ($request->method) {
             case AHttpRequest::METHOD_POST:
                 $this->returnSuccess($this->_loginUser($email, $password));
                 break;
@@ -30,35 +29,31 @@ class UserController extends Controller
 
     public function actionLogout()
     {
-        try
-        {
+        try {
             $request = Yii::app()->request;
-            switch ($request->method)
-            {
+            switch ($request->method) {
                 case AHttpRequest::METHOD_POST:
                     $this->returnSuccess($this->_logoutUser());
                     break;
                 default:
                     $this->returnError();
             }
-        } catch (Exception $e)
-        {
+        } catch (Exception $e) {
             $this->returnError($e->getMessage());
         }
     }
+
 
     public function actionItem()
     {
         $request = Yii::app()->request;
         $id = $request->getParam('id', 0, AHttpRequest::PARAM_TYPE_NUMERIC);
         $noMedals = $request->getParam('noMedals', false);
-        switch ($request->method)
-        {
+        switch ($request->method) {
             case AHttpRequest::METHOD_GET:
                 if ($id)
                     $this->returnSuccess($this->_renderUser($id, $noMedals));
-                else
-                {
+                else {
                     $filters = $request->getParam('filters', '', AHttpRequest::PARAM_TYPE_STRING);
                     $filters = @json_decode($filters, true);
                     $this->returnSuccess($this->_renderUserList($filters));
@@ -68,28 +63,27 @@ class UserController extends Controller
                 $this->returnError();
         }
     }
+
     public function actionGetIdFromUid()
     {
         $request = Yii::app()->request;
-        $uid = $request->getParam('uid','NOUID');
-        $user = User::model()->findByAttributes(['ts_id'=>$uid]);
+        $uid = $request->getParam('uid', 'NOUID');
+        $user = User::model()->findByAttributes(['ts_id' => $uid]);
         if (!$user)
-          $this->returnSuccess([]);
+            $this->returnSuccess([]);
         else
-            $this->returnSuccess(['id'=>$user->id]);
+            $this->returnSuccess(['id' => $user->id]);
     }
 
     public function actionVacation()
     {
         $request = Yii::app()->request;
-        switch ($request->method)
-        {
+        switch ($request->method) {
             case AHttpRequest::METHOD_GET:
                 $id = $request->getParam('id', 0, AHttpRequest::PARAM_TYPE_NUMERIC);
                 if ($id)
                     $this->returnSuccess($this->_renderUser($id));
-                else
-                {
+                else {
                     $filters = $request->getParam('filters', '', AHttpRequest::PARAM_TYPE_STRING);
                     $filters = @json_decode($filters, true);
                     $this->returnSuccess($this->_renderUserList($filters));
@@ -111,8 +105,7 @@ class UserController extends Controller
     {
 
         $request = Yii::app()->request;
-        switch ($request->method)
-        {
+        switch ($request->method) {
             case AHttpRequest::METHOD_GET:
                 $this->returnSuccess($this->_renderBirthdayList());
                 break;
@@ -126,8 +119,7 @@ class UserController extends Controller
         $request = Yii::app()->request;
         $user = $request->getRequiredRawBodyParam('user', [], AHttpRequest::PARAM_TYPE_ARRAY);
         $user['ip'] = $request->getUserHostAddress();
-        switch ($request->method)
-        {
+        switch ($request->method) {
             case AHttpRequest::METHOD_POST:
                 $this->returnSuccess($this->_rosterUser($user));
                 break;
@@ -140,8 +132,7 @@ class UserController extends Controller
     {
         $request = Yii::app()->request;
         $email = $request->getRequiredRawBodyParam('email', [], AHttpRequest::PARAM_TYPE_STRING);
-        switch ($request->method)
-        {
+        switch ($request->method) {
             case AHttpRequest::METHOD_POST:
                 $this->returnSuccess($this->_recoverUser($email));
                 break;
@@ -155,8 +146,7 @@ class UserController extends Controller
     {
         $request = Yii::app()->request;
         $user = $request->getRequiredRawBodyParam('user', [], AHttpRequest::PARAM_TYPE_ARRAY);
-        switch ($request->method)
-        {
+        switch ($request->method) {
             case AHttpRequest::METHOD_POST:
                 $this->returnSuccess($this->_updateUser($user));
                 break;
@@ -182,6 +172,22 @@ class UserController extends Controller
         $this->returnSuccess($this->_getUserMarks($id));
     }
 
+    public function actionUnreadMessages()
+    {
+        $request = Yii::app()->request;
+        $ts_id = $request->getParam('ts_id', "A");
+        $user = User::model()->find(['condition' => 'ts_id=:tsId', 'params' => [':tsId' => $ts_id]]);
+        if (!$user)
+            $this->returnSuccess(['data' => [], 'message' => 'User not found']);
+        else {
+            $messages = [];
+            $unreadMessages = PrivateMessage::model()->findAllByAttributes(['reciever_id' => $user->id, 'is_read' => '0']);
+            foreach ($unreadMessages as $message)
+                $messages[] = $message->getRenderAttributes();
+            $this->returnSuccess($messages);
+        }
+    }
+
     public function actionSaveMark()
     {
         $request = Yii::app()->request;
@@ -199,11 +205,17 @@ class UserController extends Controller
         $this->returnSuccess($this->_acceptRostered($id, $uId));
     }
 
+    public function actionTest()
+    {
+        $this->_acceptRostered('111','2WvRkBKNiJgsRYbHMCP46MRz1TU=');
+    }
+
     public function actionReject()
     {
         $request = Yii::app()->request;
         $id = $request->getRequiredRawBodyParam('userId', 0);
-        $this->returnSuccess($this->_rejectRostered($id));
+        $reason = $request->getRequiredRawBodyParam('reason', '');
+        $this->returnSuccess($this->_rejectRostered($id, $reason));
     }
 
 
@@ -221,8 +233,7 @@ class UserController extends Controller
         $request = Yii::app()->request;
         if ($request->method != AHttpRequest::METHOD_POST)
             $this->returnError();
-        else
-        {
+        else {
             $eventId = $request->getRequiredRawBodyParam('id', 0);
             $date = $request->getRequiredRawBodyParam('dateString', '');
             $text = $request->getRequiredRawBodyParam('text', '');
@@ -236,8 +247,7 @@ class UserController extends Controller
         $request = Yii::app()->request;
         if ($request->method != AHttpRequest::METHOD_POST)
             $this->returnError();
-        else
-        {
+        else {
             $awardId = $request->getRequiredRawBodyParam('id', 0);
             $userId = $request->getRequiredRawBodyParam('userId', 0);
 
@@ -252,8 +262,7 @@ class UserController extends Controller
         $request = Yii::app()->request;
         if ($request->method != AHttpRequest::METHOD_POST)
             $this->returnError();
-        else
-        {
+        else {
             $eventId = $request->getRequiredRawBodyParam('eventId', 0);
             $this->returnSuccess($this->_deleteEvent($eventId));
         }
@@ -264,8 +273,7 @@ class UserController extends Controller
         $request = Yii::app()->request;
         if ($request->method != AHttpRequest::METHOD_POST)
             $this->returnError();
-        else
-        {
+        else {
             $id = $request->getRequiredRawBodyParam('id', 0);
             $User = User::model()->findByPk($id);
             $User->syncWithTeamSpeak();
@@ -273,22 +281,55 @@ class UserController extends Controller
         }
     }
 
+    public function actionCheckRecoveryToken()
+    {
+        $request = Yii::app()->request;
+        $token = trim($request->getRequiredParam('token', ''));
+        try {
+            if (User::isRecoveryTokenOK($token))
+                $this->returnSuccess(['result' => 'OK']);
+            else
+                throw new Exception('Token Invalid');
+        } catch (Exception $e) {
+            $this->returnError($e->getMessage());
+        }
+    }
+
+    public function actionRecoverPassword()
+    {
+        $request = Yii::app()->request;
+        $token = trim($request->getRequiredRawBodyParam('token', ''));
+        $transaction = Yii::app()->db->beginTransaction();
+        try {
+            $password = $request->getRequiredRawBodyParam('password', '');
+            $userModel = User::resetPassword($token, $password);
+            if (!$userModel)
+                throw new Exception("Что-то пошло не так... Администратор оповещён");
+            $identity = new UserIdentity($userModel->email, '');
+            if ($identity->forceAuthenticate($userModel))
+                Yii::app()->user->login($identity, 3600 * 24 * 365);
+            else
+                throw new Exception("Что-то пошло не так... Администратор оповещён");
+            $transaction->commit();
+            $this->returnSuccess(Yii::app()->user->privateAttributes);
+        } catch (Exception $e) {
+            $transaction->rollback();
+            $this->returnError($e->getMessage());
+        }
+    }
+
 
     private function _updateEvent($id, $date, $text, $userId)
     {
+        if (Yii::app()->user->isGuest || !Yii::app()->user->model->instructor_id)
+            return null;
         $transaction = Yii::app()->db->beginTransaction();
-        try
-        {
-            if (Yii::app()->user->isGuest || !Yii::app()->user->model->instructor_id)
-                return null;
-            if ($id > 0)
-            {
+        try {
+            if ($id > 0) {
                 $event = UserEvent::model()->findByPk($id);
                 if (!$event)
                     throw new Exception('event not found');
-            }
-            else
-            {
+            } else {
                 $event = new UserEvent();
                 $event->user_id = $userId;
             }
@@ -298,8 +339,7 @@ class UserController extends Controller
                 throw new Exception($event->getErrorsString());
             $transaction->commit();
             return $event->getPublicAttributes();
-        } catch (Exception $e)
-        {
+        } catch (Exception $e) {
             $transaction->rollback();
             $this->returnError($e->getMessage());
         }
@@ -308,19 +348,19 @@ class UserController extends Controller
 
     private function _updateUser($userData)
     {
+        if (Yii::app()->user->isGuest || !Yii::app()->user->model->instructor_id)
+            return null;
         $transaction = Yii::app()->db->beginTransaction();
-        try
-        {
-            if (Yii::app()->user->isGuest || !Yii::app()->user->model->instructor_id)
-                return null;
-
+        try {
             if (!$userData['id'] ||
                 !$userData['nickname'] ||
                 !$userData['firstname'] ||
                 !$userData['ts_id'] ||
-                !$userData['birthDate']
+                !$userData['birthDate'] ||
+                (!$userData['qualifications'] || (!$userData['qualifications']['fighter'] && !$userData['qualifications']['bomber']))
             )
                 throw new Exception('Чего-то не хватает!');
+
             $user = User::model()->findByPk($userData['id']);
             if (!$user)
                 throw new Exception('Не найден!!');
@@ -329,6 +369,15 @@ class UserController extends Controller
             $user->nickname = $userData['nickname'];
             $user->ts_id = $userData['ts_id'];
             $user->is_clanner = $userData['is_clanner'];
+            $user->birth_date = $userData['birthDate'];
+
+            $qualifications = [];
+            if ($userData['qualifications']['fighter'])
+                $qualifications[] = 'fighter';
+            if ($userData['qualifications']['bomber'])
+                $qualifications[] = 'bomber';
+
+            $user->qualifications = implode(',', $qualifications);
 
             if (!$user->validate())
                 throw new Exception($user->getErrorsString());
@@ -339,8 +388,7 @@ class UserController extends Controller
 
             $transaction->commit();
             return $user->getEditAttributes();
-        } catch (Exception $e)
-        {
+        } catch (Exception $e) {
             $transaction->rollback();
             $this->returnError($e->getMessage());
         }
@@ -349,19 +397,17 @@ class UserController extends Controller
 
     private function _deleteEvent($id)
     {
+        if (Yii::app()->user->isGuest || !Yii::app()->user->model->instructor_id)
+            return null;
         $transaction = Yii::app()->db->beginTransaction();
-        try
-        {
-            if (Yii::app()->user->isGuest || !Yii::app()->user->model->instructor_id)
-                return null;
+        try {
             $event = UserEvent::model()->findByPk($id);
             if (!$event)
                 throw new Exception('event not found');
             $event->delete();
             $transaction->commit();
             return [];
-        } catch (Exception $e)
-        {
+        } catch (Exception $e) {
             $transaction->rollback();
             $this->returnError($e->getMessage());
         }
@@ -370,8 +416,7 @@ class UserController extends Controller
 
     public function actionUpload()
     {
-        try
-        {
+        try {
             if (Yii::app()->user->isGuest)
                 throw new Exception("ЭЭ??");
 
@@ -397,45 +442,42 @@ class UserController extends Controller
                 unlink(dirname(Yii::app()->basePath) . '/img/users/' . $oldFileName);
             $user->save();
             $this->returnSuccess($src);
-        } catch (Exception $e)
-        {
+        } catch (Exception $e) {
             $this->returnError($e->getMessage());
         }
     }
 
     private function _acceptRostered($id, $tsId)
     {
+        if (Yii::app()->user->isGuest || !Yii::app()->user->model->instructor_id)
+            return null;
         $transaction = Yii::app()->db->beginTransaction();
-        try
-        {
+        try {
             $user = User::model()->findByPk($id);
             if (!$user)
                 throw new Exception('Пользователь не найден');
 
             $user->accept($tsId);
             $transaction->commit();
-        } catch (Exception $e)
-        {
+        } catch (Exception $e) {
             $transaction->rollback();
             $this->returnError($e->getMessage());
         }
         return [];
     }
 
-    private function _rejectRostered($id)
+    private function _rejectRostered($id, $reason)
     {
+        if (Yii::app()->user->isGuest || !Yii::app()->user->model->instructor_id)
+            return null;
         $transaction = Yii::app()->db->beginTransaction();
-        try
-        {
+        try {
             $user = User::model()->findByPk($id);
             if (!$user)
                 throw new Exception('Пользователь не найден');
-            if ($user->rank_id || $user->ts_id)
-                throw new Exception('Пользователь уже был принят!');
-            $user->delete();
+            $user->reject($reason);
             $transaction->commit();
-        } catch (Exception $e)
-        {
+        } catch (Exception $e) {
             $transaction->rollback();
             $this->returnError($e->getMessage());
         }
@@ -444,8 +486,7 @@ class UserController extends Controller
 
     private function _renderUser($id, $noMedals = false)
     {
-        try
-        {
+        try {
             $user = User::model()->findByPk($id);
             if (!$user)
                 throw new Exception("User not found!");
@@ -453,16 +494,14 @@ class UserController extends Controller
                 return $user->getEditAttributes();
             else
                 return $user->getPublicAttributes();
-        } catch (Exception $e)
-        {
+        } catch (Exception $e) {
             $this->returnError($e->getMessage());
         }
     }
 
     private function _renderUserList($filters)
     {
-        try
-        {
+        try {
             $users = User::model()->with('rank');
 
             if (isset($filters['name']) && $filters['name'])
@@ -475,8 +514,7 @@ class UserController extends Controller
                 $usersOut[] = $user->listAttributes;
 
             return $usersOut;
-        } catch (Exception $e)
-        {
+        } catch (Exception $e) {
             $this->returnError($e->getMessage());
         }
         return null;
@@ -484,17 +522,26 @@ class UserController extends Controller
 
     private function _renderBirthdayList()
     {
-        try
-        {
+        try {
             $users = User::model()->with('rank');
             $usersOut = [];
             $users = $users->scopeWithRank()->scopeClosestBirthdays()->findAll();
-            foreach ($users as $user)
-                $usersOut[] = $user->listAttributes;
-
+            foreach ($users as $user) {
+                $attributes = $user->listAttributes;
+                $date = new DateTime($user->birth_date);
+                $date = $date->setDate(date("Y"), $date->format('m'), $date->format('d'));
+                $attributes['birthday'] = $date->getTimestamp() . '000';
+                if ($date->format('m-d') == date("m-d"))
+                    $attributes['today'] = true;
+                if ($date->format('m-d') == date("m-d", time() + 24 * 3600))
+                    $attributes['tomorow'] = true;
+                $usersOut[] = $attributes;
+            }
+            usort($usersOut, function ($a, $b) {
+                return ($a['birthday'] - $b['birthday']);
+            });
             return $usersOut;
-        } catch (Exception $e)
-        {
+        } catch (Exception $e) {
             $this->returnError($e->getMessage());
         }
         return null;
@@ -503,8 +550,7 @@ class UserController extends Controller
     private function _loginUser($username, $password)
     {
         $userModel = null;
-        try
-        {
+        try {
             $identity = new UserIdentity($username, $password);
             if ($identity->authenticate())
                 Yii::app()->user->login($identity, 3600 * 24 * 365);
@@ -512,8 +558,7 @@ class UserController extends Controller
                 throw new Exception("Не правильный логин или пароль!");
 
             return $identity->_model->privateAttributes;
-        } catch (Exception $e)
-        {
+        } catch (Exception $e) {
             $this->returnError($e->getMessage());
         }
         return [];
@@ -529,8 +574,7 @@ class UserController extends Controller
     {
         $transaction = Yii::app()->db->beginTransaction();
         $userModel = null;
-        try
-        {
+        try {
             $userModel = User::roster($user);
             if (!$userModel)
                 throw new Exception("Что-то пошло не так... Администратор оповещён");
@@ -542,8 +586,7 @@ class UserController extends Controller
                 throw new Exception("Что-то пошло не так... Администратор оповещён");
 
             $transaction->commit();
-        } catch (Exception $e)
-        {
+        } catch (Exception $e) {
             $transaction->rollback();
             $this->returnError($e->getMessage());
         }
@@ -553,12 +596,10 @@ class UserController extends Controller
     private function _recoverUser($email)
     {
         $transaction = Yii::app()->db->beginTransaction();
-        try
-        {
-            ////User::recover($email);
+        try {
+            User::recover($email);
             $transaction->commit();
-        } catch (Exception $e)
-        {
+        } catch (Exception $e) {
             $transaction->rollback();
             $this->returnError($e->getMessage());
         }
@@ -608,12 +649,10 @@ class UserController extends Controller
             return null;
 
         $transaction = Yii::app()->db->beginTransaction();
-        try
-        {
+        try {
             UserMark::saveMark($userId, $subjectId, $mark);
             $transaction->commit();
-        } catch (Exception $e)
-        {
+        } catch (Exception $e) {
             $transaction->rollback();
             $this->returnError($e->getMessage());
         }
@@ -626,8 +665,7 @@ class UserController extends Controller
             return null;
 
         $transaction = Yii::app()->db->beginTransaction();
-        try
-        {
+        try {
             $vacation = new Vacation();
             $vacation->reason = $reason;
             $vacation->date_from = $dateFrom;
@@ -636,9 +674,9 @@ class UserController extends Controller
             if (!$vacation->save())
                 throw new Exception("Ошибка сохранения");
             $transaction->commit();
+
             return $vacation->getPublicAttributes();
-        } catch (Exception $e)
-        {
+        } catch (Exception $e) {
             $transaction->rollback();
             $this->returnError($e->getMessage());
         }
@@ -652,8 +690,7 @@ class UserController extends Controller
 
         $user = null;
         $transaction = Yii::app()->db->beginTransaction();
-        try
-        {
+        try {
             $user = User::model()->findByPk($userId);
             if (!$user)
                 throw new Exception('Cannot find user');
@@ -661,8 +698,7 @@ class UserController extends Controller
             $user->promoteCourse($courseId, $promoteToOfficer);
             $transaction->commit();
             $user->refresh();
-        } catch (Exception $e)
-        {
+        } catch (Exception $e) {
             $transaction->rollback();
             $this->returnError($e->getMessage());
         }
@@ -675,8 +711,7 @@ class UserController extends Controller
         if (Yii::app()->user->isGuest || (Yii::app()->user->id != '1' && Yii::app()->user->id != '14'))
             return null;
         $transaction = Yii::app()->db->beginTransaction();
-        try
-        {
+        try {
             $userAward = UserAward::model()->find(['condition' => 'user_id=:userId AND award_id=:awardId', 'params' => ['userId' => $userId, 'awardId' => $awardId]]);
             if (!$userAward)
                 throw new Exception('Cannot find Award');
@@ -686,58 +721,35 @@ class UserController extends Controller
             $userAward->save();
             $transaction->commit();
 
-        } catch (Exception $e)
-        {
+        } catch (Exception $e) {
             $transaction->rollback();
             $this->returnError($e->getMessage());
         }
         return 'OK';
     }
 
-
-    /*
-        $transaction = Yii::app()->db->beginTransaction();
-        try
-        {
-            $string = null;
-            $value = isset($translation['value']) ? $translation['value'] : '';
-            switch ($type)
-            {
-                case 'string':
-                    $string = StringTranslation::saveTranslation($stringId, $languageId, $value);
-                    break;
-                case 'plural':
-                    //Here we use plural_string_id
-                    $string = PluralStringTranslation::saveTranslation($stringId, $languageId, $value);
-                    break;
-                default:
-                    throw  new Exception('Failed to save string translation. Reason: Input Data Error');
-            }
-
-            $transaction->commit();
-            $this->returnSuccess(['string' => $string], Yii::t('app', 'String translation successfully updated'));
-        }
-        catch (Exception $e)
-        {
-            $transaction->rollback();
-            $this->returnError($e->getMessage());
-        }
-
-     * */
-
     /**
      * This is the action to handle external exceptions.
      */
     public function actionError()
     {
-        if ($error = Yii::app()->errorHandler->error)
-        {
+        if ($error = Yii::app()->errorHandler->error) {
             if (Yii::app()->request->isAjaxRequest)
                 echo $error['message'];
             else
                 $this->render('error', $error);
         }
     }
+
+    /*public function actionTest()
+    {
+        /*foreach (User::model()->findAll() as $user) {
+            $user->broadcast_token = md5($user->email . $user->password);
+            $user->save();
+        }
+        $message = PrivateMessage::model()->findByPk(3);
+        $message->notify();
+    }*/
 
 
 }

@@ -25,6 +25,9 @@
  * @property string $is_technician
  * @property string $img_src
  * @property string $qualifications
+ * @property string $last_online_time
+ * @property string $broadcast_token
+ * @property string $recovery_token
  *
  * @property BattleEvent[] $battleEvents
  * @property ForumMessage[] $forumMessages
@@ -32,6 +35,8 @@
  * @property News[] $news
  * @property Notification[] $notifications
  * @property Order[] $orders
+ * @property PrivateMessage[] $privateMessages
+ * @property PrivateMessage[] $privateMessages1
  * @property Rank $rank
  * @property Rank $instructor
  * @property Award[] $awards
@@ -83,14 +88,14 @@ abstract class BaseUser extends AActiveRecord
     public function rules()
     {
         return array(
-            array('nickname, password, ip', 'length', 'max'=>32),
+            array('nickname, password, ip, broadcast_token, recovery_token', 'length', 'max'=>32),
             array('firstname', 'length', 'max'=>128),
             array('email, ts_id', 'length', 'max'=>64),
             array('rank_id, instructor_id, img_src', 'length', 'max'=>10),
             array('is_clanner, is_technician', 'length', 'max'=>1),
-            array('join_date, birth_date, roster, qualifications', 'safe'),
-            array('nickname, firstname, email, password, ts_id, join_date, birth_date, roster, rank_id, instructor_id, ip, is_clanner, is_technician, img_src, qualifications', 'default', 'setOnEmpty' => true, 'value' => null),
-            array('id, nickname, firstname, email, password, ts_id, join_date, birth_date, roster, rank_id, instructor_id, ip, is_clanner, is_technician, img_src, qualifications', 'safe', 'on' => 'search'),
+            array('join_date, birth_date, roster, qualifications, last_online_time', 'safe'),
+            array('nickname, firstname, email, password, ts_id, join_date, birth_date, roster, rank_id, instructor_id, ip, is_clanner, is_technician, img_src, qualifications, last_online_time, broadcast_token, recovery_token', 'default', 'setOnEmpty' => true, 'value' => null),
+            array('id, nickname, firstname, email, password, ts_id, join_date, birth_date, roster, rank_id, instructor_id, ip, is_clanner, is_technician, img_src, qualifications, last_online_time, broadcast_token, recovery_token', 'safe', 'on' => 'search'),
         );
     }
 
@@ -103,6 +108,8 @@ abstract class BaseUser extends AActiveRecord
             'news' => array(self::HAS_MANY, 'News', 'issuer_id'),
             'notifications' => array(self::HAS_MANY, 'Notification', 'user_id'),
             'orders' => array(self::MANY_MANY, 'Order', 'order_participant(user_id, order_id)'),
+            'privateMessages' => array(self::HAS_MANY, 'PrivateMessage', 'reciever_id'),
+            'privateMessages1' => array(self::HAS_MANY, 'PrivateMessage', 'sender_id'),
             'rank' => array(self::BELONGS_TO, 'Rank', 'rank_id'),
             'instructor' => array(self::BELONGS_TO, 'Rank', 'instructor_id'),
             'awards' => array(self::MANY_MANY, 'Award', 'user_award(user_id, award_id)'),
@@ -140,12 +147,17 @@ abstract class BaseUser extends AActiveRecord
             'is_technician' => Yii::t('app', 'Is Technician'),
             'img_src' => Yii::t('app', 'Img Src'),
             'qualifications' => Yii::t('app', 'Qualifications'),
+            'last_online_time' => Yii::t('app', 'Last Online Time'),
+            'broadcast_token' => Yii::t('app', 'Broadcast Token'),
+            'recovery_token' => Yii::t('app', 'Recovery Token'),
             'battleEvents' => null,
             'forumMessages' => null,
             'forumTopics' => null,
             'news' => null,
             'notifications' => null,
             'orders' => null,
+            'privateMessages' => null,
+            'privateMessages1' => null,
             'rank' => null,
             'instructor' => null,
             'awards' => null,
@@ -176,6 +188,9 @@ abstract class BaseUser extends AActiveRecord
         $criteria->compare('is_technician', $this->is_technician, true);
         $criteria->compare('img_src', $this->img_src, true);
         $criteria->compare('qualifications', $this->qualifications, true);
+        $criteria->compare('last_online_time', $this->last_online_time, true);
+        $criteria->compare('broadcast_token', $this->broadcast_token, true);
+        $criteria->compare('recovery_token', $this->recovery_token, true);
 
         return new CActiveDataProvider($this, array(
             'criteria' => $criteria,

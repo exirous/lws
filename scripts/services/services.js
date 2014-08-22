@@ -114,7 +114,16 @@ lwsServices.factory('User', ['$resource', function ($resource)
         getIdFromUid:{
             url: '/user/getIdFromUid',
             method: 'get'
+        },
+        checkRecoveryToken:{
+            url: '/user/checkRecoveryToken',
+            method: 'get'
+        },
+        recoverPassword:{
+            url: '/user/recoverPassword',
+            method: 'post'
         }
+
     });
 }]);
 
@@ -167,6 +176,28 @@ lwsServices.factory('Topic', ['$resource', function ($resource)
         post : {
             method:'POST',
             url:'/flood/postMessage'
+        }
+    });
+}]);
+
+
+lwsServices.factory('Messenger', ['$resource', function ($resource)
+{
+    return $resource('/messenger/list', {}, {
+        query : {
+            method:'GET'
+        },
+        get : {
+            method:'GET',
+            url:'/messenger/conversation'
+        },
+        page : {
+            method:'GET',
+            url:'/messenger/conversationPage'
+        },
+        post : {
+            method:'POST',
+            url:'/messenger/postMessage'
         }
     });
 }]);

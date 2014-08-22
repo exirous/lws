@@ -11,6 +11,7 @@
  *
  * @property string $id
  * @property string $name
+ * @property string $slug
  *
  * @property Course[] $courses
  */
@@ -34,15 +35,16 @@ abstract class BaseProgram extends AActiveRecord
 
     public static function representingColumn()
     {
-        return 'name';
+        return 'slug';
     }
 
     public function rules()
     {
         return array(
-            array('name', 'length', 'max'=>32),
+            array('slug', 'required'),
+            array('name, slug', 'length', 'max'=>32),
             array('name', 'default', 'setOnEmpty' => true, 'value' => null),
-            array('id, name', 'safe', 'on' => 'search'),
+            array('id, name, slug', 'safe', 'on' => 'search'),
         );
     }
 
@@ -64,6 +66,7 @@ abstract class BaseProgram extends AActiveRecord
         return array(
             'id' => Yii::t('app', 'ID'),
             'name' => Yii::t('app', 'Name'),
+            'slug' => Yii::t('app', 'Slug'),
             'courses' => null,
         );
     }
@@ -74,6 +77,7 @@ abstract class BaseProgram extends AActiveRecord
 
         $criteria->compare('id', $this->id, true);
         $criteria->compare('name', $this->name, true);
+        $criteria->compare('slug', $this->slug, true);
 
         return new CActiveDataProvider($this, array(
             'criteria' => $criteria,

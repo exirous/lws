@@ -102,23 +102,21 @@ class User extends BaseUser
             foreach (Award::model()->findAll(['order' => '`order`']) as $award)
                 $awards[$award->award_replace_id ? $award->award_replace_id : $award->id] = $award->shortAttributes;
         */
-            foreach (UserAward::model()->with('award')->findAll(['condition' => 'user_id=:userId', 'params' => ['userId' => $this->id]]) as $userAward)
-            {
-                $award = $userAward->award;
-                $attributes = $award->shortAttributes;
-                if ($userAward->top)
-                {
-                    $attributes['top'] = $userAward->top;
-                    $attributes['left'] = $userAward->left;
-                }
-                $awards[$award->award_replace_id ? $award->award_replace_id : $award->id] = $attributes;
+        foreach (UserAward::model()->with('award')->findAll(['condition' => 'user_id=:userId', 'params' => ['userId' => $this->id]]) as $userAward) {
+            $award = $userAward->award;
+            $attributes = $award->shortAttributes;
+            if ($userAward->top) {
+                $attributes['top'] = $userAward->top;
+                $attributes['left'] = $userAward->left;
             }
-            $awards = array_values($awards);
+            $awards[$award->award_replace_id ? $award->award_replace_id : $award->id] = $attributes;
+        }
+        $awards = array_values($awards);
 
-            foreach ($this->userEvents as $event)
-                $events[] = $event->publicAttributes;
+        foreach ($this->userEvents as $event)
+            $events[] = $event->publicAttributes;
 
-        $qualifications = str_replace(['fighter','bomber',','],['Истребитель','Бомбардировщик',', '], $this->qualifications);
+        $qualifications = str_replace(['fighter', 'bomber', ','], ['Истребитель', 'Бомбардировщик', ', '], $this->qualifications);
 
         return [
             'nickname' => $this->nickname,
@@ -148,7 +146,8 @@ class User extends BaseUser
             'id' => $this->id,
             'is_clanner' => intval($this->is_clanner),
             'ts_id' => $this->ts_id,
-            'possibleUsers'=>Yii::app()->ts->findUsersLike($this->nickname, $this->ip)
+            'qualifications' => ['fighter' => strpos($this->qualifications, 'fighter') !== false, 'bomber' => strpos($this->qualifications, 'bomber') !== false],
+            'possibleUsers' => Yii::app()->ts->findUsersLike($this->nickname, $this->ip)
         ];
     }
 
@@ -173,9 +172,14 @@ class User extends BaseUser
         foreach ($this->userMarks as $mark)
             $marks[$mark->subject->course_id][$mark->subject_id] = $mark->publicAttributes;
 
-        $courses = [];
-        foreach (Course::model()->findAll() as $course)
-            $courses[] = $course->publicAttributes;
+        $programs = [];
+        foreach (Program::model()->findAll() as $program) {
+            if (strpos($this->qualifications, $program->slug) !== false) {
+                $programs[$program->slug]['id'] = $program->slug;
+                foreach ($program->courses as $course)
+                    $programs[$program->slug]['courses'][] = $course->publicAttributes;
+            }
+        }
 
         return [
             'id' => $this->id,
@@ -184,7 +188,7 @@ class User extends BaseUser
             'is_clanner' => intval($this->is_clanner),
             'rank_order' => $this->rank->order,
             'marks' => $marks,
-            'courses' => $courses
+            'programs' => $programs
         ];
     }
 
@@ -242,12 +246,15 @@ class User extends BaseUser
             'rank_name' => $this->rank->name,
             'instructor' => $this->instructor_id,
             'activeVacation' => $this->activeVacation,
+            'isBomber' => strpos($this->qualifications, 'bomber') !== false,
             'is_clanner' => intval($this->is_clanner),
         ];
     }
 
     public function getPrivateAttributes()
     {
+        if (Yii::app()->user->id != $this->id)
+            return [];
         return [
             'nickname' => $this->nickname,
             'firstname' => $this->firstname,
@@ -256,6 +263,8 @@ class User extends BaseUser
             'canMakeNews' => $this->canMakeNews(),
             'isInstructor' => $this->isInstructor(),
             'fullname' => $this->nickname . ' (' . $this->firstname . ')',
+            'broadcast_token' => $this->broadcast_token,
+            'uid' => $this->ts_id,
             'id' => $this->id
         ];
     }
@@ -275,6 +284,47 @@ class User extends BaseUser
         return $this->instructor_id ? true : false;
     }
 
+    public static  function recover($email)
+    {
+        $user = User::model()->findByAttributes(['email'=>$email]);
+        if (!$user)
+            throw new Exception('Мы не можем восстановить этот аккаунт');
+        $key = md5(microtime()+'champ');
+        $user->recovery_token = $key;
+        if (!$user->save())
+           throw new Exception('Мы не можем восстановить этот аккаунт');
+        Mailer::send($email, 'Восстановление пароля', Yii::app()->controller->renderPartial('//mails/password_recovery', compact('key'), true));
+    }
+
+    public static function isRecoveryTokenOK($token)
+    {
+        if(strlen(trim($token))!=32)
+            throw new Exception('Token Invalid');
+
+        return User::model()->exists([
+            'condition' => 'recovery_token=:token',
+            'params' => [':token' => $token]]);
+    }
+
+    public static function resetPassword($token, $password)
+    {
+        if(strlen(trim($token))!=32)
+            throw new Exception('Token Invalid');
+        $user = User::model()->find([
+            'condition' => 'recovery_token=:token',
+            'params' => [':token' => $token]]);
+
+        if (!$user)
+            throw new Exception('Token Invalid');
+        $user->password = md5($password);
+        $user->recovery_token = null;
+        if (!$user->validate())
+            throw new Exception($user->getErrors());
+        if (!$user->save())
+            throw new Exception('Возникла непредвиденная ошибка, мы над этим работаем...');
+        return $user;
+    }
+
     public static function roster($user)
     {
         if (User::model()->exists(['condition' => 'email=:email', 'params' => [':email' => $user['private']['email']]]))
@@ -291,6 +341,7 @@ class User extends BaseUser
         $newUser->ip = $user['ip'];
         $newUser->is_clanner = (isset($user['squad']) && $user['squad']) ? 1 : 0;
         $newUser->roster = json_encode($user);
+        $newUser->broadcast_token = md5($newUser->email.$newUser->password);
 
         if (!$newUser->validate())
             throw new Exception($newUser->getErrors());
@@ -298,47 +349,47 @@ class User extends BaseUser
         if (!$newUser->save())
             throw new Exception('Возникла непредвиденная ошибка, мы над этим работаем...');
 
-        mailer::send('luftwaffeschule@gmail.com','Новый пользователь','<html>Зарегистрирован новый пользователь: <a href="http://lws.exirous.com/#/user/roster/'.$newUser->id.'">'.$newUser->nickname.'</a></html>');
-
+        Mailer::send('luftwaffeschule@gmail.com', 'Новый пользователь', Yii::app()->controller->renderPartial('//mails/new_user', compact('newUser'), true));
+        Mailer::send($newUser->email, 'Добро пожаловать в виртуальную школу пилотов', Yii::app()->controller->renderPartial('//mails/welcome', compact('newUser'), true));
         return $newUser;
     }
 
     public function syncWithTeamSpeak()
     {
         $dbId = Yii::app()->ts->ts3Server->clientFindDb($this->ts_id, true);
-        if (count($dbId))
-        {
+        if (count($dbId)) {
             $dbId = $dbId[0];
             $groups = Yii::app()->ts->ts3Server->clientGetServerGroupsByDbid($dbId);
             $ignoreRank = false;
             $ignoreInstructor = false;
+            $ignoreBomberQualification = false;
+            $needsBomberBadge = (strpos($this->qualifications, "bomber") !== false) && !in_array($this->instructor_id, ["30", "34", "35"]);
             $i = 1;
-            do
-            {
+            do {
                 $nicknameInUse = false;
-                try
-                {
+                try {
                     Yii::app()->ts->setName('Отдел кадров №' . $i);
-                } catch (Exception $e)
-                {
+                } catch (Exception $e) {
                     if ($e->getMessage() == 'nickname is already in use')
                         $nicknameInUse = true;
                 }
                 $i++;
             } while ($nicknameInUse && ($i < 20));
 
-            foreach ($groups as $groupId => $dummy)
-            {
+            foreach ($groups as $groupId => $dummy) {
                 if ($groupId == 8 || $groupId == 6)
                     continue;
-                if ($groupId == $this->rank_id)
-                {
+                if ($groupId == $this->rank_id) {
                     $ignoreRank = true;
                     continue;
                 }
-                if ($groupId == $this->instructor_id)
-                {
+                if ($groupId == $this->instructor_id) {
                     $ignoreInstructor = true;
+                    continue;
+                }
+
+                if (($groupId == 36) && $needsBomberBadge) {
+                    $ignoreBomberQualification = true;
                     continue;
                 }
 
@@ -349,11 +400,13 @@ class User extends BaseUser
 
             if (!$ignoreInstructor && $this->instructor_id)
                 Yii::app()->ts->ts3Server->serverGroupClientAdd($this->instructor_id, $dbId);
-        }
-        else
-        {
+
+            if (!$ignoreBomberQualification && $needsBomberBadge)
+                Yii::app()->ts->ts3Server->serverGroupClientAdd("36", $dbId);
+        } else {
             throw new Exception('Пользователь не прикреплён к TeamSpeak');
         }
+        NodeServerSync::sendInternalMessage("RELOAD_USER_LIST");
     }
 
     public function accept($tsId)
@@ -386,23 +439,17 @@ class User extends BaseUser
         $afterText = ' в связи с успешной сдачей экзаменов';
         $eventText = 'В связи с успешной сдачей экзаменов';
 
-        if ($course->next_rank_id == 16)
-        {
+        if ($course->next_rank_id == 16) {
             $afterText = '';
             $eventText = 'В связи с окончанием школы пилотов';
-            if (!$promoteToOfficer)
-            {
+            if (!$promoteToOfficer) {
                 $rank = 29;
                 $text = ' окончил школу пилотов, присвоено звание <a rank="29">Выпускник</a>, выдан значок об окончании школы';
-            }
-            else
-            {
+            } else {
                 $rank = $course->nextRank->id;
                 $text = ' окончил школу пилотов, присвоено звание <a rank="' . $course->nextRank->name . '"></a>, выдан <a award="41">значок об окончании школы</a>';
             }
-        }
-        else
-        {
+        } else {
             $rank = $course->next_rank_id;
             $text = ' переведён на <a rank="' . $rank . '">' . $course->nextRank->name . '</a>';
         }
@@ -420,5 +467,22 @@ class User extends BaseUser
                 ]
         ];
         Order::issueOrder($data);
+    }
+
+    public function sendNotification($event, $data)
+    {
+
+        NodeServerSync::sendMessage($event ,$data, $this->broadcast_token);
+        if ($this->ts_id)
+          NodeServerSync::sendInternalMessage('NOTIFY_USER',['reciever'=>$this->ts_id,'msg'=>$data['summary']]);
+    }
+
+    public function reject($reason)
+    {
+        if ($this->rank_id || $this->ts_id)
+            throw new Exception('Пользователь уже был принят!');
+        Mailer::send($this->email, 'Заявка отклонена', Yii::app()->controller->renderPartial('//mails/user_reject', ['reason'=>$reason,'user'=>$this], true));
+        Mailer::send('luftwaffeschule@gmail.com', 'Отклонение заявки', Yii::app()->controller->renderPartial('//mails/user_reject_notify', ['reason'=>$reason,'user'=>$this], true));
+        $this->delete();
     }
 }
