@@ -85,6 +85,11 @@ function mainRouteConfig($stateProvider, $urlRouterProvider)
             templateUrl: 'NewsCreatorTmpl',
             controller: "NewsCreatorCtrl"
         })
+        .state('editnews', {
+            url: "/editnews/:id",
+            templateUrl: 'NewsCreatorTmpl',
+            controller: "NewsCreatorCtrl"
+        })
         .state('school', {
             url: "/school",
             templateUrl: 'SchoolTmpl',

@@ -14,16 +14,10 @@ class Controller extends CController
 
     public function beforeAction($action)
     {
-        /*if (isset($_COOKIE['letmepeek']) || isset($_GET['iwanttotakeapeek']))
+        if (!Yii::app()->user->isGuest)
         {
-            if (isset($_GET['iwanttotakeapeek']))
-                setcookie('letmepeek', '1', time() + 60 * 60 * 24 * 365, '/');
-            return true;
+            Yii::app()->user->model->updateOnlineTime();
         }
-        else
-        {
-            die(file_get_contents('workinprogress.html'));
-        }*/
         return true;
     }
 

@@ -128,24 +128,68 @@ class TeamSpeak extends CApplicationComponent
         return getRecursiveList($this->ts3Server->channelList(), true, $knownGroups);
     }
 
+    public function cleanUserDb()
+    {
+        $from = 0;
+        do {
+            $db = $this->ts3Server->clientListDb($from, 200);
+            foreach ($db as $client) {
+                $uid = $client['client_unique_identifier']->toString();
+                if (!User::model()->findByAttributes(['ts_id'=>$uid]))
+                  $this->ts3Server->clientDeleteDb($client['cldbid']);
+            }
+            $from+=200;
+        } while (count($db) == 200);
+    }
+
     public function findUsersLike($nickname, $ip)
     {
-        $db = $this->ts3Server->clientListDb(0, 200);
+        $from = 0;
         $users = [];
-        foreach ($db as $client)
-        {
-            $name = $client['client_nickname'] ? $client['client_nickname']->toString() : '';
-            $lastIp = $client['client_lastip'] ? $client['client_lastip']->toString() : '';
-            if (stripos($name, $nickname) !== false || ($ip && ($ip == $lastIp)))
-            {
-                $users[] = [
-                    'uid' => $client['client_unique_identifier']->toString(),
-                    'name' => $name.' ('.($ip == $lastIp ? 'найден по IP' : 'найден по имени').')',
-                    //'lastOnline'=>$client[''];
-                    'ip' => $lastIp,
-                ];
+        do {
+            $db = $this->ts3Server->clientListDb($from, 200);
+            foreach ($db as $client) {
+                $name = $client['client_nickname'] ? $client['client_nickname']->toString() : '';
+                $lastIp = $client['client_lastip'] ? $client['client_lastip']->toString() : '';
+                if (stripos($name, $nickname) !== false || ($ip && ($ip == $lastIp))) {
+                    $uid = $client['client_unique_identifier']->toString();
+                    $users[$uid] = [
+                        'id' => $uid,
+                        'name' => $name,
+                        'byName' => $ip != $lastIp,
+                        'byIp' => $ip == $lastIp,
+                        'isOnline'=>false,
+                        'lastOnline'=>intval($client['client_lastconnected'])
+                    ];
+                }
             }
+            $from+=200;
+        } while (count($db) == 200);
+        $db = $this->clientList();
+
+        foreach ($db as $client) {
+            $client = $client->getInfo();
+
+            $serverGroups = $client["client_servergroups"]."";
+            if ($client["client_type"] || $serverGroups!='8')
+                continue;
+            $lastIp = $client['connection_client_ip'] ? $client['connection_client_ip']->toString() : '';
+            $name = $client['client_nickname'] ? $client['client_nickname']->toString() : '';
+            $uid = $client['client_unique_identifier']->toString();
+            $users[$uid] = [
+                'id' => $uid,
+                'name' => $name,
+                'byName' => false,
+                'byIp' => $ip == $lastIp,
+                'isOnline'=>true,
+                'lastOnline'=>time(),
+            ];
         }
+        $users = array_values($users);
+        usort($users, function($a, $b){
+            return $a['lastOnline'] - $b['lastOnline'];
+        });
+
         return $users;
     }
 

@@ -72,7 +72,7 @@ class News extends BaseNews
 
     public static function add($title, $text, $onlyForRegistered)
     {
-        if (Yii::app()->user->isGuest || Yii::app()->user->model->rank->order < 6)
+        if (Yii::app()->user->isGuest || Yii::app()->user->model->canMakeNews())
             throw new Exception('Вы пока не можете создавать новости!');
         $news = new News();
         $news->text = $text;
@@ -82,7 +82,7 @@ class News extends BaseNews
         if (!$news->save())
             throw new Exception($news->getErrorsString());
         $news->postToTeamSpeak();
-        return $news->id;
+        return $news;
     }
 
     public function renderAttributes()
@@ -96,6 +96,20 @@ class News extends BaseNews
                 'type' => 'news',
                 'id' => $this->id,
                 'text' => $this->text,
+                'issuer' => $this->issuer->getListAttributes()
+            ];
+    }
+
+    public function editAttributes()
+    {
+        $time = strtotime($this->time);
+        return
+            [
+                'title' => $this->title,
+                'time' => date('d.m.Y', $time),
+                'id' => $this->id,
+                'text' => $this->text,
+                'onlyRegistered' => $this->only_for_registered,
                 'issuer' => $this->issuer->getListAttributes()
             ];
     }

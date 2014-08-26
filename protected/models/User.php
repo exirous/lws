@@ -485,4 +485,10 @@ class User extends BaseUser
         Mailer::send('luftwaffeschule@gmail.com', 'Отклонение заявки', Yii::app()->controller->renderPartial('//mails/user_reject_notify', ['reason'=>$reason,'user'=>$this], true));
         $this->delete();
     }
+
+    public function updateOnlineTime()
+    {
+        $this->last_online_time = date("Y-m-d H:i:s");
+        $this->save();
+    }
 }

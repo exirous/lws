@@ -51,6 +51,7 @@ lwsControllers.controller('AppCtrl',
                 'orders': 'news',
                 'makeorder': 'news',
                 'makenews': 'news',
+                'editnews': 'news',
                 'roster': 'pilots',
                 'rosterUser': 'user',
                 'userMarks': 'user',
@@ -398,14 +399,35 @@ lwsControllers.controller('RosterUserCtrl',
                 function (resource)
                 {
                     $scope.pilot = resource.data;
+                    angular.extend($scope.tsSelect2Options.data, $scope.pilot.possibleUsers);
                 });
+
+            function formatTs(pilot, pilot2, pilot3)
+            {
+                var out = pilot.name;
+                if (pilot.isOnline)
+                    out +=' <b>[онлайн]</b>';
+                if (pilot.byIp)
+                    out +=' <b>[по ip]</b>';
+                else if (!pilot.isOnline && pilot.byName)
+                    out +=' <b>[по имени]</b>';
+                return out;
+            }
+
+            $scope.tsSelect2Options = {
+                data:[],
+                formatResult: formatTs,
+                formatSelection: formatTs,
+                escapeMarkup: function (m) { return m; }
+            };
+
             $scope.accept = function ()
             {
                 $dialogs.confirm('Подтвердите', 'Принять данную заявку?')
                     .result.then(function (btn)
                     {
                         $scope.rosterForm.isSubmitting = true;
-                        User.accept({userId: $stateParams.userId, uid: $scope.rosterForm.tsId}, function ()
+                        User.accept({userId: $stateParams.userId, uid: $scope.rosterForm.tsId.id}, function ()
                         {
                             $scope.rosterForm.isSubmitting = false;
                             $rootScope.$broadcast('refreshRosterList');
@@ -420,8 +442,6 @@ lwsControllers.controller('RosterUserCtrl',
                 var dlg = $dialogs.create('rejectDialogTmpl', 'RejectDialogCtrl', {}, {key: false, back: 'static'});
                 dlg.result.then(function (reason)
                 {
-                    alert(reason);
-                    return;
                     $scope.rosterForm.isSubmitting = true;
                     User.reject({userId: $stateParams.userId, reason:reason}, function ()
                     {
@@ -802,18 +822,25 @@ lwsControllers.controller("AfterRosterCtrl", ['$scope', function ($scope)
 
 }]);
 
-lwsControllers.controller("NewsCreatorCtrl", ['$scope', 'News', function ($scope, News)
+lwsControllers.controller("NewsCreatorCtrl", ['$scope', 'News', '$stateParams', function ($scope, News, $stateParams)
 {
+    $scope.newsRecord = {};
+    if ($stateParams.id)
+    {
+        $scope.newsRecord.id = $stateParams.id;
+        $scope.newsRecord.isSubmitting = true;
+        News.get({id:$stateParams.id}, function(res){
+            $scope.newsRecord = res.data;
+            $scope.newsRecord.isSubmitting = false;
+            $scope.newsRecord.onlyRegistered = !!$scope.newsRecord.onlyRegistered;
+        });
+    }
     $scope.save = function ()
     {
-        $scope.newsRecord.newsAdded = false;
         $scope.newsRecord.isSubmitting = true;
-        News.save($scope.newsRecord, function (resource)
+        News.save($scope.newsRecord, function (res)
         {
-            $scope.newsRecord.text = '';
-            $scope.newsRecord.title = '';
-            $scope.newsRecord.onlyRegistered = false;
-            $scope.newsRecord.newsAdded = true;
+            $scope.newsRecord = res.data;
             $scope.newsRecord.isSubmitting = false;
         });
     }

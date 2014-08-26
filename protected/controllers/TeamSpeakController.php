@@ -19,41 +19,6 @@ class TeamSpeakController extends Controller
         }
     }
 
-    public function actionParse()
-    {
-        $content = file_get_contents('http://unicode.org/repos/cldr-tmp/trunk/diff/supplemental/language_plural_rules.html');
-        preg_match_all('/\<tr\>(.*?)\<\/tr\>/', $content, $rows);
-        $languages = [];
-        $lang = false;
-        foreach ($rows[0] as $row)
-        {
-            if (strpos($row, 'class=\'h\'') !== false)
-                break;
-            if (strpos($row, '<th') !== false)
-            {
-                if ($lang)
-                {
-                    $languages[] = $lang;
-                }
-                $lang = [];
-            }
-            else
-            {
-                if (!isset($lang['id']))
-                {
-                    preg_match('/\<a name="([a-z]{2,4})"/', $row, $id);
-                    $lang['id'] = $id[1];
-                    preg_match('/\<tr\>\<td(.*?)\>(.*?)\</',$row,$name);
-                    $lang['name'] = $name[2];
-                }
-                preg_match_all('/\<td class=\'target\'\>(.*?)\<\/td\>/', $row, $rowdata);
-                $lang['forms'][$rowdata[1][0]] = $rowdata[1][1];
-            }
-        }
-        //echo nl2br(print_r($languages,true));
-        die();
-    }
-
     public function actionRedirect($id)
     {
         $user = User::model()->findByPk($id);
@@ -66,7 +31,9 @@ class TeamSpeakController extends Controller
     public function actionTest()
     {
 
-        // URL on which we have to post data
+        phpinfo();
+        //Yii::app()->ts->cleanUserDb();
+        /*// URL on which we have to post data
         $url = "http://127.0.0.1:3000";
 
         // Any other field you might want to post
@@ -89,7 +56,7 @@ class TeamSpeakController extends Controller
         // Just for debug: to see response
         var_dump($error);
         echo '<br>';
-        die(var_dump($response));
+        die(var_dump($response));*/
 
         //Yii::app()->ts->fixName();
 

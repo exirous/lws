@@ -161,7 +161,16 @@
         <div class="spinner-icon"></div>
     </div>
     <div ng-repeat="newsRec in news" class="news-row panel panel-default">
-        <div class="panel-heading">{{newsRec.title}}</div>
+        <div class="panel-heading">{{newsRec.title}}
+            <div ng-if="UserIdentity.canMakeOrders" class="pull-right">
+                <button type="button" ng-click="" ui-sref="editnews({id:newsRec.id})" class="btn btn-xs btn-default">
+                    <span class="glyphicon glyphicon-pencil"></span>
+                </button>
+                <!--<button type="button" ng-click="deleteNews(newsRec)" class="btn btn-xs btn-danger">
+                    <span class="glyphicon glyphicon-minus"></span>
+                </button>-->
+            </div>
+        </div>
         <div class="panel-body" ng-bind-html="newsRec.text | to_trusted"></div>
         <div class="panel-footer">
             <span>{{newsRec.time}}</span> <img
@@ -930,13 +939,10 @@
         <div ng-show="pilot.rank" class="alert alert-success">Пилот принят</div>
         <div ng-form="rosterForm" ng-show="!pilot.rank">
             <p class="well">
-                <select ng-model="rosterForm.tsId" style="width:350px"
+                <input type="hidden" ng-model="rosterForm.tsId" style="width:350px"
                         required
                         data-placeholder="Привязка к TeamSpeak"
-                        ui-select2>
-                    <option></option>
-                    <option ng-repeat="option in pilot.possibleUsers" value="{{option.uid}}">{{option.name}}</option>
-                </select>&nbsp;
+                        ui-select2="tsSelect2Options">&nbsp;
                 <button type="button" ng-click="accept()"
                         ng-disabled="(rosterForm.$dirty && rosterForm.$invalid) || rosterForm.$pristine || rosterForm.isSubmitting"
                         class="btn btn-success">Принять
@@ -1096,9 +1102,9 @@
 </script>
 
 <script type="text/ng-template" id="NewsCreatorTmpl">
-    <h2>Добавить новость</h2>
+    <h2 ng-if="!newsRecord.id">Добавить новость</h2>
+    <h2 ng-if="newsRecord.id">Редактировать новость</h2>
     <ng-form name="newsForm" novalidate role="form">
-        <div ng-if="newsRecord.newsAdded" class="alert alert-success">Новость успешно добавленна</div>
         <div class="form-group">
             <input type="text" placeholder="Впишите заголовок" class="form-control"
                    ng-model="newsRecord.title" ng-required="true"/>
@@ -1120,7 +1126,7 @@
             <p class="well">
                 <button type="button" ng-click="save()"
                         ng-disabled="(newsForm.$dirty && newsForm.$invalid) || newsForm.$pristine || newsRecord.isSubmitting"
-                        class="btn btn-primary">Опубликовать
+                        class="btn btn-primary"><span ng-if="!newsRecord.id">Опубликовать</span><span ng-if="newsRecord.id">Сохранить</span>
                 </button>
             </p>
         </div>
