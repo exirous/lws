@@ -827,12 +827,10 @@
                 </div>
                 <div class="form-group input-group">
                     <label>Тимспик</label><br>
-                    <select ng-model="user.ts_id" style="width:350px"
+                    <input type="hidden" ng-model="user.ts_id" style="width:350px"
                             required
                             data-placeholder="Привязка к TeamSpeak"
-                            ui-select2>
-                        <option></option>
-                        <option ng-repeat="option in user.possibleUsers" value="{{option.uid}}">[{{$index+1}}] {{option.name}}</option>
+                            ui-select2="tsSelect2Options">
                     </select>
                 </div>
         </ng-form>

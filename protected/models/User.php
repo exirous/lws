@@ -447,11 +447,11 @@ class User extends BaseUser
                 $text = ' окончил школу пилотов, присвоено звание <a rank="29">Выпускник</a>, выдан значок об окончании школы';
             } else {
                 $rank = $course->nextRank->id;
-                $text = ' окончил школу пилотов, присвоено звание <a rank="' . $course->nextRank->name . '"></a>, выдан <a award="41">значок об окончании школы</a>';
+                $text = ' окончил школу пилотов, присвоено звание <a rank="' . $course->nextRank->id . '">' . $course->nextRank->name . '</a>, выдан <a award="41">значок об окончании школы</a>';
             }
         } else {
             $rank = $course->next_rank_id;
-            $text = ' переведён на <a rank="' . $rank . '">' . $course->nextRank->name . '</a>';
+            $text = ' переведён на <a rank="' . $course->nextRank->id . '">' . $course->nextRank->name . '</a>';
         }
 
         $data = [

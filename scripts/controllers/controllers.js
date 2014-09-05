@@ -341,7 +341,33 @@ lwsControllers.controller('EditUserCtrl',
                 {
                     $scope.user = resource.data;
                     $scope.user.birthDate = dateFilter($scope.user.birthDate, 'yyyy-MM-dd');
+                    angular.extend($scope.tsSelect2Options.data, $scope.user.possibleUsers);
                 });
+
+            function formatTs(pilot)
+            {
+                var out = '';
+                $.each(pilot.serverGroups, function (i, val) {
+                    out+='<img src="/img/groups/'+val+'.png"> '
+                });
+                out += pilot.name;
+                if (pilot.isOnline)
+                    out +=' <b>[онлайн]</b>';
+                if (pilot.byIp)
+                    out +=' <b>[по ip]</b>';
+                else if (!pilot.isOnline && pilot.byName)
+                    out +=' <b>[по имени]</b>';
+                return out;
+            }
+
+            $scope.tsSelect2Options = {
+                data:[],
+                formatResult: formatTs,
+                formatSelection: formatTs,
+                escapeMarkup: function (m) { return m; }
+            };
+
+
 
             $scope.sync = function()
             {
@@ -352,7 +378,10 @@ lwsControllers.controller('EditUserCtrl',
 
             $scope.save = function()
             {
-                User.update({user:$scope.user}, function(res){
+                var user = {};
+                angular.extend(user, $scope.user);
+                user.ts_id = user.ts_id.id;
+                User.update({user:user}, function(res){
 
                 })
             }
@@ -402,9 +431,13 @@ lwsControllers.controller('RosterUserCtrl',
                     angular.extend($scope.tsSelect2Options.data, $scope.pilot.possibleUsers);
                 });
 
-            function formatTs(pilot, pilot2, pilot3)
+            function formatTs(pilot)
             {
-                var out = pilot.name;
+                var out = '';
+                $.each(pilot.serverGroups, function (i, val) {
+                    out+='<img src="/img/groups/'+val+'.png"> '
+                });
+                out += pilot.name;
                 if (pilot.isOnline)
                     out +=' <b>[онлайн]</b>';
                 if (pilot.byIp)

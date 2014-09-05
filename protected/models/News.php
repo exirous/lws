@@ -72,7 +72,7 @@ class News extends BaseNews
 
     public static function add($title, $text, $onlyForRegistered)
     {
-        if (Yii::app()->user->isGuest || Yii::app()->user->model->canMakeNews())
+        if (Yii::app()->user->isGuest || !Yii::app()->user->model->canMakeNews())
             throw new Exception('Вы пока не можете создавать новости!');
         $news = new News();
         $news->text = $text;

@@ -152,37 +152,43 @@ class TeamSpeak extends CApplicationComponent
                 $name = $client['client_nickname'] ? $client['client_nickname']->toString() : '';
                 $lastIp = $client['client_lastip'] ? $client['client_lastip']->toString() : '';
                 if (stripos($name, $nickname) !== false || ($ip && ($ip == $lastIp))) {
+                    $groups = array_keys(Yii::app()->ts->ts3Server->clientGetServerGroupsByDbid($client["cldbid"]));
                     $uid = $client['client_unique_identifier']->toString();
                     $users[$uid] = [
                         'id' => $uid,
                         'name' => $name,
                         'byName' => $ip != $lastIp,
                         'byIp' => $ip == $lastIp,
-                        'isOnline'=>false,
-                        'lastOnline'=>intval($client['client_lastconnected'])
+                        'isOnline' => false,
+                        'serverGroups' => $groups,
+                        'lastOnline' => intval($client['client_lastconnected'])
                     ];
                 }
             }
-            $from+=200;
+            $from += 200;
         } while (count($db) == 200);
         $db = $this->clientList();
 
         foreach ($db as $client) {
             $client = $client->getInfo();
 
-            $serverGroups = $client["client_servergroups"]."";
-            if ($client["client_type"] || $serverGroups!='8')
+            if ($client["client_type"])
                 continue;
+            $groups = explode(',', $client["client_servergroups"]);
+
             $lastIp = $client['connection_client_ip'] ? $client['connection_client_ip']->toString() : '';
             $name = $client['client_nickname'] ? $client['client_nickname']->toString() : '';
+            if (stripos($name, $nickname) === false && levenshtein(preg_replace('/\(.*?\)/', '', $name), $nickname) > 5)
+                continue;
             $uid = $client['client_unique_identifier']->toString();
             $users[$uid] = [
                 'id' => $uid,
                 'name' => $name,
                 'byName' => false,
                 'byIp' => $ip == $lastIp,
-                'isOnline'=>true,
-                'lastOnline'=>time(),
+                'isOnline' => true,
+                'serverGroups' => $groups,
+                'lastOnline' => time(),
             ];
         }
         $users = array_values($users);
