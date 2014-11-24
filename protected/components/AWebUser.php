@@ -31,7 +31,7 @@ class AWebUser extends CWebUser
     public function getModel()
     {
         if (!$this->_model)
-            $this->_model = User::model()->findByPk($this->getId());
+            $this->_model = User::model()->resetScope()->findByPk($this->getId());
         if (!$this->_model)
         {
             $this->logout();

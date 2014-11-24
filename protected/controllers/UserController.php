@@ -205,9 +205,31 @@ class UserController extends Controller
         $this->returnSuccess($this->_acceptRostered($id, $uId));
     }
 
-    public function actionTest()
+    public function actionInactiveCount()
     {
-        $this->_acceptRostered('111','2WvRkBKNiJgsRYbHMCP46MRz1TU=');
+        $this->returnSuccess(['count' => User::model()->scopeInactive()->count()]);
+    }
+
+    public function actionInactive()
+    {
+        $request = Yii::app()->request;
+        $id = $request->getParam('id', 0, AHttpRequest::PARAM_TYPE_NUMERIC);
+        switch ($request->method) {
+            case AHttpRequest::METHOD_GET:
+                $this->returnSuccess($this->_renderInactiveUserList());
+                break;
+            default:
+                $this->returnError();
+        }
+    }
+
+
+    public function actionExpel()
+    {
+        $request = Yii::app()->request;
+        $id = $request->getRequiredRawBodyParam('userId', 0);
+        $reason = $request->getRequiredRawBodyParam('reason', '');
+        $this->returnSuccess($this->_expelInactive($id, $reason));
     }
 
     public function actionReject()
@@ -484,6 +506,24 @@ class UserController extends Controller
         return [];
     }
 
+    private function _expelInactive($id, $reason)
+    {
+        if (Yii::app()->user->isGuest || !Yii::app()->user->model->instructor_id)
+            return null;
+        $transaction = Yii::app()->db->beginTransaction();
+        try {
+            $user = User::model()->findByPk($id);
+            if (!$user)
+                throw new Exception('Пользователь не найден');
+            $user->expel($reason);
+            $transaction->commit();
+        } catch (Exception $e) {
+            $transaction->rollback();
+            $this->returnError($e->getMessage());
+        }
+        return [];
+    }
+
     private function _renderUser($id, $noMedals = false)
     {
         try {
@@ -507,8 +547,26 @@ class UserController extends Controller
             if (isset($filters['name']) && $filters['name'])
                 $users = $users->scopeName($filters['name']);
 
+            if ($filters['which'] == '2') {
+                if (!in_array(Yii::app()->user->model->id, [1, 14])) {
+                    $filters['which'] = '0';
+                }
+            }
+            switch ($filters['which'])
+            {
+                case '2':
+                    $users = $users->scopeDisabled();
+                    break;
+                case '1':
+                    $users = $users->scopeEnabled()->scopeVacation();
+                    break;
+                default:
+                    $users = $users->scopeEnabled()->scopeActive();
+            }
+
+
             $usersOut = [];
-            $users = $users->scopeWithRank()->with('activeVacation')->findAll(['condition' => 'rank_id>0', 'order' => 'rank.order desc, nickname']);
+            $users = $users->scopeWithRank()->with('activeVacation')->findAll(['condition' => 'rank_id>0 AND rank_id<>8', 'order' => 'rank.order desc, nickname']);
 
             foreach ($users as $user)
                 $usersOut[] = $user->listAttributes;
@@ -666,15 +724,19 @@ class UserController extends Controller
 
         $transaction = Yii::app()->db->beginTransaction();
         try {
+            $userId = Yii::app()->user->model->id;
+            $userNickname = Yii::app()->user->model->nickname;
             $vacation = new Vacation();
             $vacation->reason = $reason;
             $vacation->date_from = $dateFrom;
             $vacation->date_to = $dateTo;
-            $vacation->user_id = Yii::app()->user->model->id;
+            $vacation->user_id = $userId;
             if (!$vacation->save())
                 throw new Exception("Ошибка сохранения");
             $transaction->commit();
-
+            Mailer::send('luftwaffeschule@gmail.com', 'Рапорт на отпуск от: ' . $userNickname,
+                Yii::app()->controller->renderPartial('//mails/vacation_report',
+                    compact('reason', 'dateFrom', 'dateTo', 'userId', 'userNickname'), true));
             return $vacation->getPublicAttributes();
         } catch (Exception $e) {
             $transaction->rollback();
@@ -728,6 +790,28 @@ class UserController extends Controller
         return 'OK';
     }
 
+    private function _renderInactiveUserList()
+    {
+        try {
+            $users = User::model()->with('rank');
+
+            if (isset($filters['name']) && $filters['name'])
+                $users = $users->scopeName($filters['name']);
+
+            $usersOut = [];
+            $users = $users->scopeInactive()->scopeEnabled()->scopeWithRank()->findAll(['order' => 'last_online_time, rank.order, nickname']);
+
+            foreach ($users as $user)
+                $usersOut[] = $user->inactiveAttributes;
+
+            return $usersOut;
+        } catch (Exception $e) {
+            $this->returnError($e->getMessage());
+        }
+        return null;
+    }
+
+
     /**
      * This is the action to handle external exceptions.
      */
@@ -741,15 +825,15 @@ class UserController extends Controller
         }
     }
 
-    /*public function actionTest()
+    public function actionTest()
     {
-        /*foreach (User::model()->findAll() as $user) {
-            $user->broadcast_token = md5($user->email . $user->password);
-            $user->save();
-        }
-        $message = PrivateMessage::model()->findByPk(3);
-        $message->notify();
-    }*/
+        //$user = User::model()->resetScope()->findByAttributes(array('id' => '1'));
+        //die(var_dump($user));
+    }
 
+    public function actionWakePc()
+    {
+        die(shell_exec('wakeonlan 1C:6F:65:81:FF:D4'));
+    }
 
 }

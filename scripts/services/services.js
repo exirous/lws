@@ -43,6 +43,16 @@ lwsServices.factory('TeamSpeak', ['$resource', function ($resource)
 lwsServices.factory('User', ['$resource', function ($resource)
 {
     return $resource('/user/item', {}, {
+        getInactiveCount:
+        {
+            url: '/user/inactiveCount',
+            method: 'get'
+        },
+        queryInactive:
+        {
+            url: '/user/inactive',
+            method: 'get'
+        },
         getbirthdays:
         {
             url: '/user/birthdays',
@@ -73,6 +83,10 @@ lwsServices.factory('User', ['$resource', function ($resource)
         },
         reject:{
             url: '/user/reject',
+            method: 'post'
+        },
+        expel:{
+            url: '/user/expel',
             method: 'post'
         },
         recover:{

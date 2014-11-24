@@ -14,6 +14,17 @@ module.exports = function (grunt)
                 ],
                 dest: 'style.css'
             },
+            css_new: {
+                src: [
+                    "css/bootstrap/bootstrap.css",
+                    "css/style_new.css",
+                    "css/select2.css",
+                    "css/select2-bootstrap.css",
+                    "css/loading-bar.css",
+                    "scripts/sceditor/minified/themes/default.min.css"
+                ],
+                dest: 'style_new.css'
+            },
             js: {
                 src: [
                     "scripts/jquery.js",
@@ -40,7 +51,11 @@ module.exports = function (grunt)
                 ],
                 dest: 'scripts.js'
             }
-        },/*
+        },
+
+        /*
+
+
         cssmin: {
             css: {
                 src: 'style.css',
@@ -82,6 +97,7 @@ module.exports = function (grunt)
                 "scripts/sceditor/minified/jquery.sceditor.bbcode.min.js",
                 "css/bootstrap/bootstrap.css",
                 "css/style.css",
+                "css/style_new.css",
                 "css/select2.css",
                 "css/select2-bootstrap.css",
                 "css/loading-bar.css",
@@ -91,8 +107,8 @@ module.exports = function (grunt)
         }
     });
     grunt.loadNpmTasks('grunt-contrib-concat');
-    //grunt.loadNpmTasks('grunt-contrib-uglify');
+    grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-watch');
-    //grunt.loadNpmTasks('grunt-contrib-cssmin');
-    grunt.registerTask('default', ['concat:css',/* 'cssmin:css',*/ 'concat:js'/*, 'uglify:js'*/]);
+    grunt.loadNpmTasks('grunt-contrib-cssmin');
+    grunt.registerTask('default', ['concat:css','concat:css_new',/* 'cssmin:css',*/ 'concat:js'/*, 'uglify:js'*/]);
 };

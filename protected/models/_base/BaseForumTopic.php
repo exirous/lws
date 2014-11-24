@@ -17,9 +17,9 @@
  * @property string $first_message_id
  *
  * @property ForumMessage[] $forumMessages
- * @property ForumMessage $firstMessage
  * @property User $author
  * @property ForumMessage $lastMessage
+ * @property ForumMessage $firstMessage
  */
 abstract class BaseForumTopic extends AActiveRecord
 {
@@ -59,9 +59,9 @@ abstract class BaseForumTopic extends AActiveRecord
     {
         return array(
             'forumMessages' => array(self::HAS_MANY, 'ForumMessage', 'topic_id'),
-            'firstMessage' => array(self::BELONGS_TO, 'ForumMessage', 'first_message_id'),
             'author' => array(self::BELONGS_TO, 'User', 'author_id'),
             'lastMessage' => array(self::BELONGS_TO, 'ForumMessage', 'last_message_id'),
+            'firstMessage' => array(self::BELONGS_TO, 'ForumMessage', 'first_message_id'),
         );
     }
 
@@ -81,9 +81,9 @@ abstract class BaseForumTopic extends AActiveRecord
             'last_message_id' => null,
             'first_message_id' => null,
             'forumMessages' => null,
-            'firstMessage' => null,
             'author' => null,
             'lastMessage' => null,
+            'firstMessage' => null,
         );
     }
 

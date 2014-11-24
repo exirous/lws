@@ -171,17 +171,19 @@ class Order extends BaseOrder
                     $eventAwardText = false;
             }
 
-            $event->text = $eventText.$eventRankText.
+            $event->text = trim($eventText.$eventRankText.
                 ($eventRankText && $eventInstructorText ? ' и ' : '').$eventInstructorText.
                 ((($eventRankText || $eventInstructorText) && $eventAwardText) ? ' и ' : '').$eventAwardText.
-                ((($eventRankText || $eventInstructorText || $eventAwardText) && $customText) ? ' и ' : '').$customText;
+                ((($eventRankText || $eventInstructorText || $eventAwardText) && $customText) ? ' и ' : '').$customText);
 
             if (isset($data['onlyatest']))
                 die($event->text);
 
-            if (trim($event->text))
-                if (!$event->save())
+            if ($event->text) {
+                if (!$event->save()) {
                     throw new Exception('3 ' . $event->getErrorsString());
+                }
+            }
 
             if ($needSave && !$pilot->save())
                 throw new Exception('6 ' . $pilot->getErrorsString());

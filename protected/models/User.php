@@ -51,6 +51,24 @@ class User extends BaseUser
         return CMap::mergeArray($defaults, parent::rules());
     }
 
+    /*public function defaultScope()
+    {
+        return [
+            'condition' => 'is_disabled=0'
+        ];
+    }*/
+
+    /**
+     * @return User
+     */
+    public function scopeEnabled()
+    {
+        $this->dbCriteria->mergeWith([
+            'condition' => 'is_disabled=0'
+        ]);
+        return $this;
+    }
+
 
     public function relations()
     {
@@ -76,6 +94,10 @@ class User extends BaseUser
         return $this;
     }
 
+    /**
+     * @param $name
+     * @return User
+     */
     public function scopeName($name)
     {
         $this->dbCriteria->mergeWith([
@@ -90,6 +112,22 @@ class User extends BaseUser
         $this->dbCriteria->mergeWith([
             'condition' => 'DATE_ADD(birth_date, INTERVAL YEAR(CURDATE())-YEAR(birth_date) YEAR)
             BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 10 DAY)'
+        ]);
+        return $this;
+    }
+
+    /**
+     * @return User
+     */
+    public function scopeInactive()
+    {
+        $this->dbCriteria->mergeWith([
+            'with' => ['vacations' => [
+                'together'=>true
+            ]],
+            'condition' => '((t.`last_online_time` < NOW() - INTERVAL 1 MONTH) OR t.`last_online_time` IS NULL)
+             AND t.`ts_id` IS NOT NULL
+             AND (vacations.id IS NULL OR vacations.`date_to` < NOW() - INTERVAL 1 MONTH)'
         ]);
         return $this;
     }
@@ -129,6 +167,8 @@ class User extends BaseUser
             'instructor' => $this->instructor_id ? $this->instructor->getShortAttributes() : null,
             'is_clanner' => intval($this->is_clanner),
             'activeVacation' => $this->activeVacation,
+            'isDisabled' => $this->is_disabled == '1' ? true : false,
+            'lastOnline' => $this->last_online_time ? (strtotime($this->last_online_time) . '000') : (mktime(0,0,1,8,1,2014).'000'),
             'qualifications' => $qualifications,
             'medals' => $awards,
             'events' => $events
@@ -250,6 +290,23 @@ class User extends BaseUser
             'is_clanner' => intval($this->is_clanner),
         ];
     }
+    public function getInactiveAttributes()
+    {
+        return [
+            'nickname' => $this->nickname,
+            'firstname' => $this->firstname,
+            'id' => $this->id,
+            'img_src' => $this->img_src,
+            'rank' => $this->rank_id,
+            'rank_name' => $this->rank->name,
+            'instructor' => $this->instructor_id,
+            'isDisabled' => $this->is_disabled == '1' ? true : false,
+            'lastOnline' => $this->last_online_time ? (strtotime($this->last_online_time) . '000') : (mktime(0,0,1,8,1,2014).'000'),
+            'lastWarning' => $this->last_warning_time ? (strtotime($this->last_warning_time) . '000') : false,
+            'isBomber' => strpos($this->qualifications, 'bomber') !== false,
+            'is_clanner' => intval($this->is_clanner),
+        ];
+    }
 
     public function getPrivateAttributes()
     {
@@ -264,6 +321,8 @@ class User extends BaseUser
             'isInstructor' => $this->isInstructor(),
             'fullname' => $this->nickname . ' (' . $this->firstname . ')',
             'broadcast_token' => $this->broadcast_token,
+            'isDisabled' => intval($this->is_disabled),
+            'disableReason' => $this->disable_reason,
             'uid' => $this->ts_id,
             'id' => $this->id
         ];
@@ -339,6 +398,7 @@ class User extends BaseUser
         $newUser->nickname = $user['nickname'];
         $newUser->firstname = $user['firstname'];
         $newUser->ip = $user['ip'];
+        $newUser->rank_id = 8;
         $newUser->is_clanner = (isset($user['squad']) && $user['squad']) ? 1 : 0;
         $newUser->roster = json_encode($user);
         $newUser->broadcast_token = md5($newUser->email.$newUser->password);
@@ -479,16 +539,89 @@ class User extends BaseUser
 
     public function reject($reason)
     {
-        if ($this->rank_id || $this->ts_id)
+        if ($this->ts_id)
             throw new Exception('Пользователь уже был принят!');
+        $this->delete();
         Mailer::send($this->email, 'Заявка отклонена', Yii::app()->controller->renderPartial('//mails/user_reject', ['reason'=>$reason,'user'=>$this], true));
         Mailer::send('luftwaffeschule@gmail.com', 'Отклонение заявки', Yii::app()->controller->renderPartial('//mails/user_reject_notify', ['reason'=>$reason,'user'=>$this], true));
-        $this->delete();
     }
+
+    public function expel($reason)
+    {
+        if ($this->is_disabled)
+            throw new Exception('Пользователь уже исключен!');
+        $this->is_disabled = 1;
+        $this->disable_reason = $reason;
+        $this->save();
+        Order::issueOrder([
+            'complete'=>'<a rank="'.$this->rank_id.'">'.$this->rank->name.'</a> <a pilot="'.$this->id.'">'.$this->nickname.'</a> исключен из школы пилотов по причине: <p>'.$reason.'</p>',
+            'pilots'=>[['id'=>$this->id]],
+            'event'=>'Исключен из школы пилотов по причине: <p>'.$reason.'</p>'
+        ]);
+        Mailer::send($this->email, 'Вы исключенны', Yii::app()->controller->renderPartial('//mails/user_expel', ['reason' => $reason, 'user' => $this], true));
+        Mailer::send('luftwaffeschule@gmail.com', 'Пилот исключён', Yii::app()->controller->renderPartial('//mails/user_expel_notify', ['reason' => $reason, 'user' => $this], true));
+    }
+
 
     public function updateOnlineTime()
     {
         $this->last_online_time = date("Y-m-d H:i:s");
+        if ($this->is_defector)
+        {
+            $this->is_defector = false;
+            Mailer::send('luftwaffeschule@gmail.com', 'Дезертир вернулся', Yii::app()->controller->renderPartial('//mails/user_defector_return_notify', ['user' => $this], true));
+        }
         $this->save();
+    }
+
+    /**
+     * @return User
+     */
+    public function scopeNeedWarning()
+    {
+        $this->dbCriteria->mergeWith([
+            'condition' => '(`last_warning_time` < NOW() - INTERVAL 1 MONTH) OR `last_warning_time` IS NULL'
+        ]);
+        return $this;
+    }
+
+    /**
+     * @return User
+     */
+    public function scopeDisabled()
+    {
+        $this->dbCriteria->mergeWith([
+            'condition' => 'is_disabled=1'
+        ]);
+        return $this;
+    }
+
+    /**
+     * @return User
+     */
+    public function scopeActive()
+    {
+        $this->dbCriteria->mergeWith([
+            'condition' => 'activeVacation.id IS NULL'
+        ]);
+        return $this;
+    }
+
+    /**
+     * @return User
+     */
+    public function scopeVacation()
+    {
+        $this->dbCriteria->mergeWith([
+            'condition' => 'activeVacation.id IS NOT NULL'
+        ]);
+        return $this;
+    }
+
+
+    protected function beforeDelete()
+    {
+        PrivateMessage::model()->deleteAll(['condition' => 'reciever_id=:id OR sender_id=:id', 'params' => [':id' => $this->id]]);
+        return parent::beforeDelete();
     }
 }

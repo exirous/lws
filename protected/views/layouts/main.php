@@ -542,7 +542,7 @@
                         </tbody>
                     </table>
                 </td>
-                <td ng-if="user.rank" rowspan="2" style="width: 380px;padding-left: 5px;max-width: 380px;">
+                <td ng-if="user.rank && user.rank.id!=8" rowspan="2" style="width: 380px;padding-left: 5px;max-width: 380px;">
                     <div class="uniform {{user.is_clanner ? 'clanner' : ''}}" dnd-container="true">
                         <div class="unform_rank"
                              style="background: url(/img/uniform/{{user.is_clanner ? 'clanner/' : ''}}{{user.rank.id}}.png) no-repeat"
@@ -559,7 +559,7 @@
                 </td>
             </tr>
             <tr>
-                <td colspan="2" style="padding-right:10px">
+                <td ng-if="user.rank && user.rank.id!=8" colspan="2" style="padding-right:10px">
                     <div class="panel panel-default">
                         <div class="panel-heading"><span>Книжка пилота</span>
                             <button type="button" ng-if="UserIdentity.canMakeOrders" ng-click="addEvent(user.id)"
@@ -933,9 +933,8 @@
         <label>Время онлайна:</label><br>
         <span>C </span><span>{{pilot.roster.onlineFrom | date : "HH:mm"}}</span><span> По </span><span>{{pilot.roster.onlineTo | date : "HH:mm"}}</span>
         <br><br>
-
-        <div ng-show="pilot.rank" class="alert alert-success">Пилот принят</div>
-        <div ng-form="rosterForm" ng-show="!pilot.rank">
+        <div ng-show="pilot.rank!=8" class="alert alert-success">Пилот принят</div>
+        <div ng-form="rosterForm" ng-show="pilot.rank==8">
             <p class="well">
                 <input type="hidden" ng-model="rosterForm.tsId" style="width:350px"
                         required

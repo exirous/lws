@@ -18,6 +18,7 @@ class Controller extends CController
         {
             Yii::app()->user->model->updateOnlineTime();
         }
+        $this->layout = 'main_new';
         return true;
     }
 

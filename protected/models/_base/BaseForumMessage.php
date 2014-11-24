@@ -58,8 +58,8 @@ abstract class BaseForumMessage extends AActiveRecord
         return array(
             'author' => array(self::BELONGS_TO, 'User', 'author_id'),
             'topic' => array(self::BELONGS_TO, 'ForumTopic', 'topic_id'),
-            'forumTopics' => array(self::HAS_MANY, 'ForumTopic', 'first_message_id'),
-            'forumTopics1' => array(self::HAS_MANY, 'ForumTopic', 'last_message_id'),
+            'forumTopics' => array(self::HAS_MANY, 'ForumTopic', 'last_message_id'),
+            'forumTopics1' => array(self::HAS_MANY, 'ForumTopic', 'first_message_id'),
         );
     }
 

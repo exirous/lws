@@ -40,6 +40,11 @@ function mainRouteConfig($stateProvider, $urlRouterProvider)
             templateUrl: 'UserTmpl',
             controller: "UserCtrl"
         })
+        .state('inactiveUsers', {
+            url: "/inactive",
+            templateUrl: 'InactiveTmpl',
+            controller: "InactiveCtrl"
+        })
         .state('editUser', {
             url: "/user/edit/:userId",
             templateUrl: 'EditUserTmpl',

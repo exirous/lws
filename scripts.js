@@ -238,7 +238,6 @@ x;s++)for(a=z[s],p=1,w=a.length;p<w;p++){if((h=a[p].element)[0].selected){h=h.va
 s=k.ngOptions,x=!1,v,C=u(X.createElement("option")),y=u(X.createElement("optgroup")),z=C.clone();k=0;for(var w=g.children(),B=w.length;k<B;k++)if(""===w[k].value){v=x=w.eq(k);break}p.init(m,x,z);q&&(m.$isEmpty=function(a){return!a||0===a.length});s?n(e,g,m):q?l(e,g,m):h(e,g,m,p)}}}}],id=["$interpolate",function(a){var c={addOption:y,removeOption:y};return{restrict:"E",priority:100,compile:function(d,e){if(D(e.value)){var f=a(d.text(),!0);f||e.$set("value",d.text())}return function(a,d,e){var h=d.parent(),
 l=h.data("$selectController")||h.parent().data("$selectController");l&&l.databound?d.prop("selected",!1):l=c;f?a.$watch(f,function(a,c){e.$set("value",a);a!==c&&l.removeOption(c);l.addOption(a)}):l.addOption(e.value);d.on("$destroy",function(){l.removeOption(e.value)})}}}}],hd=$({restrict:"E",terminal:!0});Q.angular.bootstrap?console.log("WARNING: Tried to load angular more than once."):((Da=Q.jQuery)&&Da.fn.on?(u=Da,B(Da.fn,{scope:La.scope,isolateScope:La.isolateScope,controller:La.controller,injector:La.injector,
 inheritedData:La.inheritedData}),Gb("remove",!0,!0,!1),Gb("empty",!1,!1,!1),Gb("html",!1,!1,!0)):u=S,Ua.element=u,$c(Ua),u(X).ready(function(){Xc(X,fc)}))})(window,document);!window.angular.$$csp()&&window.angular.element(document).find("head").prepend('<style type="text/css">@charset "UTF-8";[ng\\:cloak],[ng-cloak],[data-ng-cloak],[x-ng-cloak],.ng-cloak,.x-ng-cloak,.ng-hide{display:none !important;}ng\\:form{display:block;}.ng-animate-block-transitions{transition:0s all!important;-webkit-transition:0s all!important;}.ng-hide-add-active,.ng-hide-remove{display:block!important;}</style>');
-//# sourceMappingURL=angular.min.js.map
 
 /**
  * State-based routing for AngularJS
@@ -10465,7 +10464,7 @@ angular.module('dialogs',['dialogs.services','ngSanitize']) // requires angular-
     var startSym = $interpolate.startSymbol();
     var endSym = $interpolate.endSymbol();
     
-		$templateCache.put('/dialogs/error.html','<div class="modal-header dialog-header-error"><button type="button" class="close" ng-click="close()">&times;</button><h4 class="modal-title text-danger"><span class="glyphicon glyphicon-warning-sign"></span> <span ng-bind-html="header"></span></h4></div><div class="modal-body text-danger" ng-bind-html="msg"></div><div class="modal-footer"><button type="button" class="btn btn-default" ng-click="close()">Close</button></div>');
+		$templateCache.put('/dialogs/error.html','<div class="modal-header dialog-header-error"><button type="button" class="close" ng-click="close()">&times;</button><h4 class="modal-title text-danger"><span class="glyphicon glyphicon-warning-sign"></span> <span ng-bind-html="header"></span></h4></div><div class="modal-body text-danger" ng-bind-html="msg"></div><div class="modal-footer"><button type="button" class="btn btn-default" ng-click="close()">Закрыть</button></div>');
 		$templateCache.put('/dialogs/wait.html','<div class="modal-header dialog-header-wait"><h4 class="modal-title"><span class="glyphicon glyphicon-time"></span> Please Wait</h4></div><div class="modal-body"><p ng-bind-html="msg"></p><div class="progress progress-striped active"><div class="progress-bar progress-bar-info" ng-style="getProgress()"></div><span class="sr-only">'+startSym+'progress'+endSym+'% Complete</span></div></div>');
 		$templateCache.put('/dialogs/notify.html','<div class="modal-header dialog-header-notify"><button type="button" class="close" ng-click="close()" class="pull-right">&times;</button><h4 class="modal-title text-info"><span class="glyphicon glyphicon-info-sign"></span> '+startSym+'header'+endSym+'</h4></div><div class="modal-body text-info" ng-bind-html="msg"></div><div class="modal-footer"><button type="button" class="btn btn-primary" ng-click="close()">OK</button></div>');
 		$templateCache.put('/dialogs/confirm.html','<div class="modal-header dialog-header-confirm"><button type="button" class="close" ng-click="no()">&times;</button><h4 class="modal-title"><span class="glyphicon glyphicon-check"></span> '+startSym+'header'+endSym+'</h4></div><div class="modal-body" ng-bind-html="msg"></div><div class="modal-footer"><button type="button" class="btn btn-success" ng-click="yes()">Да</button><button type="button" class="btn btn-danger" ng-click="no()">Нет</button></div>');
@@ -10514,6 +10513,11 @@ function mainRouteConfig($stateProvider, $urlRouterProvider)
             url: "/user/view/:userId",
             templateUrl: 'UserTmpl',
             controller: "UserCtrl"
+        })
+        .state('inactiveUsers', {
+            url: "/inactive",
+            templateUrl: 'InactiveTmpl',
+            controller: "InactiveCtrl"
         })
         .state('editUser', {
             url: "/user/edit/:userId",
@@ -10700,6 +10704,16 @@ lwsServices.factory('TeamSpeak', ['$resource', function ($resource)
 lwsServices.factory('User', ['$resource', function ($resource)
 {
     return $resource('/user/item', {}, {
+        getInactiveCount:
+        {
+            url: '/user/inactiveCount',
+            method: 'get'
+        },
+        queryInactive:
+        {
+            url: '/user/inactive',
+            method: 'get'
+        },
         getbirthdays:
         {
             url: '/user/birthdays',
@@ -10730,6 +10744,10 @@ lwsServices.factory('User', ['$resource', function ($resource)
         },
         reject:{
             url: '/user/reject',
+            method: 'post'
+        },
+        expel:{
+            url: '/user/expel',
             method: 'post'
         },
         recover:{
@@ -10934,6 +10952,40 @@ lwsFilters.filter('daysleft', function() {
     };
 });
 
+lwsFilters.filter('timeAgo', function () {
+    var time = new Date().getTime();
+    var textRules = {
+        'many':/(\d*[5-90])|11|12|13/,
+        'one':/\d*[1]/,
+        'some':/\d*[2-4]/
+    };
+    function i18(number, strings)
+    {
+        for (var i in textRules) {
+            if (textRules[i].test(number))
+                return strings[i];
+        }
+    }
+    return function (input, noago) {
+        var timediff = time - parseInt(input);
+        var ago = !noago && timediff > 0;
+        timediff = Math.abs(timediff);
+        timediff = Math.round(timediff / 1000 / 3600);
+        var timeString = '';
+        var days = Math.round(timediff / 24 % 30)+'';
+        var months = Math.round(timediff / 24 / 30)+'';
+        if (months !='0') {
+            timeString = months + ' '+i18(months,{'one':'месяц','some':'месяца','many':'месяцев'})+' и ';
+        }
+        if (days == '0' && months == '0')
+            return 'сегодня';
+        if (days == '1' && months == '0')
+            return ago ? 'вчера' : 'завтра';
+        timeString += days + ' ' + i18(days, {'one': 'день', 'some': 'дня', 'many': 'дней'});
+        return timeString + (ago ? ' назад' : '');
+    };
+});
+
 lwsFilters.filter('to_trusted', ['$sce', function($sce){
     return function(text) {
         return $sce.trustAsHtml(text);
@@ -11068,9 +11120,9 @@ angular.module('app.controllers',
 var lwsControllers = angular.module('app.controllers');
 
 lwsControllers.controller('AppCtrl',
-    ['$scope', '$dialogs', '$stateParams', 'User','$rootScope', '$state',
+    ['$scope', '$dialogs', '$stateParams', 'User', '$rootScope', '$state', '$filter',
 
-        function ($scope, $dialogs, $stateParams, User, $rootScope, $state)
+        function ($scope, $dialogs, $stateParams, User, $rootScope, $state, $filter)
         {
             $scope.UserIdentity = UserLoginData;
 
@@ -11111,6 +11163,7 @@ lwsControllers.controller('AppCtrl',
                 'makenews': 'news',
                 'editnews': 'news',
                 'roster': 'pilots',
+                'inactiveUsers':'pilots',
                 'rosterUser': 'user',
                 'userMarks': 'user',
                 'afterroster': 'user',
@@ -11177,6 +11230,21 @@ lwsControllers.controller('AppCtrl',
                 });
             }
 
+            function checkIfDisabled() {
+                if ($scope.UserIdentity.isDisabled) {
+                    var dlg = $dialogs.error('Внимание!',
+                        'Вы были исключенны из школы по причине:<br><b>'
+                        + $scope.UserIdentity.disableReason +
+                        '</b><br>Немедленно свяжитесь с Руководителем полка <a href="/#/conversation/14/page-1">RekruT-ом!</a>');
+                }
+            }
+
+            $rootScope.$on('refreshUserLogin', function () {
+                checkIfDisabled()
+            });
+            checkIfDisabled();
+
+
             $scope.$on('$stateChangeStart',
                 function (event, toState, toParams, fromState, fromParams)
                 {
@@ -11205,8 +11273,8 @@ lwsControllers.controller('AppCtrl',
                 {
                     if (user && user.id)
                     {
-                        $rootScope.$broadcast('refreshUserLogin');
                         $scope.UserIdentity = user;
+                        $rootScope.$broadcast('refreshUserLogin');
                         $scope.registerForNotifications();
                     }
                 }, function ()
@@ -11219,6 +11287,7 @@ lwsControllers.controller('AppCtrl',
                 var dlg = $dialogs.confirm('Подтвердите', 'Вы хотите выйти из системы?');
                 dlg.result.then(function (btn)
                 {
+
                     User.logout({}, function (resource)
                     {
                         $scope.unRegisterForNotifications();
@@ -11235,6 +11304,25 @@ lwsControllers.controller('AppCtrl',
 
             }
 
+            $rootScope.expel = function (pilot) {
+                var dlg = $dialogs.create('rejectDialogTmpl', 'RejectDialogCtrl', {
+                    text: 'Отсутствие на тренировках в школе пилотов Luftwaffe сроком ' + $filter('timeAgo')(pilot.lastOnline, true) + '  без указания причины',
+                    header: 'исключения из школы',
+                    buttonText: 'Исключить'
+                }, {key: false, back: 'static'});
+                dlg.result.then(function (reason)
+                {
+                    User.expel({userId: pilot.id, reason: reason}, function (resource) {
+                        pilot.expelled = true;
+                        setTimeout(function () {
+                            $rootScope.$broadcast('pilotExpelled');
+                        }, 200);
+                    });
+                }, function (reason)
+                {
+
+                });
+            }
 
 
 
@@ -11438,7 +11526,8 @@ lwsControllers.controller('EditUserCtrl',
             {
                 var user = {};
                 angular.extend(user, $scope.user);
-                user.ts_id = user.ts_id.id;
+                if (user.ts_id.hasOwnProperty('id'))
+                  user.ts_id = user.ts_id.id;
                 User.update({user:user}, function(res){
 
                 })
@@ -11452,7 +11541,7 @@ lwsControllers.controller('BarracksCtrl',
         function ($scope, User, $stateParams, $timeout)
         {
             $scope.dataSize = 1;
-            $scope.filters = {name: null};
+            $scope.filters = {name: null, which: 0};
             var firstLoad = true;
 
             $scope.loadData = function ()
@@ -11518,7 +11607,8 @@ lwsControllers.controller('RosterUserCtrl',
                     .result.then(function (btn)
                     {
                         $scope.rosterForm.isSubmitting = true;
-                        User.accept({userId: $stateParams.userId, uid: $scope.rosterForm.tsId.id}, function ()
+                        var uid = ($scope.rosterForm.tsId.hasOwnProperty('id')) ? $scope.rosterForm.tsId.id : $scope.rosterForm.tsId;
+                        User.accept({userId: $stateParams.userId, uid: uid}, function ()
                         {
                             $scope.rosterForm.isSubmitting = false;
                             $rootScope.$broadcast('refreshRosterList');
@@ -11956,7 +12046,6 @@ lwsControllers.controller("RosterViewCtrl", ['$scope', '$timeout', 'Roster', fun
     {
         refreshRosterView();
     });
-    $scope.tree = [];
 
 }]);
 
@@ -11977,8 +12066,6 @@ lwsControllers.controller("BirthdayViewCtrl", ['$scope', '$timeout', 'User', fun
     {
         refreshBirthdayView();
     });
-    $scope.tree = [];
-
 }]);
 
 
@@ -12153,7 +12240,11 @@ lwsControllers.controller('RejectDialogCtrl',
     ['$scope', '$modalInstance', 'data',
         function ($scope, $modalInstance, data)
         {
-            $scope.reject = {text:''};
+            $scope.reject = {
+                text: data.text || '',
+                header: data.header || 'отклонения заявки',
+                buttonText: data.buttonText || 'Отклонить заявку'
+            };
             $scope.cancel = function ()
             {
                 $modalInstance.dismiss('canceled');
@@ -12451,6 +12542,37 @@ lwsControllers.controller('ConversationPageCtrl',
             });
         }]);
 
+
+lwsControllers.controller("InactiveCountCtrl", ['$scope', '$timeout', 'User', function ($scope, $timeout, User)
+{
+    var inactiveCountTimeout = null;
+    var refreshInactiveCount = function () {
+        $timeout.cancel(inactiveCountTimeout);
+        User.getInactiveCount({}, function (res) {
+            $scope.count = res.data.count;
+            inactiveCountTimeout = $timeout(refreshInactiveCount, 60 * 24 * 1000);
+        });
+    };
+    $timeout(refreshInactiveCount, 70);
+}]);
+
+lwsControllers.controller("InactiveCtrl", ['$scope', 'User', '$stateParams', '$timeout',
+    function ($scope, User, $stateParams, $timeout) {
+        $scope.filters = {name: null};
+        $scope.loadData = function () {
+            $scope.isLoading = true;
+            User.queryInactive({}, function (resource) {
+                $scope.pilots = resource.data;
+                $scope.isLoading = false;
+            });
+        };
+
+        $scope.$on('pilotExpelled',function(event, data){
+            $scope.loadData();
+        });
+        $scope.loadData();
+    }]);
+
 /*
  * angular-loading-bar
  *
@@ -12743,12 +12865,7 @@ angular.module('chieffancypants.loadingBar', [])
   });       // wtf javascript. srsly
 })();       //
 
-/*
- Angular File Upload v0.5.6
- https://github.com/nervgh/angular-file-upload
-*/
 !function(a,b){return"function"==typeof define&&define.amd?(define("angular-file-upload",["angular"],function(a){return b(a)}),void 0):b(a)}(angular||null,function(a){var b=a.module("angularFileUpload",[]);return b.directive("ngFileDrop",["$fileUploader",function(b){"use strict";return{link:b.isHTML5?function(a,b,c){b.bind("drop",function(b){var d=b.dataTransfer?b.dataTransfer:b.originalEvent.dataTransfer;d&&(b.preventDefault(),b.stopPropagation(),a.$broadcast("file:removeoverclass"),a.$emit("file:add",d.files,a.$eval(c.ngFileDrop)))}).bind("dragover",function(b){var c=b.dataTransfer?b.dataTransfer:b.originalEvent.dataTransfer;b.preventDefault(),b.stopPropagation(),c.dropEffect="copy",a.$broadcast("file:addoverclass")}).bind("dragleave",function(){a.$broadcast("file:removeoverclass")})}:a.noop}}]),b.directive("ngFileOver",function(){"use strict";return{link:function(a,b,c){a.$on("file:addoverclass",function(){b.addClass(c.ngFileOver||"ng-file-over")}),a.$on("file:removeoverclass",function(){b.removeClass(c.ngFileOver||"ng-file-over")})}}}),b.directive("ngFileSelect",["$fileUploader",function(a){"use strict";return{link:function(b,c,d){a.isHTML5||c.removeAttr("multiple"),c.bind("change",function(){var e=a.isHTML5?this.files:this,f=b.$eval(d.ngFileSelect);b.$emit("file:add",e,f),a.isHTML5&&c.attr("multiple")&&c.prop("value",null)}),c.prop("value",null)}}}]),b.factory("$fileUploader",["$compile","$rootScope","$http","$window",function(b,c,d,e){"use strict";function f(b){a.extend(this,{scope:c,url:"/",alias:"file",queue:[],headers:{},progress:null,autoUpload:!1,removeAfterUpload:!1,method:"POST",filters:[],formData:[],isUploading:!1,queueLimit:Number.MAX_VALUE,withCredentials:!1,_nextIndex:0,_timestamp:Date.now()},b),this.filters.unshift(this._queueLimitFilter),this.filters.unshift(this._emptyFileFilter),this.scope.$on("file:add",function(a,b,c){a.stopPropagation(),this.addToQueue(b,c)}.bind(this)),this.bind("beforeupload",g.prototype._beforeupload),this.bind("in:progress",g.prototype._progress),this.bind("in:success",g.prototype._success),this.bind("in:cancel",g.prototype._cancel),this.bind("in:error",g.prototype._error),this.bind("in:complete",g.prototype._complete),this.bind("in:progress",this._progress),this.bind("in:complete",this._complete)}function g(c){if(!f.prototype.isHTML5){var d=a.element(c.file),e=b(d.clone())(c.uploader.scope),g=d.val();c.file={lastModifiedDate:null,size:null,type:"like/"+g.slice(g.lastIndexOf(".")+1).toLowerCase(),name:g.slice(g.lastIndexOf("/")+g.lastIndexOf("\\")+2)},c._input=d,e.prop("value",null),d.css("display","none").after(e)}a.extend(this,{isReady:!1,isUploading:!1,isUploaded:!1,isSuccess:!1,isCancel:!1,isError:!1,progress:null,index:null},c)}return f.prototype={constructor:f,_emptyFileFilter:function(b){return a.isElement(b)?!0:!!b.size},_queueLimitFilter:function(){return this.queue.length<this.queueLimit},bind:function(a,b){return this.scope.$on(this._timestamp+":"+a,b.bind(this))},trigger:function(a){arguments[0]=this._timestamp+":"+a,this.scope.$broadcast.apply(this.scope,arguments)},isHTML5:!(!e.File||!e.FormData),addToQueue:function(b,c){var d=this.queue.length,e="length"in b?b:[b];a.forEach(e,function(b){var d=this.filters.length?this.filters.every(function(a){return a.call(this,b)},this):!0,e=new g(a.extend({url:this.url,alias:this.alias,headers:a.copy(this.headers),formData:a.copy(this.formData),removeAfterUpload:this.removeAfterUpload,withCredentials:this.withCredentials,method:this.method,uploader:this,file:b},c));d?(this.queue.push(e),this.trigger("afteraddingfile",e)):this.trigger("whenaddingfilefailed",e)},this),this.queue.length!==d&&(this.trigger("afteraddingall",this.queue),this.progress=this._getTotalProgress()),this._render(),this.autoUpload&&this.uploadAll()},removeFromQueue:function(a){var b=this.getIndexOfItem(a),c=this.queue[b];c.cancel&&c.cancel(),c._destroy&&c._destroy(),this.queue.splice(b,1),this.progress=this._getTotalProgress()},clearQueue:function(){for(;this.queue.length;)this.queue[this.queue.length-1].remove()},uploadItem:function(a){var b=this.getIndexOfItem(a),c=this.queue[b],d=this.isHTML5?"_xhrTransport":"_iframeTransport";c.index=c.index||this._nextIndex++,c.isReady=!0,this.isUploading||(this.isUploading=!0,this[d](c))},cancelItem:function(a){var b=this.getIndexOfItem(a),c=this.queue[b],d=this.isHTML5?"_xhr":"_form";c[d]&&c[d].abort()},uploadAll:function(){var a=this.getNotUploadedItems().filter(function(a){return!a.isUploading});a.forEach(function(a){a.index=a.index||this._nextIndex++,a.isReady=!0},this),a.length&&this.uploadItem(a[0])},cancelAll:function(){this.getNotUploadedItems().forEach(function(a){this.cancelItem(a)},this)},getIndexOfItem:function(b){return a.isNumber(b)?b:this.queue.indexOf(b)},getNotUploadedItems:function(){return this.queue.filter(function(a){return!a.isUploaded})},getReadyItems:function(){return this.queue.filter(function(a){return a.isReady&&!a.isUploading}).sort(function(a,b){return a.index-b.index})},_render:function(){this.scope.$$phase||this.scope.$digest()},_getTotalProgress:function(a){if(this.removeAfterUpload)return a||0;var b=this.getNotUploadedItems().length,c=b?this.queue.length-b:this.queue.length,d=100/this.queue.length,e=(a||0)*d/100;return Math.round(c*d+e)},_progress:function(a,b,c){var d=this._getTotalProgress(c);this.trigger("progressall",d),this.progress=d,this._render()},_complete:function(){var b=this.getReadyItems()[0];return this.isUploading=!1,a.isDefined(b)?(this.uploadItem(b),void 0):(this.trigger("completeall",this.queue),this.progress=this._getTotalProgress(),this._render(),void 0)},_xhrTransport:function(b){var c=b._xhr=new XMLHttpRequest,d=new FormData,e=this;this.trigger("beforeupload",b),b.formData.forEach(function(b){a.forEach(b,function(a,b){d.append(b,a)})}),d.append(b.alias,b.file),c.upload.onprogress=function(a){var c=a.lengthComputable?100*a.loaded/a.total:0;e.trigger("in:progress",b,Math.round(c))},c.onload=function(){var a=e._transformResponse(c.response),d=e._isSuccessCode(c.status)?"success":"error";e.trigger("in:"+d,c,b,a),e.trigger("in:complete",c,b,a)},c.onerror=function(){e.trigger("in:error",c,b),e.trigger("in:complete",c,b)},c.onabort=function(){e.trigger("in:cancel",c,b),e.trigger("in:complete",c,b)},c.open(b.method,b.url,!0),c.withCredentials=b.withCredentials,a.forEach(b.headers,function(a,b){c.setRequestHeader(b,a)}),c.send(d)},_iframeTransport:function(b){var c=a.element('<form style="display: none;" />'),d=a.element('<iframe name="iframeTransport'+Date.now()+'">'),e=b._input,f=this;b._form&&b._form.replaceWith(e),b._form=c,this.trigger("beforeupload",b),e.prop("name",b.alias),b.formData.forEach(function(b){a.forEach(b,function(b,d){c.append(a.element('<input type="hidden" name="'+d+'" value="'+b+'" />'))})}),c.prop({action:b.url,method:"POST",target:d.prop("name"),enctype:"multipart/form-data",encoding:"multipart/form-data"}),d.bind("load",function(){var a=d[0].contentDocument.body.innerHTML,c={response:a,status:200,dummy:!0},e=f._transformResponse(c.response);f.trigger("in:success",c,b,e),f.trigger("in:complete",c,b,e)}),c.abort=function(){var a={status:0,dummy:!0};d.unbind("load").prop("src","javascript:false;"),c.replaceWith(e),f.trigger("in:cancel",a,b),f.trigger("in:complete",a,b)},e.after(c),c.append(e).append(d),c[0].submit()},_isSuccessCode:function(a){return a>=200&&300>a||304===a},_transformResponse:function(a){return d.defaults.transformResponse.forEach(function(b){a=b(a)}),a}},g.prototype={constructor:g,remove:function(){this.uploader.removeFromQueue(this)},upload:function(){this.uploader.uploadItem(this)},cancel:function(){this.uploader.cancelItem(this)},_destroy:function(){this._form&&this._form.remove(),this._input&&this._input.remove(),delete this._form,delete this._input},_beforeupload:function(a,b){b.isReady=!0,b.isUploading=!0,b.isUploaded=!1,b.isSuccess=!1,b.isCancel=!1,b.isError=!1,b.progress=0},_progress:function(a,b,c){b.progress=c,b.uploader.trigger("progress",b,c)},_success:function(a,b,c,d){c.isReady=!1,c.isUploading=!1,c.isUploaded=!0,c.isSuccess=!0,c.isCancel=!1,c.isError=!1,c.progress=100,c.index=null,c.uploader.trigger("success",b,c,d)},_cancel:function(a,b,c){c.isReady=!1,c.isUploading=!1,c.isUploaded=!1,c.isSuccess=!1,c.isCancel=!0,c.isError=!1,c.progress=0,c.index=null,c.uploader.trigger("cancel",b,c)},_error:function(a,b,c,d){c.isReady=!1,c.isUploading=!1,c.isUploaded=!0,c.isSuccess=!1,c.isCancel=!1,c.isError=!0,c.progress=100,c.index=null,c.uploader.trigger("error",b,c,d)},_complete:function(a,b,c,d){c.uploader.trigger("complete",b,c,d),c.removeAfterUpload&&c.remove()}},{create:function(a){return new f(a)},isHTML5:f.prototype.isHTML5}}]),b});
-//# sourceMappingURL=angular-file-upload.min.map
 
 /**
  * @license AngularJS-DND v0.1.5

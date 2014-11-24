@@ -10,9 +10,9 @@ angular.module('app.controllers',
 var lwsControllers = angular.module('app.controllers');
 
 lwsControllers.controller('AppCtrl',
-    ['$scope', '$dialogs', '$stateParams', 'User','$rootScope', '$state',
+    ['$scope', '$dialogs', '$stateParams', 'User', '$rootScope', '$state', '$filter',
 
-        function ($scope, $dialogs, $stateParams, User, $rootScope, $state)
+        function ($scope, $dialogs, $stateParams, User, $rootScope, $state, $filter)
         {
             $scope.UserIdentity = UserLoginData;
 
@@ -53,6 +53,7 @@ lwsControllers.controller('AppCtrl',
                 'makenews': 'news',
                 'editnews': 'news',
                 'roster': 'pilots',
+                'inactiveUsers':'pilots',
                 'rosterUser': 'user',
                 'userMarks': 'user',
                 'afterroster': 'user',
@@ -119,6 +120,21 @@ lwsControllers.controller('AppCtrl',
                 });
             }
 
+            function checkIfDisabled() {
+                if ($scope.UserIdentity.isDisabled) {
+                    var dlg = $dialogs.error('Внимание!',
+                        'Вы были исключенны из школы по причине:<br><b>'
+                        + $scope.UserIdentity.disableReason +
+                        '</b><br>Немедленно свяжитесь с Руководителем полка <a href="/#/conversation/14/page-1">RekruT-ом!</a>');
+                }
+            }
+
+            $rootScope.$on('refreshUserLogin', function () {
+                checkIfDisabled()
+            });
+            checkIfDisabled();
+
+
             $scope.$on('$stateChangeStart',
                 function (event, toState, toParams, fromState, fromParams)
                 {
@@ -147,8 +163,8 @@ lwsControllers.controller('AppCtrl',
                 {
                     if (user && user.id)
                     {
-                        $rootScope.$broadcast('refreshUserLogin');
                         $scope.UserIdentity = user;
+                        $rootScope.$broadcast('refreshUserLogin');
                         $scope.registerForNotifications();
                     }
                 }, function ()
@@ -161,6 +177,7 @@ lwsControllers.controller('AppCtrl',
                 var dlg = $dialogs.confirm('Подтвердите', 'Вы хотите выйти из системы?');
                 dlg.result.then(function (btn)
                 {
+
                     User.logout({}, function (resource)
                     {
                         $scope.unRegisterForNotifications();
@@ -177,6 +194,25 @@ lwsControllers.controller('AppCtrl',
 
             }
 
+            $rootScope.expel = function (pilot) {
+                var dlg = $dialogs.create('rejectDialogTmpl', 'RejectDialogCtrl', {
+                    text: 'Отсутствие на тренировках в школе пилотов Luftwaffe сроком ' + $filter('timeAgo')(pilot.lastOnline, true) + '  без указания причины',
+                    header: 'исключения из школы',
+                    buttonText: 'Исключить'
+                }, {key: false, back: 'static'});
+                dlg.result.then(function (reason)
+                {
+                    User.expel({userId: pilot.id, reason: reason}, function (resource) {
+                        pilot.expelled = true;
+                        setTimeout(function () {
+                            $rootScope.$broadcast('pilotExpelled');
+                        }, 200);
+                    });
+                }, function (reason)
+                {
+
+                });
+            }
 
 
 
@@ -380,7 +416,8 @@ lwsControllers.controller('EditUserCtrl',
             {
                 var user = {};
                 angular.extend(user, $scope.user);
-                user.ts_id = user.ts_id.id;
+                if (user.ts_id.hasOwnProperty('id'))
+                  user.ts_id = user.ts_id.id;
                 User.update({user:user}, function(res){
 
                 })
@@ -394,7 +431,7 @@ lwsControllers.controller('BarracksCtrl',
         function ($scope, User, $stateParams, $timeout)
         {
             $scope.dataSize = 1;
-            $scope.filters = {name: null};
+            $scope.filters = {name: null, which: 0};
             var firstLoad = true;
 
             $scope.loadData = function ()
@@ -460,7 +497,8 @@ lwsControllers.controller('RosterUserCtrl',
                     .result.then(function (btn)
                     {
                         $scope.rosterForm.isSubmitting = true;
-                        User.accept({userId: $stateParams.userId, uid: $scope.rosterForm.tsId.id}, function ()
+                        var uid = ($scope.rosterForm.tsId.hasOwnProperty('id')) ? $scope.rosterForm.tsId.id : $scope.rosterForm.tsId;
+                        User.accept({userId: $stateParams.userId, uid: uid}, function ()
                         {
                             $scope.rosterForm.isSubmitting = false;
                             $rootScope.$broadcast('refreshRosterList');
@@ -898,7 +936,6 @@ lwsControllers.controller("RosterViewCtrl", ['$scope', '$timeout', 'Roster', fun
     {
         refreshRosterView();
     });
-    $scope.tree = [];
 
 }]);
 
@@ -919,8 +956,6 @@ lwsControllers.controller("BirthdayViewCtrl", ['$scope', '$timeout', 'User', fun
     {
         refreshBirthdayView();
     });
-    $scope.tree = [];
-
 }]);
 
 
@@ -1095,7 +1130,11 @@ lwsControllers.controller('RejectDialogCtrl',
     ['$scope', '$modalInstance', 'data',
         function ($scope, $modalInstance, data)
         {
-            $scope.reject = {text:''};
+            $scope.reject = {
+                text: data.text || '',
+                header: data.header || 'отклонения заявки',
+                buttonText: data.buttonText || 'Отклонить заявку'
+            };
             $scope.cancel = function ()
             {
                 $modalInstance.dismiss('canceled');
@@ -1392,3 +1431,34 @@ lwsControllers.controller('ConversationPageCtrl',
                 $scope.conversation.messages = res.data;
             });
         }]);
+
+
+lwsControllers.controller("InactiveCountCtrl", ['$scope', '$timeout', 'User', function ($scope, $timeout, User)
+{
+    var inactiveCountTimeout = null;
+    var refreshInactiveCount = function () {
+        $timeout.cancel(inactiveCountTimeout);
+        User.getInactiveCount({}, function (res) {
+            $scope.count = res.data.count;
+            inactiveCountTimeout = $timeout(refreshInactiveCount, 60 * 24 * 1000);
+        });
+    };
+    $timeout(refreshInactiveCount, 70);
+}]);
+
+lwsControllers.controller("InactiveCtrl", ['$scope', 'User', '$stateParams', '$timeout',
+    function ($scope, User, $stateParams, $timeout) {
+        $scope.filters = {name: null};
+        $scope.loadData = function () {
+            $scope.isLoading = true;
+            User.queryInactive({}, function (resource) {
+                $scope.pilots = resource.data;
+                $scope.isLoading = false;
+            });
+        };
+
+        $scope.$on('pilotExpelled',function(event, data){
+            $scope.loadData();
+        });
+        $scope.loadData();
+    }]);

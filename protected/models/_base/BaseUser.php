@@ -28,6 +28,10 @@
  * @property string $last_online_time
  * @property string $broadcast_token
  * @property string $recovery_token
+ * @property integer $is_disabled
+ * @property string $disable_reason
+ * @property string $last_warning_time
+ * @property integer $is_defector
  *
  * @property BattleEvent[] $battleEvents
  * @property ForumMessage[] $forumMessages
@@ -88,14 +92,15 @@ abstract class BaseUser extends AActiveRecord
     public function rules()
     {
         return array(
+            array('is_disabled, is_defector', 'numerical', 'integerOnly'=>true),
             array('nickname, password, ip, broadcast_token, recovery_token', 'length', 'max'=>32),
             array('firstname', 'length', 'max'=>128),
             array('email, ts_id', 'length', 'max'=>64),
             array('rank_id, instructor_id, img_src', 'length', 'max'=>10),
             array('is_clanner, is_technician', 'length', 'max'=>1),
-            array('join_date, birth_date, roster, qualifications, last_online_time', 'safe'),
-            array('nickname, firstname, email, password, ts_id, join_date, birth_date, roster, rank_id, instructor_id, ip, is_clanner, is_technician, img_src, qualifications, last_online_time, broadcast_token, recovery_token', 'default', 'setOnEmpty' => true, 'value' => null),
-            array('id, nickname, firstname, email, password, ts_id, join_date, birth_date, roster, rank_id, instructor_id, ip, is_clanner, is_technician, img_src, qualifications, last_online_time, broadcast_token, recovery_token', 'safe', 'on' => 'search'),
+            array('join_date, birth_date, roster, qualifications, last_online_time, disable_reason, last_warning_time', 'safe'),
+            array('nickname, firstname, email, password, ts_id, join_date, birth_date, roster, rank_id, instructor_id, ip, is_clanner, is_technician, img_src, qualifications, last_online_time, broadcast_token, recovery_token, is_disabled, disable_reason, last_warning_time, is_defector', 'default', 'setOnEmpty' => true, 'value' => null),
+            array('id, nickname, firstname, email, password, ts_id, join_date, birth_date, roster, rank_id, instructor_id, ip, is_clanner, is_technician, img_src, qualifications, last_online_time, broadcast_token, recovery_token, is_disabled, disable_reason, last_warning_time, is_defector', 'safe', 'on' => 'search'),
         );
     }
 
@@ -150,6 +155,10 @@ abstract class BaseUser extends AActiveRecord
             'last_online_time' => Yii::t('app', 'Last Online Time'),
             'broadcast_token' => Yii::t('app', 'Broadcast Token'),
             'recovery_token' => Yii::t('app', 'Recovery Token'),
+            'is_disabled' => Yii::t('app', 'Is Disabled'),
+            'disable_reason' => Yii::t('app', 'Disable Reason'),
+            'last_warning_time' => Yii::t('app', 'Last Warning Time'),
+            'is_defector' => Yii::t('app', 'Is Defector'),
             'battleEvents' => null,
             'forumMessages' => null,
             'forumTopics' => null,
@@ -191,6 +200,10 @@ abstract class BaseUser extends AActiveRecord
         $criteria->compare('last_online_time', $this->last_online_time, true);
         $criteria->compare('broadcast_token', $this->broadcast_token, true);
         $criteria->compare('recovery_token', $this->recovery_token, true);
+        $criteria->compare('is_disabled', $this->is_disabled);
+        $criteria->compare('disable_reason', $this->disable_reason, true);
+        $criteria->compare('last_warning_time', $this->last_warning_time, true);
+        $criteria->compare('is_defector', $this->is_defector);
 
         return new CActiveDataProvider($this, array(
             'criteria' => $criteria,

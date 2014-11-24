@@ -44,6 +44,40 @@ lwsFilters.filter('daysleft', function() {
     };
 });
 
+lwsFilters.filter('timeAgo', function () {
+    var time = new Date().getTime();
+    var textRules = {
+        'many':/(\d*[5-90])|11|12|13/,
+        'one':/\d*[1]/,
+        'some':/\d*[2-4]/
+    };
+    function i18(number, strings)
+    {
+        for (var i in textRules) {
+            if (textRules[i].test(number))
+                return strings[i];
+        }
+    }
+    return function (input, noago) {
+        var timediff = time - parseInt(input);
+        var ago = !noago && timediff > 0;
+        timediff = Math.abs(timediff);
+        timediff = Math.round(timediff / 1000 / 3600);
+        var timeString = '';
+        var days = Math.round(timediff / 24 % 30)+'';
+        var months = Math.round(timediff / 24 / 30)+'';
+        if (months !='0') {
+            timeString = months + ' '+i18(months,{'one':'месяц','some':'месяца','many':'месяцев'})+' и ';
+        }
+        if (days == '0' && months == '0')
+            return 'сегодня';
+        if (days == '1' && months == '0')
+            return ago ? 'вчера' : 'завтра';
+        timeString += days + ' ' + i18(days, {'one': 'день', 'some': 'дня', 'many': 'дней'});
+        return timeString + (ago ? ' назад' : '');
+    };
+});
+
 lwsFilters.filter('to_trusted', ['$sce', function($sce){
     return function(text) {
         return $sce.trustAsHtml(text);
