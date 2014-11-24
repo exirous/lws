@@ -6,7 +6,7 @@
  * Time: 12:27
  */
 
-class mailer {
+class Mailer {
 
     public static function send($to, $subject, $text)
     {
