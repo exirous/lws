@@ -13,7 +13,7 @@ class Mailer {
         $headers  = 'MIME-Version: 1.0' . "\r\n";
         $headers .= 'Content-type: text/html; charset=utf-8' . "\r\n";
         //$headers .= 'To: '.$to . "\r\n";
-        $headers .= 'From: LuftWaffeSchule <luftwaffeschule@gmail.com>' . "\r\n";
+        $headers .= 'From: LuftWaffeSchule <noreply@luftwaffeschule.ru>' . "\r\n";
         mail($to, $subject, $text, $headers);
     }
 } 

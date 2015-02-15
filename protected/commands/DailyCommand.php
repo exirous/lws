@@ -11,7 +11,9 @@ class DailyCommand extends CConsoleCommand
             $controller = new CController('SendWarnings');
 
         $viewPath = Yii::getPathOfAlias('application.views.mails.user_inactive_warning').'.php';
-        $users = User::model()->scopeInactive()->scopeEnabled()->scopeNeedWarning()->findAll();
+        $viewPathNotify = Yii::getPathOfAlias('application.views.mails.user_defector_notify').'.php';
+        //$users = User::model()->scopeInactive()->scopeEnabled()->scopeNeedWarning()->findAll();
+        $users = [];
         foreach ($users as $user) {
             $transaction = Yii::app()->db->beginTransaction();
             try {
@@ -19,7 +21,7 @@ class DailyCommand extends CConsoleCommand
                 $user->is_defector = 1;
                 $user->save();
                 Mailer::send($user->email, 'Предупреждение об отчислении', $controller->renderInternal($viewPath, compact('user'), true));
-                Mailer::send('luftwaffeschule@gmail.com', 'Вероятная дезертация', Yii::app()->controller->renderPartial('//mails/user_defector_notify', ['user' => $user], true));
+                Mailer::send('luftwaffeschule@gmail.com', 'Вероятная дезертация', $controller->renderInternal($viewPathNotify,  ['user' => $user], true));
                 $transaction->commit();
             }
             catch(Exception $e)

@@ -9,7 +9,7 @@
     <title>Школа виртуального пилотирования LuftwaffeSchule</title>
     <script type="text/javascript">var UserLoginData = <?=json_encode(Yii::app()->user->privateAttributes)?>;</script>
     <script src="/scripts.js"></script>
-    <script src="http://lws.exirous.com:3000/socket.io/socket.io.js"></script>
+    <script src="http://luftwaffeschule.ru:3000/socket.io/socket.io.js"></script>
     <link rel="stylesheet" href="/style_new.css" type="text/css">
     <!--[if lt IE 8]>
     <script type="text/javascript">
@@ -29,11 +29,14 @@
         <div class="photostack" id="main_header">
             <img ng-repeat="image in headerImages" class="header-image" ng-src="{{image}}">
         </div>
+        <div class="whiteline"></div>
         <a ui-sref="news" id="logo"></a>
         <table class="contentTable" cellpadding=0 cellspacing=0>
             <tbody>
             <tr>
                 <td class="mm left_panel">
+                    <div class="left_panel_2">
+                    <div class="left_panel_3">
                     <div  ng-if="UserIdentity.id == 1 || UserIdentity.id == 14" ng-controller="InactiveCountCtrl">
                         <div ng-if="count > 0">
                             <div class="panel_menu">
@@ -67,7 +70,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="panel_menu"><a href="ts3server://lws.exirous.com/?nickname={{UserIdentity.fullname}}">TeamSpeak</a>
+                    <div class="panel_menu"><a href="ts3server://luftwaffeschule.ru/?nickname={{UserIdentity.fullname}}">TeamSpeak</a>
                     </div>
                     <div class="left_content ts_channels">
                         <ul ng-controller="TSViewCtrl" style="padding:15px">
@@ -86,15 +89,17 @@
                     <div class="left_content">
                         <div class="g-page" data-width="250" data-href="//plus.google.com/u/0/108457946413274910426" data-showtagline="false" data-showcoverphoto="false" data-rel="publisher"></div>
                     </div>
+                    </div>
+                        </div>
                 </td>
                 <td class="mm center_panel">
                     <div class="main_menu">
-                        <div class="zhopa"></div>
-                        <a ui-sref="news">Новости</a>
-                        <a ui-sref="orders" ng-if="!UserIdentity.canMakeOrders && !UserIdentity.isGuest" >Приказы</a>
+                        <a ui-sref="news">Сводки<i></i></a>
+                        <a ui-sref="texts({id:5})">История<i></i></a>
+                        <a ui-sref="orders" ng-if="!UserIdentity.canMakeOrders && !UserIdentity.isGuest" >Приказы<i></i></a>
                         <span class="dropdown dropdown-hover" ng-if="UserIdentity.canMakeOrders">
-                        <a href="">Приказы</a>
-                        <ul class="dropdown-menu" style="top: 20px;left: -7px;">
+                        <a href="">Приказы<i></i></a>
+                        <ul class="dropdown-menu" style="top: 45px;left: -7px;">
                             <li><a ui-sref="orders">Архив</a></li>
                             <li class="divider"></li>
                             <li><a ui-sref="makeorder">Отдать приказ</a></li>
@@ -102,21 +107,21 @@
                         </ul>
                         </span>
                         <span class="dropdown dropdown-hover">
-                        <a href="">Штаб</a>
-                        <ul class="dropdown-menu" style="top: 20px;left: -7px;">
+                        <a href="">Документы<i></i></a>
+                        <ul class="dropdown-menu" style="top: 45px;left: -7px;">
                             <li><a ui-sref="texts({id:1})">Устав</a></li>
                             <li><a ui-sref="texts({id:2})">Приложения к уставу</a></li>
                             <li role="presentation" ng-if="UserIdentity.isInstructor" class="divider"></li>
                             <li><a ui-sref="materials({slug:'instructor_training'})" ng-if="UserIdentity.isInstructor">Настваление инструктору</a></li>
                         </ul>
                         </span>
-                        <a ui-sref="roster" ng-if="UserIdentity.isGuest">Вступить в школу</a>
+                        <a ui-sref="roster" ng-if="UserIdentity.isGuest">Вступить<i></i></a>
                         <span class="dropdown dropdown-hover" ng-if="!UserIdentity.isGuest">
-                        <a href="">Учебный класс</a>
-                        <ul class="dropdown-menu" style="top: 20px;left: -7px;">
+                        <a href="">Класс<i></i></a>
+                        <ul class="dropdown-menu" style="top: 45px;left: -7px;">
                             <li><a>Расписание занятий</a></li>
                             <li role="presentation" class="divider"></li>
-                            <li><a ui-sref="materials({slug:'flight_basics'})">Наставление по лётной подготовке</a></li>
+                            <li><a ui-sref="materials({slug:'flight_basics'})">Наставление по лётной подготовке истребителей</a></li>
                             <li><a ui-sref="materials({slug:'fighter_course'})">Программа обучения истребителей</a></li>
                             <li role="presentation" class="divider"></li>
                             <li><a ui-sref="materials({slug:'bomber_basics'})">Наставление по лётной подготовке бомбардировщиков</a></li>
@@ -127,13 +132,12 @@
                             <li><a ui-sref="texts({id:'6'})">Техническая эксплуатационная часть</a></li>-->
                         </ul>
                         </span>
-                        <a ui-sref="pilots">Казарма</a>
-                        <a ui-sref="flood" ng-if="!UserIdentity.isGuest">Курилка</a>
-                        <a ui-sref="texts({id:5})">О школе</a>
+                        <a ui-sref="pilots">Казарма<i></i></a>
+                        <a ui-sref="flood" ng-if="!UserIdentity.isGuest">Курилка<i></i></a>
                         <a href="" style="float:right" ng-click="login()" ng-if="UserIdentity.isGuest">Вход</a>
                         <span ng-if="!UserIdentity.isGuest" class="dropdown dropdown-hover" style="float:right">
-                        <a href="">{{UserIdentity.nickname}} <span class="glyphicon glyphicon-user"></span></a>
-                        <ul class="dropdown-menu" style="top: 27px;left: -10px;">
+                        <a href="" class="profile_btn">{{UserIdentity.nickname}} <span class="glyphicon glyphicon-user"></span></a>
+                        <ul class="dropdown-menu" style="top: 40px;left: -10px;">
                             <li><a ui-sref="user({userId:UserIdentity.id})">Посмотреть профиль</a></li>
                             <li><a ui-sref="reportvacation">Рапорт на отпуск</a></li>
                             <li><a ui-sref="messenger">Личные сообщения</a></li>
@@ -155,7 +159,7 @@
 </div>
 
 <script type="text/ng-template" id="NewsTmpl">
-    <h2>Объявления</h2>
+    <h2>Сводки</h2>
     <div class="big-spinner" ng-if="!news.length">
         <div class="spinner-icon"></div>
     </div>
@@ -490,11 +494,12 @@
     </div>
     <div ng-show="user">
         <button style="margin-left:10px" type="button" ng-click="expel(user)" class="btn btn-sm btn-danger pull-right" ng-if="!user.isDisabled && ((UserIdentity.id == 14) || (UserIdentity.id == 1))"><span class="glyphicon glyphicon-ban-circle"></span> Исключить</button>
-        <button style="margin-left:10px" type="button" ng-click="reenlist(user)" class="btn btn-sm btn-success pull-right" ng-if="user.isDisabled && ((UserIdentity.id == 14) || (UserIdentity.id == 1))"><span class="glyphicon glyphicon-heart"></span> Зачислить</button>
+        <button style="margin-left:10px" type="button" ng-click="reenlist(user)" class="btn btn-sm btn-success pull-right" ng-if="user.isDisabled && ((UserIdentity.id == 14) || (UserIdentity.id == 1))"><span class="glyphicon glyphicon-heart"></span> Восстановить</button>
         <button type="button" ui-sref="editUser({userId:user.id})" class="btn btn-sm btn-default pull-right" ng-if="(UserIdentity.id == 14) || (UserIdentity.id == 1)"><span class="glyphicon glyphicon-pencil"></span></button>
         <!--<button type="button" ng-click="sync()" class="btn btn-sm btn-default pull-right" ng-if="(UserIdentity.id == 14) || (UserIdentity.id == 1)"><span class="glyphicon glyphicon-refresh"></span></button>-->
         <h2>{{user.rank.name}} "{{user.nickname}}" {{user.firstname}}</h2>
         <br>
+        <div class="expelled_tag" ng-if="user.isDisabled"></div>
         <table style="width: 100%">
             <tr>
                 <td style="height: 210px;width: 210px">
@@ -502,6 +507,7 @@
                         <img ng-src="/img/users/{{user.img_src ? user.id+'_'+user.img_src+'.jpg' : (user.is_clanner ? 'no_image_clanner.png' : 'no_image.png')}}"
                              style="width: 200px;display:block">
                         <div ng-if="user.activeVacation" class="vacation" title="{{user.activeVacation.reason}}, с {{user.activeVacation.date_from | date : 'dd.MM.yyyy'}} по {{user.activeVacation.date_to | date : 'dd.MM.yyyy'}}">В Отпуске!</div>
+                        <div ng-if="user.isDefector" class="defector">Дезертир!</div>
                         <div ng-if="(UserIdentity.id == 14) || (UserIdentity.id == 1)" file-upload-box></div>
                     </div>
                     <div class="btn-group" ng-if="!UserIdentity.isGuest && (UserIdentity.id != user.id)">
@@ -633,49 +639,53 @@
                 </p>
             </div>
             <label>Каким образом попали в нашу школу?</label>
-
             <div class="form-group input-group">
                 <p class="form-group input-group-lng">
                     <input type="text" placeholder="Например: Друг рассказал, Вычитал в журнале, и.т.д" id="user_reason"
-                           class="form-control" ng-model="user.reason" required/>
+                           class="form-control long" ng-model="user.reason" required/>
                 </p>
             </div>
-
-            <label>Состоите-ли в другом СКВАДе, Клане или Полку?</label>
-
             <div class="form-group input-group">
-                <p class="btn-group">
-                    <button type="button" class="btn btn-default" ng-model="user.in_squad" btn-radio="true" required>
-                        Да
-                    </button>
-                    <button type="button" class="btn btn-default" ng-model="user.in_squad" btn-radio="false">
-                        Нет
-                    </button>
-                </p>
-            </div>
-            <div class="form-group input-group" ng-if="user.in_squad">
-                <label>В каком?</label>
-
+                <label>Название вашего полка:</label>
                 <div>
                     <p>
+                        <button type="button" class="btn btn-default pull-right" ng-model="user.in_squad" btn-checkbox>
+                            Не состою
+                        </button>
                         <input type="text" placeholder="Например: Lws, Heer, DerAdler, и.т.д" id="user_squad"
-                               class="form-control" ng-model="user.squad"/>
+                               class="form-control pull-left long" ng-model="user.squad" ng-disabled="user.in_squad"/>
                     </p>
                 </div>
             </div>
-            <label>Наличие в ангаре самолетов Bf-109E-3 и/или Р-36G для истребителей</label>
-
+            <div class="form-group input-group">
+                <label>Что побудило Вас освоить режим симуляторных боев?</label>
+                <div>
+                    <p>
+                        <textarea class="form-control pull-left long" ng-model="user.motive"></textarea>
+                    </p>
+                </div>
+            </div>
+            <label>Какую профессию хотите освоить?</label>
             <div class="form-group input-group">
                 <p class="btn-group">
-                    <button type="button" class="btn btn-default" ng-model="user.craft.bf109" btn-checkbox>Bf-109E-3
-                        (Эмиль)
+                    <button type="button" class="btn btn-default" ng-model="user.profession" btn-radio="'fighter'"
+                            required>Истребитель
                     </button>
-                    <button type="button" class="btn btn-default" ng-model="user.craft.p36g" btn-checkbox>P-36G Hawk
+                    <button type="button" class="btn btn-default" ng-model="user.profession" btn-radio="'bomber'">
+                        Бомбардировщик
                     </button>
                 </p>
             </div>
-            <label>Предпочитаете технику:</label>
-
+            <label ng-if="user.profession=='fighter'">Наличие в ангаре самолета Bf-109E-3 для истребителей</label>
+            <label ng-if="user.profession=='bomber'">Наличие в ангаре самолетов Ju-87 и Не-111 для бомбардировщиков</label>
+            <div class="form-group input-group" ng-if="user.profession">
+                <p class="btn-group">
+                    <button type="button" class="btn btn-default" ng-if="user.profession=='fighter'" ng-model="user.craft.bf109" btn-checkbox>Bf-109E-3</button>
+                    <button type="button" class="btn btn-default" ng-if="user.profession=='bomber'" ng-model="user.craft.ju87" btn-checkbox>Ju-87</button>
+                    <button type="button" class="btn btn-default" ng-if="user.profession=='bomber'" ng-model="user.craft.he111" btn-checkbox>He-111</button>
+                </p>
+            </div>
+            <label>Технику какой нации предпочитаете пилотировать?</label>
             <div class="form-group input-group">
                 <p class="btn-group">
                     <button type="button" class="btn btn-default" ng-model="user.nation" btn-radio="'germany'" required>
@@ -689,9 +699,38 @@
                     <button type="button" class="btn btn-default" ng-model="user.nation" btn-radio="'japan'">Япония
                     </button>
                 </p>
+                <br>
+                <label>Почему?</label>
+                <textarea class="form-control pull-left long" ng-model="user.nation_reason"></textarea>
             </div>
-            <label>Время вашего онлайна:</label>
 
+            <label>Как давно играете в War Thunder?</label>
+            <div class="form-group input-group">
+                <p class="form-group input-group-lng">
+                    <input type="text" class="form-control long" ng-model="user.wttime"/>
+                </p>
+            </div>
+            <label>Название вашего джойстика?</label>
+            <div class="form-group input-group">
+                <p class="form-group input-group-lng">
+                    <input type="text" class="form-control long" ng-model="user.joyname"/>
+                </p>
+            </div>
+            <label>Чем ведёте обзор из кабины?</label>
+            <div class="form-group input-group">
+                <p class="form-group input-group-lng">
+                    <input type="text" class="form-control long" ng-model="user.viewmode"/>
+                </p>
+            </div>
+
+            <label>Ваше хобби или профессия могущие принести пользу школе?</label>
+            <div class="form-group input-group">
+                <p class="form-group input-group-lng">
+                    <input type="text" class="form-control long" ng-model="user.hobby"/>
+                </p>
+            </div>
+
+            <label>Время вашего онлайна:</label>
             <div class="form-group input-group">
                 <span>С</span>
 
@@ -716,8 +755,7 @@
             <div class="form-group input-group"
                  ng-class="{true: 'has-error'}[(rosterForm.nickname.$dirty && rosterForm.nickname.$invalid)]">
                 <label>Ваш никнейм в игре?</label>
-                <input type="text"
-                       style="margin-bottom: 10px" name="nickname" class="form-control" ng-model="user.nickname"
+                <input type="text" name="nickname" class="form-control long" ng-model="user.nickname"
                        required/>
             </div>
             <div class="form-group input-group"
@@ -725,8 +763,7 @@
                 <label>Ваше имя?</label>
                 <input type="text"
                        name="firstname"
-                       style="margin-bottom: 10px"
-                       placeholder="Например: Женя, Паша, Виталий, и.т.д" class="form-control"
+                       placeholder="Например: Женя, Паша, Виталий, и.т.д" class="form-control long"
                        ng-model="user.firstname"
                        required/>
             </div>
@@ -734,21 +771,26 @@
                  ng-class="{true: 'has-error'}[(rosterForm.email.$dirty && rosterForm.email.$invalid)]">
                 <label>Укажите вашу электронную почту (будет использоватся в качестве Логина)</label>
                 <input type="email"
-                       style="margin-bottom: 10px"
                        placeholder="Укажите свою электроннную почту"
-                       class="form-control"
+                       class="form-control long"
                        name="email"
                        id="email"
                        ng-model="user.private.email"
                        required>
             </div>
+            <div class="form-group input-group">
+                <label>Ваш скайп (если есть)</label>
+                <input type="text"
+                       class="form-control long"
+                       ng-model="user.skype"
+                       required>
+            </div>
             <div class="form-group input-group"
                  ng-class="{true: 'has-error'}[(rosterForm.password.$dirty && rosterForm.password.$invalid)]">
-                <label>Укажите пароль который будет использоватся для входа в систему</label>
+                <label>Укажите пароль, который будет использоватся для входа в систему</label>
                 <input type="password"
-                       style="margin-bottom: 10px"
                        placeholder="Укажите новый пароль"
-                       class="form-control"
+                       class="form-control long"
                        name="password"
                        id="password"
                        ng-model="user.private.password"
@@ -851,7 +893,7 @@
     <h2>Заявка отправлена</h2>
     <br>
     <div class="alert alert-warning" style="font-size:20px">
-        Что-бы вас приняли, пожалуйста зайдите на наш <a href="ts3server://lws.exirous.com/?nickname={{UserIdentity.fullname}}">сервер
+        Что-бы вас приняли, пожалуйста зайдите на наш <a href="ts3server://luftwaffeschule.ru/?nickname={{UserIdentity.fullname}}">сервер
             TeamSpeak</a> для собеседования и ожидайте в приёмной. Кто-то из инструкторов к вам обязательно подойдёт.
         <br>
         TeamSpeak можно скачать пройдя по <a href="http://www.teamspeak.com/?page=downloads" target="_blank">этой</a>
@@ -861,7 +903,7 @@
 
 
 <script type="text/ng-template" id="BarracksTmpl">
-    <h2>Казарма<span ng-show="pilots.length"> ({{pilots.length}})</span></h2>
+    <h2>Казарма - {{headings[filters.which]}}<span ng-show="pilots.length"> {{pilots.length}} пилотов</span></h2>
     <div class="well well-sm">
         <div class="input-group">
             <span class="input-group-addon glyphicon glyphicon glyphicon-search" style="top:0"></span>
@@ -877,17 +919,22 @@
         </div>
         <div class="btn-group btn-group-justified" style="margin-top:5px">
             <div class="btn-group">
-                <button type="button" class="btn btn-success" ng-model="filters.which" btn-radio="0">
+                <button type="button" class="btn btn-default" ng-model="filters.which" btn-radio="0">
                     <span class="glyphicon glyphicon-screenshot"></span> На службе
                 </button>
             </div>
             <div class="btn-group">
-                <button type="button" class="btn btn-warning" ng-model="filters.which" btn-radio="1">
+                <button type="button" class="btn btn-success" ng-model="filters.which" btn-radio="1">
                     <span class="glyphicon glyphicon-briefcase"></span> В отпуске
                 </button>
             </div>
+            <div class="btn-group">
+                <button type="button" ng-if="UserIdentity.canMakeOrders" class="btn btn-warning" ng-model="filters.which" btn-radio="2">
+                    <span class="glyphicon glyphicon-ban-circle"></span> Дезертиры
+                </button>
+            </div>
             <div class="btn-group" ng-if="UserIdentity.id == 1 || UserIdentity.id == 14">
-                <button type="button" class="btn btn-danger" ng-model="filters.which" btn-radio="2">
+                <button type="button" class="btn btn-danger" ng-model="filters.which" btn-radio="3">
                     <span class="glyphicon glyphicon-remove"></span> Исключены
                 </button>
             </div>
@@ -915,6 +962,7 @@
                 <img ng-src="/img/users/{{pilot.img_src ? pilot.id+'_'+pilot.img_src+'.jpg' : (pilot.is_clanner ? 'no_image_clanner.png' : 'no_image.png')}}" alt=""
                      style="width:175px; height:175px">
                 <div ng-if="pilot.activeVacation" class="vacation" title="{{pilot.activeVacation.reason}}, c {{pilot.activeVacation.date_from | date : 'dd.MM.yyyy'}} по {{pilot.activeVacation.date_to | date : 'dd.MM.yyyy'}}">В Отпуске!</div>
+                <div ng-if="pilot.isDefector" class="defector">Дезертир!</div>
                 <div class="floating_rank"><img
                         ng-src="/img/groups/{{pilot.rank}}{{pilot.is_clanner ? '_clanner' : ''}}.png"></div>
                 <div ng-if="pilot.instructor || pilot.isBomber" class="floating_rank" style="left:40px"><img
@@ -942,14 +990,36 @@
         <span>{{pilot.roster.scale}}</span><br>
         <label>Попал в школу посредством:</label><br>
         <span>{{pilot.roster.reason}}</span><br>
+        <label>Освоить симуляторные бои побудило:</label><br>
+        <span>{{pilot.roster.motive}}</span><br>
         <label>Состоит в скваде:</label><br>
         <span ng-bind="pilot.roster.squad ? pilot.roster.squad : 'Нет'"></span><br>
-        <label>Наличие в ангаре самолетов Bf-109E-3 и/или Р-36G для истребителей:</label><br>
+        <label>Хочет стать:</label><br>
+        <span ng-show="pilot.roster.profession == 'fighter'">Истребителем</span>
+        <span ng-show="pilot.roster.profession == 'bomber'">Бомбардировщиком</span>
+        <br>
+        <label>Наличие в ангаре самолетов:</label><br>
         <span ng-show="pilot.roster.craft.bf109">Bf 109E-3</span>
-        <span ng-show="pilot.roster.craft.p36g">P-36G Hawk</span>
+        <span ng-show="pilot.roster.craft.ju87">Ju-87</span>
+        <span ng-show="pilot.roster.craft.he111">He-111</span>
         <br>
         <label>Предпочитает технику:</label><br>
         <span>{{pilot.roster.nation}}</span><br>
+        <label>Потому-что:</label><br>
+        <span>{{pilot.roster.nation_reason}}</span><br>
+
+        <label>В WT играет:</label><br>
+        <span>{{pilot.roster.wttime}}</span><br>
+
+        <label>Джойстик:</label><br>
+        <span>{{pilot.roster.joyname}}</span><br>
+
+        <label>Обзор:</label><br>
+        <span>{{pilot.roster.viewmode}}</span><br>
+
+        <label>Полезное хобби:</label><br>
+        <span>{{pilot.roster.hobby}}</span><br>
+
         <label>Время онлайна:</label><br>
         <span>C </span><span>{{pilot.roster.onlineFrom | date : "HH:mm"}}</span><span> По </span><span>{{pilot.roster.onlineTo | date : "HH:mm"}}</span>
         <br><br>
@@ -1387,6 +1457,47 @@
                 Отмена
             </button>
             <button type="button" class="btn btn-primary" ng-disabled="reject.isSubmitting" ng-click="saveReject()" ng-bind="reject.buttonText"></button>
+        </div>
+    </div>
+</script>
+
+<script type="text/ng-template" id="acquitDialogTmpl">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h4 class="modal-title"><span class="glyphicon glyphicon-plane"></span>
+                <span>Оправдание пилота "{{pilot.nickname}}"</span></h4>
+        </div>
+        <div class="modal-body">
+        <ng-form name="acquitForm" role="form">
+            <div>
+                <label>Даты отпуска</label>
+                <div class="row">
+                    <div class="col-lg-6">
+                        <div class="input-group">
+                            <span class="input-group-addon">Начало</span>
+                            <input type="date" class="form-control" required ng-model="acquit.dateFrom">
+                        </div><!-- /input-group -->
+                    </div><!-- /.col-lg-6 -->
+                    <div class="col-lg-6">
+                        <div class="input-group">
+                            <span class="input-group-addon">Конец</span>
+                            <input type="date" class="form-control" required ng-model="acquit.dateTo">
+                        </div><!-- /input-group -->
+                    </div><!-- /.col-lg-6 -->
+                </div><!-- /.row -->
+            </div>
+            <br>
+            <label>Отмазка</label>
+            <textarea style="width: 100%;resize: none;" ng-model="acquit.reason" rows="5" class="form-control" required></textarea>
+        </ng-form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-default" ng-disabled="acquitForm.isSubmitting" ng-click="cancel()">
+                Отмена
+            </button>
+            <button type="button" class="btn btn-primary" ng-disabled="(acquitForm.$dirty && acquitForm.$invalid) || acquitForm.$pristine || acquitForm.isSubmitting" ng-click="saveAcquit()">
+                Оправдать
+            </button>
         </div>
     </div>
 </script>

@@ -10714,6 +10714,11 @@ lwsServices.factory('User', ['$resource', function ($resource)
             url: '/user/inactive',
             method: 'get'
         },
+        acquit:
+        {
+            url: '/user/acquit',
+            method: 'post'
+        },
         getbirthdays:
         {
             url: '/user/birthdays',
@@ -10748,6 +10753,10 @@ lwsServices.factory('User', ['$resource', function ($resource)
         },
         expel:{
             url: '/user/expel',
+            method: 'post'
+        },
+        reenlist:{
+            url: '/user/reenlist',
             method: 'post'
         },
         recover:{
@@ -10883,7 +10892,7 @@ lwsServices.factory('Vacation', ['$resource', function ($resource)
 }]);
 
 lwsServices.factory('socket', function ($rootScope) {
-    var socket = io.connect('http://lws.exirous.com:3000');
+    var socket = io.connect('http://luftwaffeschule.ru:3000');
     return {
         on: function (eventName, callback) {
             socket.on(eventName, function () {
@@ -10991,6 +11000,20 @@ lwsFilters.filter('to_trusted', ['$sce', function($sce){
         return $sce.trustAsHtml(text);
     };
 }]);
+
+lwsFilters.filter('simpleTime', function(){
+    return function(text) {
+        var date = new Date(parseInt(text));
+        var day = date.getDate();
+        var month = date.getMonth()+1;
+        var year = date.getFullYear();
+        if (day < 10)
+            day = "0" + day;
+        if (month < 10)
+            month = "0" + month;
+        return year + '-' + month + '-' + day;
+    };
+});
 var lwsDirectives = angular.module('app.directives', []);
 lwsDirectives.directive("rank", function ()
 {
@@ -11223,7 +11246,7 @@ lwsControllers.controller('AppCtrl',
                     $scope.io_socket.emit('unregister', {token: $scope.UserIdentity.broadcast_token});
                 }
 
-                $scope.io_socket = io.connect('http://lws.exirous.com:3000');
+                $scope.io_socket = io.connect('http://luftwaffeschule.ru:3000');
                 $scope.io_socket.on('ready', function (data) {
                     if (!$scope.UserIdentity.isGuest)
                         $scope.registerForNotifications();
@@ -11314,8 +11337,30 @@ lwsControllers.controller('AppCtrl',
                 {
                     User.expel({userId: pilot.id, reason: reason}, function (resource) {
                         pilot.expelled = true;
+                        pilot.isDisabled = true;
                         setTimeout(function () {
                             $rootScope.$broadcast('pilotExpelled');
+                        }, 200);
+                    });
+                }, function (reason)
+                {
+
+                });
+            }
+
+            $rootScope.reenlist = function (pilot) {
+                var dlg = $dialogs.create('rejectDialogTmpl', 'RejectDialogCtrl', {
+                    text: '',
+                    header: 'восстановления в школе',
+                    buttonText: 'Восстановить'
+                }, {key: false, back: 'static'});
+                dlg.result.then(function (reason)
+                {
+                    User.reenlist({userId: pilot.id, reason: reason}, function (resource) {
+                        pilot.expelled = false;
+                        pilot.isDisabled = false;
+                        setTimeout(function () {
+                            $rootScope.$broadcast('pilotReenlisted');
                         }, 200);
                     });
                 }, function (reason)
@@ -11542,6 +11587,12 @@ lwsControllers.controller('BarracksCtrl',
         {
             $scope.dataSize = 1;
             $scope.filters = {name: null, which: 0};
+            $scope.headings = [
+                'на службе',
+                'в отпуске',
+                'дезертиры',
+                'исключены'
+            ];
             var firstLoad = true;
 
             $scope.loadData = function ()
@@ -11555,14 +11606,24 @@ lwsControllers.controller('BarracksCtrl',
                 });
             };
             var timeoutPromise = null;
-            $scope.$watch('filters', function ()
+
+            $scope.$watch('filters', function (oldValue, newValue)
             {
-                if (firstLoad) return;
-                $timeout.cancel(timeoutPromise);
-                timeoutPromise = $timeout(function ()
+                if (firstLoad)
+                    return;
+                if ((oldValue.name != newValue.name))
                 {
+                    $timeout.cancel(timeoutPromise);
+                    timeoutPromise = $timeout(function ()
+                    {
+                        $scope.pilots = {};
+                        $scope.loadData();
+                    }, 600);
+                }
+                else {
+                    $scope.pilots = {};
                     $scope.loadData();
-                }, 600);
+                }
             }, true);
             $scope.loadData();
         }]);
@@ -12556,8 +12617,8 @@ lwsControllers.controller("InactiveCountCtrl", ['$scope', '$timeout', 'User', fu
     $timeout(refreshInactiveCount, 70);
 }]);
 
-lwsControllers.controller("InactiveCtrl", ['$scope', 'User', '$stateParams', '$timeout',
-    function ($scope, User, $stateParams, $timeout) {
+lwsControllers.controller("InactiveCtrl", ['$scope', 'User', '$dialogs', '$rootScope',
+    function ($scope, User, $dialogs, $rootScope) {
         $scope.filters = {name: null};
         $scope.loadData = function () {
             $scope.isLoading = true;
@@ -12567,11 +12628,40 @@ lwsControllers.controller("InactiveCtrl", ['$scope', 'User', '$stateParams', '$t
             });
         };
 
+        $scope.acquit = function(pilot){
+            var dlg = $dialogs.create('acquitDialogTmpl', 'AcquitDialogCtrl', {pilot:pilot}, {key: false, back: 'static'});
+            dlg.result.then(function (acquitConditions)
+            {
+                acquitConditions.pilotId = pilot.id;
+                User.acquit(acquitConditions, function(resource){
+                    $scope.loadData();
+                });
+            }, function ()
+            {
+
+            });
+        };
+
         $scope.$on('pilotExpelled',function(event, data){
             $scope.loadData();
         });
         $scope.loadData();
     }]);
+
+lwsControllers.controller('AcquitDialogCtrl',
+    ['$scope', '$modalInstance', '$filter', 'data',
+        function ($scope, $modalInstance, $filter, data) {
+            $scope.pilot = data.pilot;
+            $scope.acquit = {dateFrom: $filter("simpleTime")($scope.pilot.lastWarning), dateTo: $filter("simpleTime")(parseInt($scope.pilot.lastWarning) + 1000*60*60*24*30)};
+
+            $scope.cancel = function () {
+                $modalInstance.dismiss('canceled');
+            }; // end cancel
+
+            $scope.saveAcquit = function () {
+                $modalInstance.close($scope.acquit);
+            }; // end save
+        }]);
 
 /*
  * angular-loading-bar

@@ -27,6 +27,7 @@ body
     position: relative;
 }
 
+
 #main_content
 {
     min-height: 100%;
@@ -80,15 +81,25 @@ img
 }
 
 .left_panel.mm {
-    background: #969c96 url(/img/design/tile_bg/left_panel_rust.png) repeat-y !important;
+    background: linear-gradient(to bottom, #9a9f99 0%,#283d28 100%); /* W3C */
     width: 298px;
     min-width: 298px;
     height: 100%;
-    padding: 25px 22px 10px 22px;
     box-shadow: 0px 0px 4px 1px rgba(50, 50, 50, 0.75);
     position: relative;
 }
 
+.left_panel_2 {
+    background: url(/img/design/tile_bg/left_panel_rust.png) repeat-y !important;
+    height: 100%;
+}
+
+.left_panel_3 {
+    background: url(/img/design/tile_bg/left_panel_rust.png) repeat-y !important;
+    padding: 25px 22px 10px 22px;
+    box-shadow: inset 1px 2px 3px 0px #fff, inset -1px -2px 3px 0px #000;
+    height: 100%;
+}
 
 .pilot_search
 {
@@ -120,10 +131,10 @@ img
 
 .contentTable
 {
-
     width: 1195px;
     margin-top: -44px;
     margin-left: -3px;
+    height: 100%;
 }
 
 .contentTable tr, .contentTable td
@@ -131,6 +142,7 @@ img
     padding: 0;
     margin: 0;
     vertical-align: top;
+    height: 100%;
 }
 
 .contentTable .tr, .contentTable .tl, .contentTable .br, .contentTable .bl
@@ -187,7 +199,8 @@ img
 {
     padding: 0;
     background: #fbf9f8;
-    box-shadow: 0px 0px 4px 1px rgba(50, 50, 50, 0.75);
+    box-shadow: 0px 6px 4px 1px rgba(50, 50, 50, 0.75);
+    border: 0;
 }
 
 .center_panel .content
@@ -212,18 +225,18 @@ img
 
 .main_menu
 {
-    height: 30px;
-    background: #969c96;
-    margin: 0;
+    height: 55px;
+    background: linear-gradient(to bottom, #a5aaa5 0%,#495a48 100%); /* W3C */
+    margin: 0 0 10px 12px;
     position: relative;
     padding-left: 0px;
-    margin-bottom: 10px;
-    box-shadow: 0px 0px 4px 1px rgba(50, 50, 50, 0.75);
+    box-shadow: 0px 0px 4px 1px rgba(50, 50, 50, 0.75), inset 1px 2px 3px 0px #fff, inset -1px -2px 3px 0px #000;
+    border-radius:5px;
 }
 
 .main_menu .zhopa
 {
-    height: 61px;
+    height: 56px;
     width: 20px;
     margin-left: -20px;
     position: absolute;
@@ -233,11 +246,30 @@ img
 .main_menu > a,.main_menu > span > a
 {
     padding: 5px 10px;
+    height:60px;
     display: inline-block;
     text-decoration: none;
     color: #fff;
     font-weight: bold;
-    border-right: 1px dotted #555;
+    width: 100px;
+    text-align: center;
+}
+
+.main_menu > a > i,.main_menu > span > a > i
+{
+    width: 100%;
+    height: 42px;
+    background: url(/img/design/switch_down.png) no-repeat 50% 0;
+    display: block;
+    position: relative;
+    z-index: 1001;
+    pointer-events: none;
+}
+
+.main_menu > a:active > i, .main_menu > span > a:active > i, .main_menu > a.active > i, .main_menu > span > a.active > i
+{
+    background: url(/img/design/switch_up.png) no-repeat 50% 0;
+    top: -18px;
 }
 
 .main_menu > a:hover,.main_menu > span > a:hover
@@ -660,6 +692,23 @@ ol li
     border-bottom: 1px solid #bbb;
 }
 
+div.defector
+{
+    position: relative;
+    text-align: center;
+    text-transform: uppercase;
+    color: #fff;
+    font-weight: bold;
+    margin-top: -20px;
+    text-decoration: none;
+    background: #dd0000;
+    -webkit-animation: red_blink 2000ms linear infinite;
+    -moz-animation:    red_blink 2000ms linear infinite;
+    -ms-animation:     red_blink 2000ms linear infinite;
+    -o-animation:      red_blink 2000ms linear infinite;
+    animation:         red_blink 2000ms linear infinite;
+}
+
 div.vacation
 {
     position: relative;
@@ -669,7 +718,7 @@ div.vacation
     font-weight: bold;
     margin-top: -20px;
     text-decoration: none;
-    background: #ff0000;
+    background: #ed9c28;
     -webkit-animation: red_blink 2000ms linear infinite;
     -moz-animation:    red_blink 2000ms linear infinite;
     -ms-animation:     red_blink 2000ms linear infinite;
@@ -839,4 +888,43 @@ div.vacation
     margin: 0 !important;
     padding: 0;
     border: 0;
+}
+
+input.long {
+    width:400px !important;
+    float: none !important;
+    display: block!important;
+}
+
+div.expelled_tag
+{
+    background: url("/img/design/expelled.png") center center no-repeat;
+    width: 100%;
+    height: 600px;
+    position: absolute;
+    z-index: 10;
+    -webkit-transform: rotate(-25deg);
+    -moz-transform: rotate(-25deg);
+    -ms-transform: rotate(-25deg);
+    -o-transform: rotate(-25deg);
+    transform: rotate(-25deg);
+    pointer-events: none;
+}
+
+.whiteline {
+    width: 1190px;
+    height:8px;
+    background: #fff;
+}
+
+.main_menu a.profile_btn {
+    height: 30px;
+    margin: 13px 15px 0 0;
+    background: linear-gradient(to bottom, #9b1d10 0%,#9d1e10 100%); /* W3C */
+    box-shadow: inset 1px 2px 2px 0px rgba(255,255,255,0.7), inset -1px -2px 2px 0px rgba(0,0,0,0.7),-1px -2px 2px 0px rgba(0,0,0,0.7),1px 1px 1px 0px rgba(255,255,255,0.5);
+    border-radius: 2px;
+}
+
+.main_menu a.profile_btn:hover {
+    background: linear-gradient(to bottom, #eb1d10 0%,#ed1e10 100%); /* W3C */
 }

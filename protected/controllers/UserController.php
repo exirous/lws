@@ -101,6 +101,22 @@ class UserController extends Controller
         }
     }
 
+    public function actionAcquit()
+    {
+        $request = Yii::app()->request;
+        switch ($request->method) {
+            case AHttpRequest::METHOD_POST:
+                $pilotId = $request->getRequiredRawBodyParam('pilotId', '');
+                $dateFrom = $request->getRequiredRawBodyParam('dateFrom', '');
+                $dateTo = $request->getRequiredRawBodyParam('dateTo', '');
+                $reason = $request->getRequiredRawBodyParam('reason', '');
+                $this->returnSuccess($this->_saveAcquit($pilotId, $dateFrom, $dateTo, $reason));
+                break;
+            default:
+                $this->returnError();
+        }
+    }
+
     public function actionBirthdays()
     {
 
@@ -178,12 +194,13 @@ class UserController extends Controller
         $ts_id = $request->getParam('ts_id', "A");
         $user = User::model()->find(['condition' => 'ts_id=:tsId', 'params' => [':tsId' => $ts_id]]);
         if (!$user)
-            $this->returnSuccess(['data' => [], 'message' => 'User not found']);
+            $this->returnSuccess();
         else {
             $messages = [];
             $unreadMessages = PrivateMessage::model()->findAllByAttributes(['reciever_id' => $user->id, 'is_read' => '0']);
             foreach ($unreadMessages as $message)
                 $messages[] = $message->getRenderAttributes();
+            $user->updateOnlineTime();
             $this->returnSuccess($messages);
         }
     }
@@ -207,13 +224,12 @@ class UserController extends Controller
 
     public function actionInactiveCount()
     {
-        $this->returnSuccess(['count' => User::model()->scopeInactive()->count()]);
+        $this->returnSuccess(['count' => User::model()->scopeDefectors()->scopeEnabled()->count()]);
     }
 
     public function actionInactive()
     {
         $request = Yii::app()->request;
-        $id = $request->getParam('id', 0, AHttpRequest::PARAM_TYPE_NUMERIC);
         switch ($request->method) {
             case AHttpRequest::METHOD_GET:
                 $this->returnSuccess($this->_renderInactiveUserList());
@@ -230,6 +246,14 @@ class UserController extends Controller
         $id = $request->getRequiredRawBodyParam('userId', 0);
         $reason = $request->getRequiredRawBodyParam('reason', '');
         $this->returnSuccess($this->_expelInactive($id, $reason));
+    }
+
+    public function actionReenlist()
+    {
+        $request = Yii::app()->request;
+        $id = $request->getRequiredRawBodyParam('userId', 0);
+        $reason = $request->getRawBodyParam('reason', '');
+        $this->returnSuccess($this->_reenlist($id, $reason));
     }
 
     public function actionReject()
@@ -547,15 +571,23 @@ class UserController extends Controller
             if (isset($filters['name']) && $filters['name'])
                 $users = $users->scopeName($filters['name']);
 
-            if ($filters['which'] == '2') {
+            if ($filters['which'] == '3') {
                 if (!in_array(Yii::app()->user->model->id, [1, 14])) {
+                    $filters['which'] = '0';
+                }
+            }
+            if ($filters['which'] == '2') {
+                if (!Yii::app()->user->model->canMakeOrders()) {
                     $filters['which'] = '0';
                 }
             }
             switch ($filters['which'])
             {
-                case '2':
+                case '3':
                     $users = $users->scopeDisabled();
+                    break;
+                case '2':
+                    $users = $users->scopeEnabled()->scopeDefectors();
                     break;
                 case '1':
                     $users = $users->scopeEnabled()->scopeVacation();
@@ -568,8 +600,9 @@ class UserController extends Controller
             $usersOut = [];
             $users = $users->scopeWithRank()->with('activeVacation')->findAll(['condition' => 'rank_id>0 AND rank_id<>8', 'order' => 'rank.order desc, nickname']);
 
-            foreach ($users as $user)
+            foreach ($users as $user) {
                 $usersOut[] = $user->listAttributes;
+            }
 
             return $usersOut;
         } catch (Exception $e) {
@@ -745,6 +778,38 @@ class UserController extends Controller
         return [];
     }
 
+    private function _saveAcquit($userId, $dateFrom, $dateTo, $reason)
+    {
+        if (Yii::app()->user->isGuest || !Yii::app()->user->model->canMakeOrders())
+            return null;
+
+        $transaction = Yii::app()->db->beginTransaction();
+        try {
+            $user = User::model()->findByPk($userId);
+            if (!$user)
+                throw new Exception("Такой пользователь не существует");
+            $userNickname = $user->nickname;
+            $vacation = new Vacation();
+            $vacation->reason = $reason;
+            $vacation->date_from = $dateFrom;
+            $vacation->date_to = $dateTo;
+            $vacation->user_id = $userId;
+            if (!$vacation->save())
+                throw new Exception("Ошибка сохранения");
+            $user->is_defector = 0;
+            $user->save();
+            $transaction->commit();
+            Mailer::send('luftwaffeschule@gmail.com', 'Принудительный рапорт на отпуск для: ' . $userNickname,
+                Yii::app()->controller->renderPartial('//mails/vacation_report',
+                    compact('reason', 'dateFrom', 'dateTo', 'userId', 'userNickname'), true));
+            return $vacation->getPublicAttributes();
+        } catch (Exception $e) {
+            $transaction->rollback();
+            $this->returnError($e->getMessage());
+        }
+        return [];
+    }
+
     private function _promote($userId, $courseId, $promoteToOfficer)
     {
         if (Yii::app()->user->isGuest || !Yii::app()->user->model->instructor_id)
@@ -799,7 +864,7 @@ class UserController extends Controller
                 $users = $users->scopeName($filters['name']);
 
             $usersOut = [];
-            $users = $users->scopeInactive()->scopeEnabled()->scopeWithRank()->findAll(['order' => 'last_online_time, rank.order, nickname']);
+            $users = $users->scopeDefectors()->scopeEnabled()->scopeWithRank()->findAll(['order' => 'last_online_time, rank.order, nickname']);
 
             foreach ($users as $user)
                 $usersOut[] = $user->inactiveAttributes;
@@ -827,13 +892,35 @@ class UserController extends Controller
 
     public function actionTest()
     {
-        //$user = User::model()->resetScope()->findByAttributes(array('id' => '1'));
-        //die(var_dump($user));
+        $users = User::model()->scopeInactive()->scopeEnabled()->findAll();
+        foreach ($users as $user) {
+                $user->is_defector = 1;
+                $user->save();
+            }
+        die(var_dump("!!"));
     }
 
     public function actionWakePc()
     {
         die(shell_exec('wakeonlan 1C:6F:65:81:FF:D4'));
+    }
+
+    private function _reenlist($id, $reason)
+    {
+        if (Yii::app()->user->isGuest || !Yii::app()->user->model->instructor_id)
+            return null;
+        $transaction = Yii::app()->db->beginTransaction();
+        try {
+            $user = User::model()->findByPk($id);
+            if (!$user)
+                throw new Exception('Пользователь не найден');
+            $user->reenlist($reason);
+            $transaction->commit();
+        } catch (Exception $e) {
+            $transaction->rollback();
+            $this->returnError($e->getMessage());
+        }
+        return [];
     }
 
 }

@@ -53,6 +53,11 @@ lwsServices.factory('User', ['$resource', function ($resource)
             url: '/user/inactive',
             method: 'get'
         },
+        acquit:
+        {
+            url: '/user/acquit',
+            method: 'post'
+        },
         getbirthdays:
         {
             url: '/user/birthdays',
@@ -87,6 +92,10 @@ lwsServices.factory('User', ['$resource', function ($resource)
         },
         expel:{
             url: '/user/expel',
+            method: 'post'
+        },
+        reenlist:{
+            url: '/user/reenlist',
             method: 'post'
         },
         recover:{
@@ -222,7 +231,7 @@ lwsServices.factory('Vacation', ['$resource', function ($resource)
 }]);
 
 lwsServices.factory('socket', function ($rootScope) {
-    var socket = io.connect('http://lws.exirous.com:3000');
+    var socket = io.connect('http://luftwaffeschule.ru:3000');
     return {
         on: function (eventName, callback) {
             socket.on(eventName, function () {

@@ -23,9 +23,9 @@ class TeamSpeakController extends Controller
     {
         $user = User::model()->findByPk($id);
         if ($user)
-            $this->redirect('ts3server://lws.exirous.com/?nickname=' . urlencode($user->nickname . ' (' . $user->firstname . ')'), true);
+            $this->redirect('ts3server://luftwaffeschule.ru/?nickname=' . urlencode($user->nickname . ' (' . $user->firstname . ')'), true);
         else
-            $this->redirect('http://lws.exirous.com', true);
+            $this->redirect('http://luftwaffeschule.ru', true);
     }
 
     public function actionTest()

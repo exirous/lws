@@ -125,7 +125,7 @@ class User extends BaseUser
             'with' => ['vacations' => [
                 'together'=>true
             ]],
-            'condition' => '((t.`last_online_time` < NOW() - INTERVAL 1 MONTH) OR t.`last_online_time` IS NULL)
+            'condition' => '(t.rank_id <> 29) AND ((t.`last_online_time` < NOW() - INTERVAL 1 MONTH) OR t.`last_online_time` IS NULL)
              AND t.`ts_id` IS NOT NULL
              AND (vacations.id IS NULL OR vacations.`date_to` < NOW() - INTERVAL 1 MONTH)'
         ]);
@@ -167,7 +167,8 @@ class User extends BaseUser
             'instructor' => $this->instructor_id ? $this->instructor->getShortAttributes() : null,
             'is_clanner' => intval($this->is_clanner),
             'activeVacation' => $this->activeVacation,
-            'isDisabled' => $this->is_disabled == '1' ? true : false,
+            'isDisabled' => !!$this->is_disabled,
+            'isDefector' => !!$this->is_defector,
             'lastOnline' => $this->last_online_time ? (strtotime($this->last_online_time) . '000') : (mktime(0,0,1,8,1,2014).'000'),
             'qualifications' => $qualifications,
             'medals' => $awards,
@@ -287,7 +288,8 @@ class User extends BaseUser
             'instructor' => $this->instructor_id,
             'activeVacation' => $this->activeVacation,
             'isBomber' => strpos($this->qualifications, 'bomber') !== false,
-            'is_clanner' => intval($this->is_clanner),
+            'isDefector' => !!$this->is_defector,
+            'is_clanner' => intval($this->is_clanner)
         ];
     }
     public function getInactiveAttributes()
@@ -400,6 +402,7 @@ class User extends BaseUser
         $newUser->ip = $user['ip'];
         $newUser->rank_id = 8;
         $newUser->is_clanner = (isset($user['squad']) && $user['squad']) ? 1 : 0;
+        $newUser->qualifications = ($user['profession'] == 'bomber' ? 'bomber' : 'fighter');
         $newUser->roster = json_encode($user);
         $newUser->broadcast_token = md5($newUser->email.$newUser->password);
 
@@ -562,16 +565,40 @@ class User extends BaseUser
         Mailer::send('luftwaffeschule@gmail.com', 'Пилот исключён', Yii::app()->controller->renderPartial('//mails/user_expel_notify', ['reason' => $reason, 'user' => $this], true));
     }
 
+    public function reenlist($reason)
+    {
+        if (!$this->is_disabled)
+            throw new Exception('Пользователь уже Зачислен!');
+        $this->is_disabled = 0;
+        $this->disable_reason = '';//$reason;
+        $this->last_online_time = date("Y-m-d H:i:s");
+        $this->save();
+        Order::issueOrder([
+            'complete'=>'<a rank="'.$this->rank_id.'">'.$this->rank->name.'</a> <a pilot="'.$this->id.'">'.$this->nickname.'</a> восстановлен в школе пилотов'.($reason ? 'по причине: <p>'.$reason.'</p>' : ''),
+            'pilots'=>[['id'=>$this->id]],
+            'event'=>'Восстановлен в школе пилотов'.($reason ? 'по причине: <p>'.$reason.'</p>' : '')
+        ]);
+
+        Mailer::send($this->email, 'Вы восстановленны', Yii::app()->controller->renderPartial('//mails/user_reenlist', ['reason' => $reason, 'user' => $this], true));
+        Mailer::send('luftwaffeschule@gmail.com', 'Пилот восстановлен', Yii::app()->controller->renderPartial('//mails/user_reenlist_notify', ['reason' => $reason, 'user' => $this], true));
+    }
+
+
 
     public function updateOnlineTime()
     {
+        $sendDefectorMail = false;
+
         $this->last_online_time = date("Y-m-d H:i:s");
         if ($this->is_defector)
         {
-            $this->is_defector = false;
-            Mailer::send('luftwaffeschule@gmail.com', 'Дезертир вернулся', Yii::app()->controller->renderPartial('//mails/user_defector_return_notify', ['user' => $this], true));
+            $this->is_defector = 0;
+            $sendDefectorMail = true;
         }
         $this->save();
+
+        if ($sendDefectorMail)
+            Mailer::send('luftwaffeschule@gmail.com', 'Дезертир вернулся!', Yii::app()->controller->renderPartial('//mails/user_defector_return_notify', ['user' => $this], true));
     }
 
     /**
@@ -602,7 +629,7 @@ class User extends BaseUser
     public function scopeActive()
     {
         $this->dbCriteria->mergeWith([
-            'condition' => 'activeVacation.id IS NULL'
+            'condition' => 'activeVacation.id IS NULL AND is_defector = 0'
         ]);
         return $this;
     }
@@ -614,6 +641,17 @@ class User extends BaseUser
     {
         $this->dbCriteria->mergeWith([
             'condition' => 'activeVacation.id IS NOT NULL'
+        ]);
+        return $this;
+    }
+
+    /**
+     * @return User
+     */
+    public function scopeDefectors()
+    {
+        $this->dbCriteria->mergeWith([
+            'condition' => 'is_defector = 1'
         ]);
         return $this;
     }

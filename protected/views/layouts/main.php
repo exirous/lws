@@ -9,7 +9,7 @@
     <title>Школа виртуального пилотирования LuftwaffeSchule</title>
     <script type="text/javascript">var UserLoginData = <?=json_encode(Yii::app()->user->privateAttributes)?>;</script>
     <script src="/scripts.js"></script>
-    <script src="http://lws.exirous.com:3000/socket.io/socket.io.js"></script>
+    <script src="https://cdn.socket.io/socket.io-1.2.1.js"></script>
     <link rel="stylesheet" href="/style.css" type="text/css">
     <!--[if lt IE 8]>
     <script type="text/javascript">
@@ -58,7 +58,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="main_menu"><a href="ts3server://lws.exirous.com/?nickname={{UserIdentity.fullname}}">TeamSpeak</a>
+                    <div class="main_menu"><a href="ts3server://luftwaffeschule.ru/?nickname={{UserIdentity.fullname}}">TeamSpeak</a>
                     </div>
                     <div class="left_content ts_channels">
                         <ul ng-controller="TSViewCtrl" style="padding:0">
@@ -848,7 +848,7 @@
     <h2>Заявка отправлена</h2>
     <br>
     <div class="alert alert-warning" style="font-size:20px">
-        Что-бы вас приняли, пожалуйста зайдите на наш <a href="ts3server://lws.exirous.com/?nickname={{UserIdentity.fullname}}">сервер
+        Что-бы вас приняли, пожалуйста зайдите на наш <a href="ts3server://luftwaffeschule.ru/?nickname={{UserIdentity.fullname}}">сервер
             TeamSpeak</a> для собеседования и ожидайте в приёмной. Кто-то из инструкторов к вам обязательно подойдёт.
         <br>
         TeamSpeak можно скачать пройдя по <a href="http://www.teamspeak.com/?page=downloads" target="_blank">этой</a>
