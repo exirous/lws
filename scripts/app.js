@@ -17,6 +17,18 @@ var lwsApp = angular.module('app', [
     'dnd'
 ]);
 
+lwsApp.run(['$rootScope', '$location', '$window', function($rootScope, $location, $window){
+    $rootScope
+        .$on('$stateChangeSuccess',
+        function(event){
+            if (!$window.ga)
+                return;
+            console.log("page view!", $location.path());
+            $window.ga('send', 'pageview', { page: $location.path() });
+        });
+}]);
+
+
 function mainRouteConfig($stateProvider, $urlRouterProvider)
 {
     //

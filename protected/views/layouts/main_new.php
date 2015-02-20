@@ -93,6 +93,7 @@
                         </div>
                 </td>
                 <td class="mm center_panel">
+                    <div class="main_menu_cover">
                     <div class="main_menu">
                         <a ui-sref="news">Сводки<i></i></a>
                         <a ui-sref="texts({id:5})">История<i></i></a>
@@ -134,7 +135,7 @@
                         </span>
                         <a ui-sref="pilots">Казарма<i></i></a>
                         <a ui-sref="flood" ng-if="!UserIdentity.isGuest">Курилка<i></i></a>
-                        <a href="" style="float:right" ng-click="login()" ng-if="UserIdentity.isGuest">Вход</a>
+                        <a href="" class="profile_btn" style="float:right" ng-click="login()" ng-if="UserIdentity.isGuest">Вход</a>
                         <span ng-if="!UserIdentity.isGuest" class="dropdown dropdown-hover" style="float:right">
                         <a href="" class="profile_btn">{{UserIdentity.nickname}} <span class="glyphicon glyphicon-user"></span></a>
                         <ul class="dropdown-menu" style="top: 40px;left: -10px;">
@@ -145,6 +146,7 @@
                             <li><a ng-click="logout()" href="">Выход</a></li>
                         </ul>
                         </span>
+                    </div>
                     </div>
                     <div class="content" style="min-height:400px">
                         <div class="center_content" ui-view>
@@ -1501,7 +1503,17 @@
         </div>
     </div>
 </script>
+<script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+    ga('create', 'UA-57603782-1', 'auto');
+    if (!UserLoginData.isGuest && UserLoginData.id) {
+        ga('set', '&uid', UserLoginData.id);
+    }
 
+</script>
 <script type="text/javascript">
     window.___gcfg = {lang: 'ru'};
     (function() {

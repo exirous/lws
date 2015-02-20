@@ -616,7 +616,7 @@ class UserController extends Controller
         try {
             $users = User::model()->with('rank');
             $usersOut = [];
-            $users = $users->scopeWithRank()->scopeClosestBirthdays()->findAll();
+            $users = $users->scopeWithRank()->scopeEnabled()->scopeClosestBirthdays()->findAll();
             foreach ($users as $user) {
                 $attributes = $user->listAttributes;
                 $date = new DateTime($user->birth_date);

@@ -149,8 +149,8 @@ class TeamSpeak extends CApplicationComponent
         do {
             $db = $this->ts3Server->clientListDb($from, 200);
             foreach ($db as $client) {
-                $name = $client['client_nickname'] ? $client['client_nickname']->toString() : '';
-                $lastIp = $client['client_lastip'] ? $client['client_lastip']->toString() : '';
+                $name = (isset($client['client_nickname']) && method_exists($client['client_nickname'], "toString")) ? $client['client_nickname']->toString() : '';
+                $lastIp = (isset($client['client_lastip']) && method_exists($client['client_lastip'], "toString")) ? $client['client_lastip']->toString() : '';
                 if (stripos($name, $nickname) !== false || ($ip && ($ip == $lastIp))) {
                     $groups = array_keys(Yii::app()->ts->ts3Server->clientGetServerGroupsByDbid($client["cldbid"]));
                     $uid = $client['client_unique_identifier']->toString();

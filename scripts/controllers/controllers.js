@@ -164,6 +164,9 @@ lwsControllers.controller('AppCtrl',
                     if (user && user.id)
                     {
                         $scope.UserIdentity = user;
+                        if (window.hasOwnProperty('ga')) {
+                            ga('set', '&uid', user.id);
+                        }
                         $rootScope.$broadcast('refreshUserLogin');
                         $scope.registerForNotifications();
                     }
@@ -182,6 +185,9 @@ lwsControllers.controller('AppCtrl',
                     {
                         $scope.unRegisterForNotifications();
                         $rootScope.$broadcast('refreshUserLogin');
+                        if (window.hasOwnProperty('ga')) {
+                            ga('set', '&uid', null);
+                        }
                         $scope.UserIdentity = {isGuest: true, fullname: 'Неизвестный Гость'};
                     });
                 }, function (btn)
@@ -588,6 +594,9 @@ lwsControllers.controller('RecoverUserCtrl',
                     if (res.data && res.data.id) {
                         $rootScope.$broadcast('refreshUserLogin');
                         $scope.UserIdentity = res.data;
+                        if (window.hasOwnProperty('ga')) {
+                            ga('set', '&uid', res.data.id);
+                        }
                         $scope.registerForNotifications();
                         $state.go('news');
                     }
@@ -643,6 +652,9 @@ lwsControllers.controller('RosterCtrl',
                     $scope.userForm.isSubmitting = false;
                     $rootScope.$broadcast('refreshUserLogin');
                     $scope.UserIdentity = resource.data;
+                    if (window.hasOwnProperty('ga')) {
+                        ga('set', '&uid', resource.data.id);
+                    }
                     $scope.registerForNotifications();
                     setTimeout(function ()
                     {
