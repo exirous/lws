@@ -16,7 +16,7 @@ class AWebUser extends CWebUser
     {
         if ($this->isGuest)
             return [
-                'fullname'=>'Неизвестный Гость',
+                'fullname' => 'Неизвестный Гость',
                 'isGuest' => true
             ];
         else
@@ -32,12 +32,19 @@ class AWebUser extends CWebUser
     {
         if (!$this->_model)
             $this->_model = User::model()->resetScope()->findByPk($this->getId());
-        if (!$this->_model)
-        {
+        if (!$this->_model) {
             $this->logout();
             return null;
         }
         return $this->_model;
+    }
+
+    public function canViewUserEmailAddress($id = false)
+    {
+        if (!$this->isGuest && (($id == $this->model->id) || ($this->model->rank->order > 11))) {
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -59,7 +66,7 @@ class AWebUser extends CWebUser
      */
     public function login($identity, $duration = 0)
     {
-        $response = parent::login($identity,$duration);
+        $response = parent::login($identity, $duration);
         if ($response)
             $this->_model = $identity->_model;
         else

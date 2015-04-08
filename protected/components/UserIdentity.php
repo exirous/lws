@@ -27,6 +27,9 @@ class UserIdentity extends CUserIdentity
         return !$this->errorCode;
     }
 
+
+
+
     /**
      * @param User $record
      * @return bool

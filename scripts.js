@@ -10671,6 +10671,24 @@ if (typeof Notification != 'undefined' && Notification.requestPermission)
     Notification.requestPermission(function (state) {
         NotificationsAllowed = (state == 'granted')
     });
+
+
+$(function(){
+    var navBarDetached = false;
+    function checkScroll() {
+        if (!navBarDetached && document.body.scrollTop > 309) {
+            navBarDetached = true;
+            $('.main_menu_cover').addClass('detached');
+        } else if(navBarDetached && document.body.scrollTop < 310){
+            navBarDetached = false;
+            $('.main_menu_cover').removeClass('detached');
+        }
+    }
+    $(document).on('scroll', function(){
+        checkScroll();
+    })
+    checkScroll();
+})
 var lwsServices = angular.module('app.services', ['ngResource'])
 
 lwsServices.factory('News', ['$resource', function ($resource)
@@ -11157,34 +11175,56 @@ var lwsControllers = angular.module('app.controllers');
 lwsControllers.controller('AppCtrl',
     ['$scope', '$dialogs', '$stateParams', 'User', '$rootScope', '$state', '$filter',
 
-        function ($scope, $dialogs, $stateParams, User, $rootScope, $state, $filter)
-        {
+        function ($scope, $dialogs, $stateParams, User, $rootScope, $state, $filter) {
             $scope.UserIdentity = UserLoginData;
+
 
             $scope.notifications = [];
 
-            $scope.addNotification = function(data, callback)
-            {
+            var full = window.location.host;
+            var parts = full.split('.');
+            var sub = parts[0];
+            if (!sub || (sub != 'bos' && sub !='bzs')) {
+                sub = 'wt';
+            }
+            $scope.game = {selection:sub, loading:false};
+            $scope.$watch('game.selection', function (newVal) {
+                if (!newVal || newVal == '') newVal = 'wt';
+                if (sub != newVal) {
+                    $scope.game.loading = true;
+                    window.location.href = 'http://' + ((newVal != 'wt') ? newVal + '.' : '') + 'luftwaffeschule.ru/' + window.location.hash;
+                }
+            }, true);
+
+            function formatGame(state) {
+                if (!state.id) return state.text; // optgroup
+                return '<img class="ts_group_icon" width="16px" height="16px" src="/img/games/' + state.id + '.ico"><span> ' + state.text + "</span>";
+            }
+
+            $scope.gameSelect2Options = {
+                formatResult: formatGame,
+                formatSelection: formatGame
+            };
+
+            $scope.addNotification = function (data, callback) {
                 var notification = {};
                 notification.text = data.text;
                 notification.type = data.type;
                 notification.callback = callback;
 
-                if (data.timeout)
-                {
-                    setTimeout(function(){
+                if (data.timeout) {
+                    setTimeout(function () {
                         var index = $scope.notifications.indexOf(notification);
                         if (index >= 0)
-                          $scope.notifications.splice(index, 1);
-                    },data.timeout*1000);
+                            $scope.notifications.splice(index, 1);
+                    }, data.timeout * 1000);
                 }
-                $scope.$apply(function(){
+                $scope.$apply(function () {
                     $scope.notifications.push(notification);
                 });
             };
 
-            $scope.closeNotification = function(index)
-            {
+            $scope.closeNotification = function (index) {
                 if ($scope.notifications[index].callback)
                     $scope.notifications[index].callback();
                 $scope.notifications.splice(index, 1);
@@ -11198,7 +11238,7 @@ lwsControllers.controller('AppCtrl',
                 'makenews': 'news',
                 'editnews': 'news',
                 'roster': 'pilots',
-                'inactiveUsers':'pilots',
+                'inactiveUsers': 'pilots',
                 'rosterUser': 'user',
                 'userMarks': 'user',
                 'afterroster': 'user',
@@ -11217,11 +11257,13 @@ lwsControllers.controller('AppCtrl',
                 'messenger': 'user'
             };
 
-            $scope.unRegisterForNotifications = function(){};
-            $scope.registerForNotifications = function(){};
+            $scope.unRegisterForNotifications = function () {
+            };
+            $scope.registerForNotifications = function () {
+            };
             $scope.io_socket = false;
             if (typeof io != 'undefined') {
-                $scope.registerForNotifications = function(){
+                $scope.registerForNotifications = function () {
                     $scope.io_socket.on('new_message', function (data) {
                         SoundAlert.play();
                         if (!$state.is('conversation.page', {
@@ -11243,7 +11285,7 @@ lwsControllers.controller('AppCtrl',
                             else {
                                 var html = '<img  class="avatar" ng-src="/img/users/' + (data.sender.img_src ? data.sender.id + '_' + data.sender.img_src + '.jpg' : (data.sender.is_clanner ? 'no_image_clanner.png' : 'no_image.png')) +
                                     '"><div class="message-content"><a class="user" >' + data.sender.nickname + '</a><span class="text">' + data.text + '</span></div>';
-                                $scope.addNotification({type: 'message', text: html}, function(){
+                                $scope.addNotification({type: 'message', text: html}, function () {
                                     $state.go('conversation.page', {senderId: data.sender.id + '', page: '1'});
                                 });
                             }
@@ -11251,10 +11293,12 @@ lwsControllers.controller('AppCtrl',
                         else
                             $scope.$broadcast('new_message', data);
                     });
-                    $scope.io_socket.emit('register', {token: $scope.UserIdentity.broadcast_token, uid:$scope.UserIdentity.uid});
+                    $scope.io_socket.emit('register', {
+                        token: $scope.UserIdentity.broadcast_token,
+                        uid: $scope.UserIdentity.uid
+                    });
                 };
-                $scope.unRegisterForNotifications = function()
-                {
+                $scope.unRegisterForNotifications = function () {
                     $scope.io_socket.emit('unregister', {token: $scope.UserIdentity.broadcast_token});
                 }
 
@@ -11281,8 +11325,7 @@ lwsControllers.controller('AppCtrl',
 
 
             $scope.$on('$stateChangeStart',
-                function (event, toState, toParams, fromState, fromParams)
-                {
+                function (event, toState, toParams, fromState, fromParams) {
                     var stateName = toState.name;
                     var fromStateName = fromState.name;
 
@@ -11301,13 +11344,10 @@ lwsControllers.controller('AppCtrl',
                     $scope.headerImages.push('/img/header/' + stateName + '.png');
                 });
 
-            $scope.login = function ()
-            {
+            $scope.login = function () {
                 var dlg = $dialogs.create('loginDialogTmpl', 'UserLoginCtrl', {}, {key: false, back: 'static'});
-                dlg.result.then(function (user)
-                {
-                    if (user && user.id)
-                    {
+                dlg.result.then(function (user) {
+                    if (user && user.id) {
                         $scope.UserIdentity = user;
                         if (window.hasOwnProperty('ga')) {
                             ga('set', '&uid', user.id);
@@ -11315,19 +11355,15 @@ lwsControllers.controller('AppCtrl',
                         $rootScope.$broadcast('refreshUserLogin');
                         $scope.registerForNotifications();
                     }
-                }, function ()
-                {
+                }, function () {
 
                 });
             };
-            $scope.logout = function ()
-            {
+            $scope.logout = function () {
                 var dlg = $dialogs.confirm('Подтвердите', 'Вы хотите выйти из системы?');
-                dlg.result.then(function (btn)
-                {
+                dlg.result.then(function (btn) {
 
-                    User.logout({}, function (resource)
-                    {
+                    User.logout({}, function (resource) {
                         $scope.unRegisterForNotifications();
                         $rootScope.$broadcast('refreshUserLogin');
                         if (window.hasOwnProperty('ga')) {
@@ -11335,13 +11371,11 @@ lwsControllers.controller('AppCtrl',
                         }
                         $scope.UserIdentity = {isGuest: true, fullname: 'Неизвестный Гость'};
                     });
-                }, function (btn)
-                {
+                }, function (btn) {
                 });
             };
 
-            $scope.vacation = function()
-            {
+            $scope.vacation = function () {
 
             }
 
@@ -11351,8 +11385,7 @@ lwsControllers.controller('AppCtrl',
                     header: 'исключения из школы',
                     buttonText: 'Исключить'
                 }, {key: false, back: 'static'});
-                dlg.result.then(function (reason)
-                {
+                dlg.result.then(function (reason) {
                     User.expel({userId: pilot.id, reason: reason}, function (resource) {
                         pilot.expelled = true;
                         pilot.isDisabled = true;
@@ -11360,8 +11393,7 @@ lwsControllers.controller('AppCtrl',
                             $rootScope.$broadcast('pilotExpelled');
                         }, 200);
                     });
-                }, function (reason)
-                {
+                }, function (reason) {
 
                 });
             }
@@ -11372,8 +11404,7 @@ lwsControllers.controller('AppCtrl',
                     header: 'восстановления в школе',
                     buttonText: 'Восстановить'
                 }, {key: false, back: 'static'});
-                dlg.result.then(function (reason)
-                {
+                dlg.result.then(function (reason) {
                     User.reenlist({userId: pilot.id, reason: reason}, function (resource) {
                         pilot.expelled = false;
                         pilot.isDisabled = false;
@@ -11381,66 +11412,54 @@ lwsControllers.controller('AppCtrl',
                             $rootScope.$broadcast('pilotReenlisted');
                         }, 200);
                     });
-                }, function (reason)
-                {
+                }, function (reason) {
 
                 });
             }
-
 
 
         }]);
 
 lwsControllers.controller('UserLoginCtrl',
     ['$scope', '$modalInstance', 'data', 'User', '$dialogs',
-        function ($scope, $modalInstance, data, User, $dialogs)
-        {
+        function ($scope, $modalInstance, data, User, $dialogs) {
             $scope.user = {email: '', password: ''};
             $scope.userForm = {forgotPass: false};
-            $scope.cancel = function ()
-            {
+            $scope.cancel = function () {
                 $modalInstance.dismiss('canceled');
             }; // end cancel
 
-            $scope.save = function ()
-            {
+            $scope.save = function () {
                 $scope.user.error = '';
-                User.login({email: $scope.user.email, password: $scope.user.password}, function (resource)
-                    {
+                User.login({email: $scope.user.email, password: $scope.user.password}, function (resource) {
                         $modalInstance.close(resource.data);
                     },
-                    function (resource)
-                    {
+                    function (resource) {
                         $scope.user.error = resource.data.message;
                     });
                 $scope.user.password = '';
             }; // end save
 
-            $scope.sendPass = function ()
-            {
+            $scope.sendPass = function () {
                 $scope.userForm.errorPass = '';
-                User.recover({email: $scope.user.email}, function (resource)
-                    {
+                User.recover({email: $scope.user.email}, function (resource) {
                         $dialogs.notify('Восстановление пароля', 'Скоро к вам прийдёт письмо по э-почте что вы указали<br>Следуйте инструкциям в письме для смены пароля');
                         $modalInstance.close(resource.data);
                     },
-                    function (resource)
-                    {
+                    function (resource) {
                         $scope.user.errorPass = resource.data.message;
                     });
 
             }; // end save
 
-            $scope.hitEnter = function (evt)
-            {
+            $scope.hitEnter = function (evt) {
                 if (angular.equals(evt.keyCode, 13) && !(angular.equals($scope.email, null)
                     || angular.equals($scope.email, '')) && !(angular.equals($scope.password, null)
                     || angular.equals($scope.password, '')))
                     $scope.save();
             }; // end hitEnter
 
-            $scope.hitEnterForgot = function (evt)
-            {
+            $scope.hitEnterForgot = function (evt) {
                 if (angular.equals(evt.keyCode, 13) && !(angular.equals($scope.email, null)
                     || angular.equals($scope.email, '')) && !(angular.equals($scope.password, null)
                     || angular.equals($scope.password, '')))
@@ -11451,90 +11470,74 @@ lwsControllers.controller('UserLoginCtrl',
 
 lwsControllers.controller('NewsCtrl',
     ['$scope', 'News', '$rootScope',
-        function ($scope, News, $rootScope)
-        {
-            function reloadNews()
-            {
-                News.last({}, function (res)
-                {
+        function ($scope, News, $rootScope) {
+            function reloadNews() {
+                News.last({}, function (res) {
                     $scope.news = res.data;
                 });
             }
+
             reloadNews();
-            $rootScope.$on('refreshUserLogin', function(){
+            $rootScope.$on('refreshUserLogin', function () {
                 reloadNews();
             });
         }]);
 
 lwsControllers.controller('OrdersCtrl',
     ['$scope', 'News',
-        function ($scope, News)
-        {
-            News.orders({}, function (res)
-            {
+        function ($scope, News) {
+            News.orders({}, function (res) {
                 $scope.news = res.data;
             });
         }]);
 
 lwsControllers.controller('UserCtrl',
     ['$scope', 'User', '$stateParams', '$dialogs',
-        function ($scope, User, $stateParams, $dialogs)
-        {
+        function ($scope, User, $stateParams, $dialogs) {
             User.get({id: $stateParams.userId},
-                function (resource)
-                {
+                function (resource) {
                     $scope.user = resource.data;
                 });
 
-            $scope.medalDrop = function (element, medal)
-            {
-                medal.top = element[0].offsetTop +3;
+            $scope.medalDrop = function (element, medal) {
+                medal.top = element[0].offsetTop + 3;
                 medal.left = element[0].offsetLeft;
                 medal.userId = $scope.user.id;
-                User.saveMedalPosition(medal, function(res){
+                User.saveMedalPosition(medal, function (res) {
                 });
             };
 
-            $scope.addEvent = function (userId)
-            {
+            $scope.addEvent = function (userId) {
                 var event = {date: '', text: '', id: -1, userId: userId, isNew: true}
                 $scope.editEvent(event);
             };
 
-            $scope.editEvent = function (event)
-            {
+            $scope.editEvent = function (event) {
                 var dlg = $dialogs.create('eventDialogTmpl', 'EventDialogCtrl', event,
                     {key: false, back: 'static'})
-                    .result.then(function (newEvent)
-                    {
+                    .result.then(function (newEvent) {
                         angular.extend(event, newEvent);
-                        if (newEvent && event.isNew)
-                        {
+                        if (newEvent && event.isNew) {
                             $scope.user.events.push(newEvent);
                         }
-                    }, function ()
-                    {
+                    }, function () {
 
                     });
             };
 
 
-            $scope.deleteEvent = function (event)
-            {
+            $scope.deleteEvent = function (event) {
                 $dialogs.confirm('Подтвердите', 'Удалить событие "' + event.text + '"?')
-                    .result.then(function (btn)
-                    {
+                    .result.then(function (btn) {
                         $scope.user.events.splice($scope.user.events.indexOf(event), 1);
-                        User.deleteEvent({eventId: event.id}, function (resource)
-                        {
+                        User.deleteEvent({eventId: event.id}, function (resource) {
 
                         });
                     });
             }
 
-            $scope.sync = function()
-            {
-                User.sync({id:$scope.user.id},function(){
+            $scope.sync = function () {
+                User.sync({id: $scope.user.id}, function () {
 
                 });
             }
@@ -11542,56 +11545,52 @@ lwsControllers.controller('UserCtrl',
 
 
 lwsControllers.controller('EditUserCtrl',
-    ['$scope', 'User', '$stateParams', '$dialogs','dateFilter',
-        function ($scope, User, $stateParams, $dialogs, dateFilter)
-        {
-            User.get({id: $stateParams.userId, noMedals:true},
-                function (resource)
-                {
+    ['$scope', 'User', '$stateParams', '$dialogs', 'dateFilter',
+        function ($scope, User, $stateParams, $dialogs, dateFilter) {
+            User.get({id: $stateParams.userId, noMedals: true},
+                function (resource) {
                     $scope.user = resource.data;
                     $scope.user.birthDate = dateFilter($scope.user.birthDate, 'yyyy-MM-dd');
                     angular.extend($scope.tsSelect2Options.data, $scope.user.possibleUsers);
                 });
 
-            function formatTs(pilot)
-            {
+            function formatTs(pilot) {
                 var out = '';
                 $.each(pilot.serverGroups, function (i, val) {
-                    out+='<img src="/img/groups/'+val+'.png"> '
+                    out += '<img src="/img/groups/' + val + '.png"> '
                 });
                 out += pilot.name;
                 if (pilot.isOnline)
-                    out +=' <b>[онлайн]</b>';
+                    out += ' <b>[онлайн]</b>';
                 if (pilot.byIp)
-                    out +=' <b>[по ip]</b>';
+                    out += ' <b>[по ip]</b>';
                 else if (!pilot.isOnline && pilot.byName)
-                    out +=' <b>[по имени]</b>';
+                    out += ' <b>[по имени]</b>';
                 return out;
             }
 
             $scope.tsSelect2Options = {
-                data:[],
+                data: [],
                 formatResult: formatTs,
                 formatSelection: formatTs,
-                escapeMarkup: function (m) { return m; }
+                escapeMarkup: function (m) {
+                    return m;
+                }
             };
 
 
-
-            $scope.sync = function()
-            {
-                User.sync({id:$scope.user.id},function(){
+            $scope.sync = function () {
+                User.sync({id: $scope.user.id}, function () {
 
                 });
             };
 
-            $scope.save = function()
-            {
+            $scope.save = function () {
                 var user = {};
                 angular.extend(user, $scope.user);
                 if (user.ts_id.hasOwnProperty('id'))
-                  user.ts_id = user.ts_id.id;
-                User.update({user:user}, function(res){
+                    user.ts_id = user.ts_id.id;
+                User.update({user: user}, function (res) {
 
                 })
             }
@@ -11601,8 +11600,7 @@ lwsControllers.controller('EditUserCtrl',
 
 lwsControllers.controller('BarracksCtrl',
     ['$scope', 'User', '$stateParams', '$timeout',
-        function ($scope, User, $stateParams, $timeout)
-        {
+        function ($scope, User, $stateParams, $timeout) {
             $scope.dataSize = 1;
             $scope.filters = {name: null, which: 0};
             $scope.headings = [
@@ -11613,11 +11611,9 @@ lwsControllers.controller('BarracksCtrl',
             ];
             var firstLoad = true;
 
-            $scope.loadData = function ()
-            {
+            $scope.loadData = function () {
                 $scope.isLoading = true;
-                User.query({filters: $scope.filters}, function (resource)
-                {
+                User.query({filters: $scope.filters}, function (resource) {
                     $scope.pilots = resource.data;
                     firstLoad = false;
                     $scope.isLoading = false;
@@ -11625,15 +11621,12 @@ lwsControllers.controller('BarracksCtrl',
             };
             var timeoutPromise = null;
 
-            $scope.$watch('filters', function (oldValue, newValue)
-            {
+            $scope.$watch('filters', function (oldValue, newValue) {
                 if (firstLoad)
                     return;
-                if ((oldValue.name != newValue.name))
-                {
+                if ((oldValue.name != newValue.name)) {
                     $timeout.cancel(timeoutPromise);
-                    timeoutPromise = $timeout(function ()
-                    {
+                    timeoutPromise = $timeout(function () {
                         $scope.pilots = {};
                         $scope.loadData();
                     }, 600);
@@ -11648,69 +11641,60 @@ lwsControllers.controller('BarracksCtrl',
 
 lwsControllers.controller('RosterUserCtrl',
     ['$scope', 'User', '$stateParams', '$rootScope', '$dialogs', '$state',
-        function ($scope, User, $stateParams, $rootScope, $dialogs, $state)
-        {
+        function ($scope, User, $stateParams, $rootScope, $dialogs, $state) {
             User.getRoster({userId: $stateParams.userId},
-                function (resource)
-                {
+                function (resource) {
                     $scope.pilot = resource.data;
                     angular.extend($scope.tsSelect2Options.data, $scope.pilot.possibleUsers);
                 });
 
-            function formatTs(pilot)
-            {
+            function formatTs(pilot) {
                 var out = '';
                 $.each(pilot.serverGroups, function (i, val) {
-                    out+='<img src="/img/groups/'+val+'.png"> '
+                    out += '<img src="/img/groups/' + val + '.png"> '
                 });
                 out += pilot.name;
                 if (pilot.isOnline)
-                    out +=' <b>[онлайн]</b>';
+                    out += ' <b>[онлайн]</b>';
                 if (pilot.byIp)
-                    out +=' <b>[по ip]</b>';
+                    out += ' <b>[по ip]</b>';
                 else if (!pilot.isOnline && pilot.byName)
-                    out +=' <b>[по имени]</b>';
+                    out += ' <b>[по имени]</b>';
                 return out;
             }
 
             $scope.tsSelect2Options = {
-                data:[],
+                data: [],
                 formatResult: formatTs,
                 formatSelection: formatTs,
-                escapeMarkup: function (m) { return m; }
+                escapeMarkup: function (m) {
+                    return m;
+                }
             };
 
-            $scope.accept = function ()
-            {
+            $scope.accept = function () {
                 $dialogs.confirm('Подтвердите', 'Принять данную заявку?')
-                    .result.then(function (btn)
-                    {
+                    .result.then(function (btn) {
                         $scope.rosterForm.isSubmitting = true;
                         var uid = ($scope.rosterForm.tsId.hasOwnProperty('id')) ? $scope.rosterForm.tsId.id : $scope.rosterForm.tsId;
-                        User.accept({userId: $stateParams.userId, uid: uid}, function ()
-                        {
+                        User.accept({userId: $stateParams.userId, uid: uid}, function () {
                             $scope.rosterForm.isSubmitting = false;
                             $rootScope.$broadcast('refreshRosterList');
                             $scope.pilot.rank = 7;
                         });
-                    }, function (btn)
-                    {
+                    }, function (btn) {
                     });
             };
-            $scope.reject = function ()
-            {
+            $scope.reject = function () {
                 var dlg = $dialogs.create('rejectDialogTmpl', 'RejectDialogCtrl', {}, {key: false, back: 'static'});
-                dlg.result.then(function (reason)
-                {
+                dlg.result.then(function (reason) {
                     $scope.rosterForm.isSubmitting = true;
-                    User.reject({userId: $stateParams.userId, reason:reason}, function ()
-                    {
+                    User.reject({userId: $stateParams.userId, reason: reason}, function () {
                         $scope.rosterForm.isSubmitting = false;
                         $rootScope.$broadcast('refreshRosterList');
                         $state.go('news');
                     });
-                }, function (reason)
-                {
+                }, function (reason) {
 
                 });
             };
@@ -11718,24 +11702,26 @@ lwsControllers.controller('RosterUserCtrl',
 
 lwsControllers.controller('RecoverUserCtrl',
     ['$scope', 'User', '$stateParams', '$rootScope', '$dialogs', '$state',
-        function ($scope, User, $stateParams, $rootScope, $dialogs, $state)
-        {
+        function ($scope, User, $stateParams, $rootScope, $dialogs, $state) {
             $scope.recoverForm = {};
-            $scope.recovery = {token:$stateParams.token, password:null};
+            $scope.recovery = {token: $stateParams.token, password: null};
             $scope.recoverForm.isSubmitting = true;
             $scope.recoverForm.error = false;
 
-            User.checkRecoveryToken({token:$stateParams.token}, function(res){
+            User.checkRecoveryToken({token: $stateParams.token}, function (res) {
                     if (res.data.result != 'OK')
                         $state.go('news');
                 },
-            function(){
-                $state.go('news');
-            });
+                function () {
+                    $state.go('news');
+                });
 
-            $scope.recover = function(){
+            $scope.recover = function () {
                 $scope.recoverForm.isSubmitting = true;
-                User.recoverPassword({token:$scope.recovery.token,password:$scope.recovery.password}, function(res){
+                User.recoverPassword({
+                    token: $scope.recovery.token,
+                    password: $scope.recovery.password
+                }, function (res) {
                     if (res.data && res.data.id) {
                         $rootScope.$broadcast('refreshUserLogin');
                         $scope.UserIdentity = res.data;
@@ -11745,7 +11731,7 @@ lwsControllers.controller('RecoverUserCtrl',
                         $scope.registerForNotifications();
                         $state.go('news');
                     }
-                }, function(res){
+                }, function (res) {
                     $scope.recoverForm.isSubmitting = false;
                     $scope.recoverForm.error = res.data.message
                 });
@@ -11754,9 +11740,8 @@ lwsControllers.controller('RecoverUserCtrl',
         }]);
 
 lwsControllers.controller('RosterCtrl',
-    ['$scope', 'User', '$stateParams' ,'$rootScope',
-        function ($scope, User, $stateParams, $rootScope)
-        {
+    ['$scope', 'User', '$stateParams', '$rootScope',
+        function ($scope, User, $stateParams, $rootScope) {
 
             var dfrom = new Date();
             dfrom.setHours(20);
@@ -11777,8 +11762,7 @@ lwsControllers.controller('RosterCtrl',
 
             $scope.userForm = {isSubmitting: false};
 
-            $scope.open = function ($event)
-            {
+            $scope.open = function ($event) {
                 $event.preventDefault();
                 $event.stopPropagation();
                 $scope.opened = true;
@@ -11788,12 +11772,10 @@ lwsControllers.controller('RosterCtrl',
                 'starting-day': 1
             };
 
-            $scope.send = function ()
-            {
+            $scope.send = function () {
                 $scope.userForm.isSubmitting = true;
                 $scope.userForm.error = false;
-                User.roster({user: $scope.user}, function (resource)
-                {
+                User.roster({user: $scope.user}, function (resource) {
                     $scope.userForm.isSubmitting = false;
                     $rootScope.$broadcast('refreshUserLogin');
                     $scope.UserIdentity = resource.data;
@@ -11801,12 +11783,10 @@ lwsControllers.controller('RosterCtrl',
                         ga('set', '&uid', resource.data.id);
                     }
                     $scope.registerForNotifications();
-                    setTimeout(function ()
-                    {
+                    setTimeout(function () {
                         document.location.href = "/#/afterroster"
                     }, 100);
-                }, function (resource)
-                {
+                }, function (resource) {
                     $scope.userForm.isSubmitting = false;
                     $scope.userForm.error = resource.data.message
                 });
@@ -11815,24 +11795,20 @@ lwsControllers.controller('RosterCtrl',
         }]);
 
 lwsControllers.controller('OrderCreatorCtrl',
-    ['$scope', 'OrderGenerator', '$stateParams', '$sce', '$compile' , '$filter',
-        function ($scope, OrderGenerator, $stateParams, $sce, $compile, $filter)
-        {
+    ['$scope', 'OrderGenerator', '$stateParams', '$sce', '$compile', '$filter',
+        function ($scope, OrderGenerator, $stateParams, $sce, $compile, $filter) {
             $scope.initialData = {pilots: {}};
             $scope.orderData = {pilots: []};
             $scope.updatedData = {pilots: {}};
 
-            function formatPilot(state)
-            {
+            function formatPilot(state) {
                 if (!state.id) return state.text; // optgroup
                 var rank = $(state.element[0]).data('rankid');
                 return '<img class="ts_group_icon" src="/img/groups/' + rank + '.png"><span> ' + state.text + "</span>";
             }
 
-            $scope.$watch('orderData.pilots', function (current, last)
-            {
-                angular.forEach($scope.updatedData.pilots, function (value, key)
-                {
+            $scope.$watch('orderData.pilots', function (current, last) {
+                angular.forEach($scope.updatedData.pilots, function (value, key) {
                     key += '';
                     if (!current)
                         $scope.updatedData.pilots = {};
@@ -11840,11 +11816,9 @@ lwsControllers.controller('OrderCreatorCtrl',
                     if (current && current.indexOf(key) == -1)
                         delete $scope.updatedData.pilots[key];
                 }, this);
-                angular.forEach(current, function (value, key)
-                {
+                angular.forEach(current, function (value, key) {
                     value += '';
-                    if (!$scope.updatedData.pilots.hasOwnProperty(value))
-                    {
+                    if (!$scope.updatedData.pilots.hasOwnProperty(value)) {
                         $scope.updatedData.pilots[value] = {};
                         angular.extend($scope.updatedData.pilots[value], $scope.initialData.pilots[value]);
                         $scope.updatedData.pilots[value].awards = [];
@@ -11852,26 +11826,24 @@ lwsControllers.controller('OrderCreatorCtrl',
                 }, this);
             }, true);
 
-            function formatRank(state)
-            {
+            function formatRank(state) {
                 if (!state.id) return state.text; // optgroup
                 return '<img class="ts_group_icon" src="/img/groups/'
-                + state.id
-                + '.png"> '
-                + "<span> "
-                + state.text
-                + "</span>";
+                    + state.id
+                    + '.png"> '
+                    + "<span> "
+                    + state.text
+                    + "</span>";
             }
 
-            function formatAward(state)
-            {
+            function formatAward(state) {
                 if (!state.id) return state.text; // optgroup
                 return '<img class="micro_award" src="/img/awards/'
-                + state.id
-                + '.png"> '
-                + "<span> "
-                + state.text
-                + "</span>";
+                    + state.id
+                    + '.png"> '
+                    + "<span> "
+                    + state.text
+                    + "</span>";
             }
 
             $scope.pilotSelect2Options = {
@@ -11895,8 +11867,7 @@ lwsControllers.controller('OrderCreatorCtrl',
                 formatSelection: formatAward
             };
 
-            function reloadData()
-            {
+            function reloadData() {
                 $scope.initialData = {pilots: {}};
                 $scope.orderData = {pilots: []};
                 var time = new Date();
@@ -11904,25 +11875,21 @@ lwsControllers.controller('OrderCreatorCtrl',
 
                 $scope.updatedData = {pilots: {}, time: time, customText: ''};
 
-                OrderGenerator.get({}, function (resource)
-                {
+                OrderGenerator.get({}, function (resource) {
                     angular.extend($scope.initialData, resource.data);
                     var intArray = [];
-                    angular.forEach($scope.initialData.pilots, function (value, key)
-                    {
+                    angular.forEach($scope.initialData.pilots, function (value, key) {
                         intArray.push(value);
                     });
                     $scope.initialData.pilotsArray = intArray;
                     intArray = [];
 
-                    angular.forEach($scope.initialData.ranks, function (value, key)
-                    {
+                    angular.forEach($scope.initialData.ranks, function (value, key) {
                         intArray.push(value);
                     })
                     $scope.initialData.rankArray = intArray;
                     intArray = [];
-                    angular.forEach($scope.initialData.instructors, function (value, key)
-                    {
+                    angular.forEach($scope.initialData.instructors, function (value, key) {
                         intArray.push(value);
                     })
                     $scope.initialData.instructorsArray = intArray;
@@ -11931,21 +11898,17 @@ lwsControllers.controller('OrderCreatorCtrl',
 
             reloadData();
 
-            $scope.save = function ()
-            {
+            $scope.save = function () {
                 $scope.orderData.isSubmitting = true;
                 OrderGenerator.save({data: angular.extend({complete: $scope.orderData.complete}, $scope.updatedData)},
-                    function (resource)
-                    {
+                    function (resource) {
                         reloadData();
                     });
             };
 
-            $scope.$watch('updatedData', function ()
-            {
+            $scope.$watch('updatedData', function () {
                 var pilotTexts = [];
-                angular.forEach($scope.updatedData.pilots, function (pilot, key)
-                {
+                angular.forEach($scope.updatedData.pilots, function (pilot, key) {
                     var pilotname = '';
 
                     var ranktext = '';
@@ -11955,8 +11918,7 @@ lwsControllers.controller('OrderCreatorCtrl',
 
                     var awardtext = '';
 
-                    if (pilot.old_rank == 7 || pilot.old_rank == 11 || pilot.old_rank == 12)
-                    {
+                    if (pilot.old_rank == 7 || pilot.old_rank == 11 || pilot.old_rank == 12) {
                         pilotname =
                             '<a rank="'
                             + pilot.old_rank
@@ -11981,8 +11943,7 @@ lwsControllers.controller('OrderCreatorCtrl',
                             + pilot.nickname
                             + '</a>';
 
-                    if (pilot.old_rank != pilot.rank)
-                    {
+                    if (pilot.old_rank != pilot.rank) {
                         var oldOrder = $scope.initialData.ranks[pilot.old_rank].order;
                         var newOrder = $scope.initialData.ranks[pilot.rank].order;
                         var rankuptext = '';
@@ -12008,8 +11969,7 @@ lwsControllers.controller('OrderCreatorCtrl',
                             + '</a>';
                     }
 
-                    if (pilot.old_instructor != pilot.instructor)
-                    {
+                    if (pilot.old_instructor != pilot.instructor) {
                         var instruptext = ' присвоена должность ';
                         instrtext =
                             instruptext + $sce.trustAsHtml('<a rank="'
@@ -12019,11 +11979,9 @@ lwsControllers.controller('OrderCreatorCtrl',
                             + '</a>');
                     }
 
-                    if (pilot.awards.length)
-                    {
+                    if (pilot.awards.length) {
                         var awards = [];
-                        angular.forEach(pilot.awards, function (awardId, key)
-                        {
+                        angular.forEach(pilot.awards, function (awardId, key) {
                             var name = $scope.initialData.awards[awardId].sub_name;
                             //name = name.replace('Медаль','медалью').replace('Крест','крестом').replace('Знак','знаком').replace('Шпанга','шпангой').replace('Лента','лентой');
                             awards.push('<a award="' + awardId + '">' + name);
@@ -12032,8 +11990,7 @@ lwsControllers.controller('OrderCreatorCtrl',
                         awardtext = 'награждается ' + awards.join(', ');
                     }
 
-                    if (ranktext || awardtext || instrtext || $scope.updatedData.event || $scope.updatedData.customText)
-                    {
+                    if (ranktext || awardtext || instrtext || $scope.updatedData.event || $scope.updatedData.customText) {
                         var pilotText = '';
                         pilotText += pilotname;
                         if (ranktext)
@@ -12059,8 +12016,7 @@ lwsControllers.controller('OrderCreatorCtrl',
 
         }]);
 
-lwsControllers.controller("TSViewCtrl", ['$scope','User','$state','$dialogs', function ($scope, User, $state, $dialogs)
-{
+lwsControllers.controller("TSViewCtrl", ['$scope', 'User', '$state', '$dialogs', function ($scope, User, $state, $dialogs) {
     $scope.tree = [];
     if ($scope.io_socket)
         $scope.io_socket.on('ts_clients', function (data) {
@@ -12076,79 +12032,66 @@ lwsControllers.controller("TSViewCtrl", ['$scope','User','$state','$dialogs', fu
                 $state.go('user', {userId: res.data.id});
             }
             else
-                $dialogs.notify('Этого пользователя нету в базе','Наверное его ТС ещё не подключен к сайту');
+                $dialogs.notify('Этого пользователя нету в базе', 'Наверное его ТС ещё не подключен к сайту');
         })
     }
 
 }]);
 
-lwsControllers.controller("AfterRosterCtrl", ['$scope', function ($scope)
-{
+lwsControllers.controller("AfterRosterCtrl", ['$scope', function ($scope) {
 
 
 }]);
 
-lwsControllers.controller("NewsCreatorCtrl", ['$scope', 'News', '$stateParams', function ($scope, News, $stateParams)
-{
+lwsControllers.controller("NewsCreatorCtrl", ['$scope', 'News', '$stateParams', function ($scope, News, $stateParams) {
     $scope.newsRecord = {};
-    if ($stateParams.id)
-    {
+    if ($stateParams.id) {
         $scope.newsRecord.id = $stateParams.id;
         $scope.newsRecord.isSubmitting = true;
-        News.get({id:$stateParams.id}, function(res){
+        News.get({id: $stateParams.id}, function (res) {
             $scope.newsRecord = res.data;
             $scope.newsRecord.isSubmitting = false;
             $scope.newsRecord.onlyRegistered = !!$scope.newsRecord.onlyRegistered;
         });
     }
-    $scope.save = function ()
-    {
+    $scope.save = function () {
         $scope.newsRecord.isSubmitting = true;
-        News.save($scope.newsRecord, function (res)
-        {
+        News.save($scope.newsRecord, function (res) {
             $scope.newsRecord = res.data;
             $scope.newsRecord.isSubmitting = false;
         });
     }
 }]);
 
-lwsControllers.controller("RosterViewCtrl", ['$scope', '$timeout', 'Roster', function ($scope, $timeout, Roster)
-{
+lwsControllers.controller("RosterViewCtrl", ['$scope', '$timeout', 'Roster', function ($scope, $timeout, Roster) {
     var rosterTimeout = null;
-    var refreshRosterView = function ()
-    {
+    var refreshRosterView = function () {
         $timeout.cancel(rosterTimeout);
-        Roster.get({}, function (res)
-        {
+        Roster.get({}, function (res) {
             $scope.roster = res.data;
-            rosterTimeout = $timeout(refreshRosterView, 60* 5 * 1000);
+            rosterTimeout = $timeout(refreshRosterView, 60 * 5 * 1000);
         });
     };
 
     $timeout(refreshRosterView, 20);
 
-    $scope.$on('refreshRosterList', function (event, args)
-    {
+    $scope.$on('refreshRosterList', function (event, args) {
         refreshRosterView();
     });
 
 }]);
 
-lwsControllers.controller("BirthdayViewCtrl", ['$scope', '$timeout', 'User', function ($scope, $timeout, User)
-{
+lwsControllers.controller("BirthdayViewCtrl", ['$scope', '$timeout', 'User', function ($scope, $timeout, User) {
     var rosterTimeout = null;
-    var refreshBirthdayView = function ()
-    {
+    var refreshBirthdayView = function () {
         $timeout.cancel(rosterTimeout);
-        User.getbirthdays({}, function (res)
-        {
+        User.getbirthdays({}, function (res) {
             $scope.birthdays = res.data;
             rosterTimeout = $timeout(refreshBirthdayView, 720 * 1000);
         });
     };
     $timeout(refreshBirthdayView, 20);
-    $scope.$on('refreshRosterList', function (event, args)
-    {
+    $scope.$on('refreshRosterList', function (event, args) {
         refreshBirthdayView();
     });
 }]);
@@ -12159,20 +12102,17 @@ lwsControllers.controller("UserMarksCtrl",
         '$stateParams',
         'User',
         '$dialogs',
-        function ($scope, $stateParams, User, $dialogs)
-        {
+        function ($scope, $stateParams, User, $dialogs) {
             $scope.user = {};
 
-            User.getMarks({userId: $stateParams.userId}, function (resource)
-            {
+            User.getMarks({userId: $stateParams.userId}, function (resource) {
                 $scope.tabs = {activeTab: 'fighter'};
                 angular.extend($scope.user, resource.data);
                 if (!$scope.user.programs.fighter)
                     $scope.tabs.activeTab = 'bomber';
             });
 
-            $scope.mark = function (subjectId, courseId)
-            {
+            $scope.mark = function (subjectId, courseId) {
                 var mark = ($scope.user.marks[courseId] && $scope.user.marks[courseId][subjectId]) ?
                     $scope.user.marks[courseId][subjectId].mark :
                     0;
@@ -12181,62 +12121,58 @@ lwsControllers.controller("UserMarksCtrl",
                     subjectId: subjectId,
                     userId: $scope.user.id
                 }, {key: false, back: 'static'});
-                dlg.result.then(function (mark)
-                {
+                dlg.result.then(function (mark) {
                     if (!$scope.user.marks[courseId])
                         $scope.user.marks[courseId] = {};
                     if (!$scope.user.marks[courseId][subjectId])
                         $scope.user.marks[courseId][subjectId] = {};
                     $scope.user.marks[courseId][subjectId].mark = mark.mark
-                }, function ()
-                {
+                }, function () {
 
                 });
             };
 
-            $scope.promote = function (courseId)
-            {
-                if (courseId == 3)
-                {
-                    $dialogs.create('promoteDialogTmpl', 'PromoteDialogCtrl', {is_clanner: $scope.user.is_clanner}, {key: false, back: 'static'})
-                        .result.then(function (toOfficer)
-                        {
-                            User.promote({userId: $scope.user.id, courseId: courseId, promoteToOfficer: toOfficer}, function (resource)
-                            {
+            $scope.promote = function (courseId) {
+                if (courseId == 3) {
+                    $dialogs.create('promoteDialogTmpl', 'PromoteDialogCtrl', {is_clanner: $scope.user.is_clanner}, {
+                        key: false,
+                        back: 'static'
+                    })
+                        .result.then(function (toOfficer) {
+                            User.promote({
+                                userId: $scope.user.id,
+                                courseId: courseId,
+                                promoteToOfficer: toOfficer
+                            }, function (resource) {
                                 angular.extend($scope.user, resource.data);
                             });
-                        }, function ()
-                        {
+                        }, function () {
 
                         });
                 }
-                else
-                {
+                else {
                     $dialogs.confirm('Подтвердите', 'Продвинуть курсанта на следующий курс?')
-                        .result.then(function (btn)
-                        {
-                            User.promote({userId: $scope.user.id, courseId: courseId, promoteToOfficer: false}, function (resource)
-                            {
+                        .result.then(function (btn) {
+                            User.promote({
+                                userId: $scope.user.id,
+                                courseId: courseId,
+                                promoteToOfficer: false
+                            }, function (resource) {
                                 angular.extend($scope.user, resource.data);
                             });
-                        }, function (btn)
-                        {
+                        }, function (btn) {
                         });
                 }
             };
 
 
-            $scope.$watch('user.marks', function ()
-            {
+            $scope.$watch('user.marks', function () {
                 if (!$scope.user) return;
-                angular.forEach($scope.user.programs, function (program, programKey)
-                {
-                    angular.forEach(program.courses, function (course, key)
-                    {
+                angular.forEach($scope.user.programs, function (program, programKey) {
+                    angular.forEach(program.courses, function (course, key) {
                         var count = 0;
                         var average = 0;
-                        angular.forEach($scope.user.marks[course.id], function (mark, key2)
-                        {
+                        angular.forEach($scope.user.marks[course.id], function (mark, key2) {
                             count++;
                             average += parseInt(mark.mark);
                         }, this);
@@ -12251,25 +12187,20 @@ lwsControllers.controller("UserMarksCtrl",
 
 lwsControllers.controller('MarkDialogCtrl',
     ['$scope', '$modalInstance', 'data', 'User', '$dialogs',
-        function ($scope, $modalInstance, data, User, $dialogs)
-        {
+        function ($scope, $modalInstance, data, User, $dialogs) {
             $scope.userMark = {};
             angular.extend($scope.userMark, data);
 
-            $scope.cancel = function ()
-            {
+            $scope.cancel = function () {
                 $modalInstance.dismiss('canceled');
             }; // end cancel
 
-            $scope.saveMark = function ()
-            {
+            $scope.saveMark = function () {
                 $scope.userMark.isSubmitting = true;
-                User.saveMark($scope.userMark, function (resource)
-                    {
+                User.saveMark($scope.userMark, function (resource) {
                         $modalInstance.close($scope.userMark);
                     },
-                    function (resource)
-                    {
+                    function (resource) {
                         $modalInstance.close($scope.userMark);
                     });
             }; // end save
@@ -12278,26 +12209,21 @@ lwsControllers.controller('MarkDialogCtrl',
 
 lwsControllers.controller('EventDialogCtrl',
     ['$scope', '$modalInstance', 'data', 'User',
-        function ($scope, $modalInstance, data, User)
-        {
+        function ($scope, $modalInstance, data, User) {
             $scope.event = {};
             angular.extend($scope.event, data);
 
-            $scope.cancel = function ()
-            {
+            $scope.cancel = function () {
                 $modalInstance.dismiss('canceled');
             }; // end cancel
 
-            $scope.saveEvent = function ()
-            {
+            $scope.saveEvent = function () {
                 $scope.event.isSubmitting = true;
-                User.saveEvent($scope.event, function (resource)
-                    {
+                User.saveEvent($scope.event, function (resource) {
                         $scope.event.isSubmitting = false;
                         $modalInstance.close(resource.data);
                     },
-                    function (resource)
-                    {
+                    function (resource) {
                         $scope.event.isSubmitting = false;
                         $modalInstance.close(resource.data);
                     });
@@ -12307,54 +12233,45 @@ lwsControllers.controller('EventDialogCtrl',
 
 lwsControllers.controller('PromoteDialogCtrl',
     ['$scope', '$modalInstance', 'data',
-        function ($scope, $modalInstance, data)
-        {
+        function ($scope, $modalInstance, data) {
             $scope.is_clanner = data.is_clanner;
-            $scope.cancel = function ()
-            {
+            $scope.cancel = function () {
                 $modalInstance.dismiss('canceled');
             }; // end cancel
 
-            $scope.promote = function (promoteToOfficer)
-            {
+            $scope.promote = function (promoteToOfficer) {
                 $modalInstance.close(promoteToOfficer);
             }; // end save
         }]);
 
 lwsControllers.controller('RejectDialogCtrl',
     ['$scope', '$modalInstance', 'data',
-        function ($scope, $modalInstance, data)
-        {
+        function ($scope, $modalInstance, data) {
             $scope.reject = {
                 text: data.text || '',
                 header: data.header || 'отклонения заявки',
                 buttonText: data.buttonText || 'Отклонить заявку'
             };
-            $scope.cancel = function ()
-            {
+            $scope.cancel = function () {
                 $modalInstance.dismiss('canceled');
             }; // end cancel
 
-            $scope.saveReject = function ()
-            {
+            $scope.saveReject = function () {
                 $modalInstance.close($scope.reject.text);
             }; // end save
         }]);
 
 
 lwsControllers.controller('SchoolCtrl',
-    ['$scope', 'School', '$location', '$anchorScroll','$stateParams',
-        function ($scope, School, $location, $anchorScroll, $stateParams)
-        {
-            $scope.scrollTo = function (id)
-            {
+    ['$scope', 'School', '$location', '$anchorScroll', '$stateParams',
+        function ($scope, School, $location, $anchorScroll, $stateParams) {
+            $scope.scrollTo = function (id) {
                 $location.hash(id);
                 $anchorScroll();
             };
 
             $scope.sceditor = {text: ''};
-            School.materials({slug:$stateParams.slug}, function (res)
-            {
+            School.materials({slug: $stateParams.slug}, function (res) {
                 $scope.subject = res.data;
                 setTimeout($anchorScroll, 500);
             });
@@ -12363,31 +12280,25 @@ lwsControllers.controller('SchoolCtrl',
 
 lwsControllers.controller('EditMaterialCtrl',
     ['$scope', 'Material', '$stateParams',
-        function ($scope, Material, $stateParams)
-        {
+        function ($scope, Material, $stateParams) {
             $scope.sceditor = {text: ''};
             $scope.material = {};
-            if ($stateParams.materialId > 0)
-            {
-                Material.get({id: $stateParams.materialId}, function (res)
-                {
+            if ($stateParams.materialId > 0) {
+                Material.get({id: $stateParams.materialId}, function (res) {
                     angular.extend($scope.material, res.data);
                     $scope.sceditor.text = $scope.material.text;
                     $scope.material.isLoaded = true;
                 });
             }
-            else
-            {
+            else {
                 $scope.material.id = -1;
                 $scope.material.isLoaded = true;
             }
-            $scope.save = function ()
-            {
+            $scope.save = function () {
                 $scope.material.text = $scope.sceditor.text;
                 $scope.material.isLoaded = false;
                 $scope.material.slug = $stateParams.slug;
-                Material.save($scope.material, function (res)
-                {
+                Material.save($scope.material, function (res) {
                     angular.extend($scope.material, res.data);
                     $scope.sceditor.text = $scope.material.text;
                     $scope.material.isLoaded = true;
@@ -12398,10 +12309,8 @@ lwsControllers.controller('EditMaterialCtrl',
 
 lwsControllers.controller('TextCtrl',
     ['$scope', 'Text', '$location', '$stateParams',
-        function ($scope, Text, $location, $stateParams)
-        {
-            Text.get({id: $stateParams.id}, function (res)
-            {
+        function ($scope, Text, $location, $stateParams) {
+            Text.get({id: $stateParams.id}, function (res) {
                 $scope.text = res.data;
             });
         }]);
@@ -12409,30 +12318,24 @@ lwsControllers.controller('TextCtrl',
 
 lwsControllers.controller('EditTextCtrl',
     ['$scope', 'Text', '$stateParams',
-        function ($scope, Text, $stateParams)
-        {
+        function ($scope, Text, $stateParams) {
             $scope.sceditor = {text: ''};
             $scope.material = {};
-            if ($stateParams.id)
-            {
-                Text.edit({id: $stateParams.id}, function (res)
-                {
+            if ($stateParams.id) {
+                Text.edit({id: $stateParams.id}, function (res) {
                     angular.extend($scope.material, res.data);
                     $scope.sceditor.text = $scope.material.text;
                     $scope.material.isLoaded = true;
                 });
             }
-            else
-            {
+            else {
                 $scope.material.id = -1;
                 $scope.material.isLoaded = true;
             }
-            $scope.save = function ()
-            {
+            $scope.save = function () {
                 $scope.material.text = $scope.sceditor.text;
                 $scope.material.isLoaded = false;
-                Text.save($scope.material, function (res)
-                {
+                Text.save($scope.material, function (res) {
                     angular.extend($scope.material, res.data);
                     $scope.sceditor.text = $scope.material.text;
                     $scope.material.isLoaded = true;
@@ -12442,32 +12345,26 @@ lwsControllers.controller('EditTextCtrl',
 
 lwsControllers.controller('FloodCtrl',
     ['$scope', 'Flood',
-        function ($scope, Flood)
-        {
-            Flood.query({}, function (res)
-            {
+        function ($scope, Flood) {
+            Flood.query({}, function (res) {
                 $scope.topics = res.data;
             });
         }]);
 
 lwsControllers.controller('TopicCtrl',
     ['$scope', 'Topic', '$location', '$stateParams', '$state',
-        function ($scope, Topic, $location, $stateParams, $state)
-        {
+        function ($scope, Topic, $location, $stateParams, $state) {
             $scope.topic = {currentPage: 1};
             var lastNewId = 1;
             $scope.sceditor = {text: ''};
-            Topic.get({topicId: $stateParams.topicId}, function (res)
-            {
+            Topic.get({topicId: $stateParams.topicId}, function (res) {
                 angular.extend($scope.topic, res.data);
             });
-            $scope.$watch('topic.currentPage', function (newValue, oldValue)
-            {
+            $scope.$watch('topic.currentPage', function (newValue, oldValue) {
                 if (oldValue != newValue)
                     $state.go('topic.page', {topicId: $stateParams.topicId, page: newValue});
             });
-            $scope.post = function ()
-            {
+            $scope.post = function () {
                 var message = {
                     id: 'new_' + lastNewId,
                     isNew: true,
@@ -12476,13 +12373,11 @@ lwsControllers.controller('TopicCtrl',
                 lastNewId++;
 
                 $scope.topic.messages.push(message);
-                Topic.post({topicId: $scope.topic.id, text: $scope.sceditor.text}, function (res)
-                {
+                Topic.post({topicId: $scope.topic.id, text: $scope.sceditor.text}, function (res) {
                     message.isNew = false;
                     angular.extend(message, res.data);
                     $scope.topic.itemCount++;
-                }, function (res)
-                {
+                }, function (res) {
                     $scope.topic.messages.splice($scope.topic.messages.indexOf(message), 1);
                 });
 
@@ -12494,47 +12389,37 @@ lwsControllers.controller('TopicCtrl',
 
 lwsControllers.controller('TopicPageCtrl',
     ['$scope', 'Topic', '$location', '$stateParams',
-        function ($scope, Topic, $location, $stateParams)
-        {
+        function ($scope, Topic, $location, $stateParams) {
             $scope.isLoading = true;
             $scope.topic.currentPage = parseInt($stateParams.page);
-            Topic.page({topicId: $stateParams.topicId, page: $stateParams.page}, function (res)
-            {
+            Topic.page({topicId: $stateParams.topicId, page: $stateParams.page}, function (res) {
                 $scope.isLoading = false;
                 $scope.topic.messages = res.data;
             });
         }]);
 
-lwsControllers.controller("NewTopicCtrl", ['$scope', 'Topic', '$state', function ($scope, Topic, $state)
-{
+lwsControllers.controller("NewTopicCtrl", ['$scope', 'Topic', '$state', function ($scope, Topic, $state) {
     $scope.sceditor = {text: ''};
 
-    $scope.save = function ()
-    {
+    $scope.save = function () {
 
         $scope.topicRecord.isSubmitting = true;
-        Topic.save({title: $scope.topicRecord.title, text: $scope.sceditor.text}, function (resource)
-        {
+        Topic.save({title: $scope.topicRecord.title, text: $scope.sceditor.text}, function (resource) {
             $state.go('topic.page', {topicId: resource.data.id, page: 1});
-        }, function (res)
-        {
+        }, function (res) {
             $scope.topicRecord.isSubmitting = false;
         });
     }
 }]);
 
-lwsControllers.controller("ReportVacationCtrl", ['$scope', 'Vacation', '$state', function ($scope, Vacation, $state)
-{
+lwsControllers.controller("ReportVacationCtrl", ['$scope', 'Vacation', '$state', function ($scope, Vacation, $state) {
     $scope.vacation = {};
-    $scope.save = function ()
-    {
-        Vacation.save($scope.vacation, function (resource)
-        {
+    $scope.save = function () {
+        Vacation.save($scope.vacation, function (resource) {
             $scope.vacationForm.isSubmitting = true;
-            $scope.vacation = {isSaved:true};
+            $scope.vacation = {isSaved: true};
 
-        }, function (res)
-        {
+        }, function (res) {
             $scope.vacationForm.isSubmitting = false;
         });
     }
@@ -12543,13 +12428,11 @@ lwsControllers.controller("ReportVacationCtrl", ['$scope', 'Vacation', '$state',
 
 lwsControllers.controller('MessengerCtrl',
     ['$scope', 'Messenger',
-        function ($scope, Messenger)
-        {
-            Messenger.query({}, function (res)
-            {
+        function ($scope, Messenger) {
+            Messenger.query({}, function (res) {
                 $scope.conversations = res.data;
             });
-            $scope.$on('new_message',function(event, data){
+            $scope.$on('new_message', function (event, data) {
 
 
                 $scope.conversations.messages.unshift(data);
@@ -12560,31 +12443,26 @@ lwsControllers.controller('MessengerCtrl',
 
 lwsControllers.controller('ConversationCtrl',
     ['$scope', 'Messenger', '$location', '$stateParams', '$state',
-        function ($scope, Messenger, $location, $stateParams, $state)
-        {
+        function ($scope, Messenger, $location, $stateParams, $state) {
             $scope.conversation = {currentPage: 1};
             var lastNewId = 1;
             $scope.sceditor = {text: ''};
-            Messenger.get({senderId: $stateParams.senderId}, function (res)
-            {
+            Messenger.get({senderId: $stateParams.senderId}, function (res) {
                 angular.extend($scope.conversation, res.data);
             });
-            $scope.$watch('conversation.currentPage', function (newValue, oldValue)
-            {
+            $scope.$watch('conversation.currentPage', function (newValue, oldValue) {
                 if (oldValue != newValue)
                     $state.go('conversation.page', {senderId: $stateParams.senderId, page: newValue});
             });
 
 
-            function trimMessages()
-            {
+            function trimMessages() {
                 var toTrim = $scope.conversation.messages.length - $scope.conversation.limit;
                 if (toTrim > 0)
-                    $scope.conversation.messages.splice($scope.conversation.messages.length-toTrim,toTrim);
+                    $scope.conversation.messages.splice($scope.conversation.messages.length - toTrim, toTrim);
             }
 
-            $scope.post = function ()
-            {
+            $scope.post = function () {
                 var message = {
                     id: 'new_' + lastNewId,
                     isNew: true,
@@ -12593,20 +12471,18 @@ lwsControllers.controller('ConversationCtrl',
                 lastNewId++;
 
                 $scope.conversation.messages.unshift(message);
-                Messenger.post({recieverId: $scope.conversation.sender.id, text: $scope.sceditor.text}, function (res)
-                {
+                Messenger.post({recieverId: $scope.conversation.sender.id, text: $scope.sceditor.text}, function (res) {
                     message.isNew = false;
                     angular.extend(message, res.data);
                     $scope.conversation.itemCount++;
                     trimMessages()
 
-                }, function (res)
-                {
+                }, function (res) {
                     $scope.conversation.messages.splice($scope.conversation.messages.indexOf(message), 1);
                 });
                 $scope.sceditor.text = '';
             };
-            $scope.$on('new_message',function(event, data){
+            $scope.$on('new_message', function (event, data) {
                 $scope.conversation.messages.unshift(data);
                 $scope.conversation.itemCount++;
                 trimMessages();
@@ -12616,20 +12492,17 @@ lwsControllers.controller('ConversationCtrl',
 
 lwsControllers.controller('ConversationPageCtrl',
     ['$scope', 'Messenger', '$location', '$stateParams',
-        function ($scope, Messenger, $location, $stateParams)
-        {
+        function ($scope, Messenger, $location, $stateParams) {
             $scope.isLoading = true;
             $scope.conversation.currentPage = parseInt($stateParams.page);
-            Messenger.page({senderId: $stateParams.senderId, page: $stateParams.page}, function (res)
-            {
+            Messenger.page({senderId: $stateParams.senderId, page: $stateParams.page}, function (res) {
                 $scope.isLoading = false;
                 $scope.conversation.messages = res.data;
             });
         }]);
 
 
-lwsControllers.controller("InactiveCountCtrl", ['$scope', '$timeout', 'User', function ($scope, $timeout, User)
-{
+lwsControllers.controller("InactiveCountCtrl", ['$scope', '$timeout', 'User', function ($scope, $timeout, User) {
     var inactiveCountTimeout = null;
     var refreshInactiveCount = function () {
         $timeout.cancel(inactiveCountTimeout);
@@ -12652,21 +12525,22 @@ lwsControllers.controller("InactiveCtrl", ['$scope', 'User', '$dialogs', '$rootS
             });
         };
 
-        $scope.acquit = function(pilot){
-            var dlg = $dialogs.create('acquitDialogTmpl', 'AcquitDialogCtrl', {pilot:pilot}, {key: false, back: 'static'});
-            dlg.result.then(function (acquitConditions)
-            {
+        $scope.acquit = function (pilot) {
+            var dlg = $dialogs.create('acquitDialogTmpl', 'AcquitDialogCtrl', {pilot: pilot}, {
+                key: false,
+                back: 'static'
+            });
+            dlg.result.then(function (acquitConditions) {
                 acquitConditions.pilotId = pilot.id;
-                User.acquit(acquitConditions, function(resource){
+                User.acquit(acquitConditions, function (resource) {
                     $scope.loadData();
                 });
-            }, function ()
-            {
+            }, function () {
 
             });
         };
 
-        $scope.$on('pilotExpelled',function(event, data){
+        $scope.$on('pilotExpelled', function (event, data) {
             $scope.loadData();
         });
         $scope.loadData();
@@ -12676,7 +12550,10 @@ lwsControllers.controller('AcquitDialogCtrl',
     ['$scope', '$modalInstance', '$filter', 'data',
         function ($scope, $modalInstance, $filter, data) {
             $scope.pilot = data.pilot;
-            $scope.acquit = {dateFrom: $filter("simpleTime")($scope.pilot.lastWarning), dateTo: $filter("simpleTime")(parseInt($scope.pilot.lastWarning) + 1000*60*60*24*30)};
+            $scope.acquit = {
+                dateFrom: $filter("simpleTime")($scope.pilot.lastWarning),
+                dateTo: $filter("simpleTime")(parseInt($scope.pilot.lastWarning) + 1000 * 60 * 60 * 24 * 30)
+            };
 
             $scope.cancel = function () {
                 $modalInstance.dismiss('canceled');

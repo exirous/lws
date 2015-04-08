@@ -123,7 +123,7 @@ class User extends BaseUser
     {
         $this->dbCriteria->mergeWith([
             'with' => ['vacations' => [
-                'together'=>true
+                'together' => true
             ]],
             'condition' => '(t.rank_id <> 29) AND ((t.`last_online_time` < NOW() - INTERVAL 1 MONTH) OR t.`last_online_time` IS NULL)
              AND t.`ts_id` IS NOT NULL
@@ -169,10 +169,11 @@ class User extends BaseUser
             'activeVacation' => $this->activeVacation,
             'isDisabled' => !!$this->is_disabled,
             'isDefector' => !!$this->is_defector,
-            'lastOnline' => $this->last_online_time ? (strtotime($this->last_online_time) . '000') : (mktime(0,0,1,8,1,2014).'000'),
+            'lastOnline' => $this->last_online_time ? (strtotime($this->last_online_time) . '000') : (mktime(0, 0, 1, 8, 1, 2014) . '000'),
             'qualifications' => $qualifications,
             'medals' => $awards,
-            'events' => $events
+            'events' => $events,
+            'email' => Yii::app()->user->canViewUserEmailAddress($this->id) ? $this->email : ''
 
         ];
     }
@@ -188,7 +189,8 @@ class User extends BaseUser
             'is_clanner' => intval($this->is_clanner),
             'ts_id' => $this->ts_id,
             'qualifications' => ['fighter' => strpos($this->qualifications, 'fighter') !== false, 'bomber' => strpos($this->qualifications, 'bomber') !== false],
-            'possibleUsers' => Yii::app()->ts->findUsersLike($this->nickname, $this->ip)
+            'possibleUsers' => Yii::app()->ts->findUsersLike($this->nickname, $this->ip),
+            'email' => Yii::app()->user->canViewUserEmailAddress($this->id) ? $this->email : ''
         ];
     }
 
@@ -203,7 +205,8 @@ class User extends BaseUser
             'id' => $this->id,
             'rank' => $this->rank_id,
             'roster' => $roster,
-            'ip' => $this->ip
+            'ip' => $this->ip,
+            'email' => Yii::app()->user->canViewUserEmailAddress($this->id) ? $this->email : ''
         ];
     }
 
@@ -292,6 +295,7 @@ class User extends BaseUser
             'is_clanner' => intval($this->is_clanner)
         ];
     }
+
     public function getInactiveAttributes()
     {
         return [
@@ -303,7 +307,7 @@ class User extends BaseUser
             'rank_name' => $this->rank->name,
             'instructor' => $this->instructor_id,
             'isDisabled' => $this->is_disabled == '1' ? true : false,
-            'lastOnline' => $this->last_online_time ? (strtotime($this->last_online_time) . '000') : (mktime(0,0,1,8,1,2014).'000'),
+            'lastOnline' => $this->last_online_time ? (strtotime($this->last_online_time) . '000') : (mktime(0, 0, 1, 8, 1, 2014) . '000'),
             'lastWarning' => $this->last_warning_time ? (strtotime($this->last_warning_time) . '000') : false,
             'isBomber' => strpos($this->qualifications, 'bomber') !== false,
             'is_clanner' => intval($this->is_clanner),
@@ -326,7 +330,8 @@ class User extends BaseUser
             'isDisabled' => intval($this->is_disabled),
             'disableReason' => $this->disable_reason,
             'uid' => $this->ts_id,
-            'id' => $this->id
+            'id' => $this->id,
+            'email' => Yii::app()->user->canViewUserEmailAddress($this->id) ? $this->email : ''
         ];
     }
 
@@ -345,21 +350,21 @@ class User extends BaseUser
         return $this->instructor_id ? true : false;
     }
 
-    public static  function recover($email)
+    public static function recover($email)
     {
-        $user = User::model()->findByAttributes(['email'=>$email]);
+        $user = User::model()->findByAttributes(['email' => $email]);
         if (!$user)
             throw new Exception('Мы не можем восстановить этот аккаунт');
-        $key = md5(microtime()+'champ');
+        $key = md5(microtime() + 'champ');
         $user->recovery_token = $key;
         if (!$user->save())
-           throw new Exception('Мы не можем восстановить этот аккаунт');
+            throw new Exception('Мы не можем восстановить этот аккаунт');
         Mailer::send($email, 'Восстановление пароля', Yii::app()->controller->renderPartial('//mails/password_recovery', compact('key'), true));
     }
 
     public static function isRecoveryTokenOK($token)
     {
-        if(strlen(trim($token))!=32)
+        if (strlen(trim($token)) != 32)
             throw new Exception('Token Invalid');
 
         return User::model()->exists([
@@ -369,7 +374,7 @@ class User extends BaseUser
 
     public static function resetPassword($token, $password)
     {
-        if(strlen(trim($token))!=32)
+        if (strlen(trim($token)) != 32)
             throw new Exception('Token Invalid');
         $user = User::model()->find([
             'condition' => 'recovery_token=:token',
@@ -404,7 +409,7 @@ class User extends BaseUser
         $newUser->is_clanner = (isset($user['squad']) && $user['squad']) ? 1 : 0;
         $newUser->qualifications = ($user['profession'] == 'bomber' ? 'bomber' : 'fighter');
         $newUser->roster = json_encode($user);
-        $newUser->broadcast_token = md5($newUser->email.$newUser->password);
+        $newUser->broadcast_token = md5($newUser->email . $newUser->password);
 
         if (!$newUser->validate())
             throw new Exception($newUser->getErrors());
@@ -535,9 +540,9 @@ class User extends BaseUser
     public function sendNotification($event, $data)
     {
 
-        NodeServerSync::sendMessage($event ,$data, $this->broadcast_token);
+        NodeServerSync::sendMessage($event, $data, $this->broadcast_token);
         if ($this->ts_id)
-          NodeServerSync::sendInternalMessage('NOTIFY_USER',['reciever'=>$this->ts_id,'msg'=>$data['summary']]);
+            NodeServerSync::sendInternalMessage('NOTIFY_USER', ['reciever' => $this->ts_id, 'msg' => $data['summary']]);
     }
 
     public function reject($reason)
@@ -545,8 +550,8 @@ class User extends BaseUser
         if ($this->ts_id)
             throw new Exception('Пользователь уже был принят!');
         $this->delete();
-        Mailer::send($this->email, 'Заявка отклонена', Yii::app()->controller->renderPartial('//mails/user_reject', ['reason'=>$reason,'user'=>$this], true));
-        Mailer::send('luftwaffeschule@gmail.com', 'Отклонение заявки', Yii::app()->controller->renderPartial('//mails/user_reject_notify', ['reason'=>$reason,'user'=>$this], true));
+        Mailer::send($this->email, 'Заявка отклонена', Yii::app()->controller->renderPartial('//mails/user_reject', ['reason' => $reason, 'user' => $this], true));
+        Mailer::send('luftwaffeschule@gmail.com', 'Отклонение заявки', Yii::app()->controller->renderPartial('//mails/user_reject_notify', ['reason' => $reason, 'user' => $this], true));
     }
 
     public function expel($reason)
@@ -557,9 +562,9 @@ class User extends BaseUser
         $this->disable_reason = $reason;
         $this->save();
         Order::issueOrder([
-            'complete'=>'<a rank="'.$this->rank_id.'">'.$this->rank->name.'</a> <a pilot="'.$this->id.'">'.$this->nickname.'</a> исключен из школы пилотов по причине: <p>'.$reason.'</p>',
-            'pilots'=>[['id'=>$this->id]],
-            'event'=>'Исключен из школы пилотов по причине: <p>'.$reason.'</p>'
+            'complete' => '<a rank="' . $this->rank_id . '">' . $this->rank->name . '</a> <a pilot="' . $this->id . '">' . $this->nickname . '</a> исключен из школы пилотов по причине: <p>' . $reason . '</p>',
+            'pilots' => [['id' => $this->id]],
+            'event' => 'Исключен из школы пилотов по причине: <p>' . $reason . '</p>'
         ]);
         Mailer::send($this->email, 'Вы исключенны', Yii::app()->controller->renderPartial('//mails/user_expel', ['reason' => $reason, 'user' => $this], true));
         Mailer::send('luftwaffeschule@gmail.com', 'Пилот исключён', Yii::app()->controller->renderPartial('//mails/user_expel_notify', ['reason' => $reason, 'user' => $this], true));
@@ -574,9 +579,9 @@ class User extends BaseUser
         $this->last_online_time = date("Y-m-d H:i:s");
         $this->save();
         Order::issueOrder([
-            'complete'=>'<a rank="'.$this->rank_id.'">'.$this->rank->name.'</a> <a pilot="'.$this->id.'">'.$this->nickname.'</a> восстановлен в школе пилотов'.($reason ? 'по причине: <p>'.$reason.'</p>' : ''),
-            'pilots'=>[['id'=>$this->id]],
-            'event'=>'Восстановлен в школе пилотов'.($reason ? 'по причине: <p>'.$reason.'</p>' : '')
+            'complete' => '<a rank="' . $this->rank_id . '">' . $this->rank->name . '</a> <a pilot="' . $this->id . '">' . $this->nickname . '</a> восстановлен в школе пилотов' . ($reason ? 'по причине: <p>' . $reason . '</p>' : ''),
+            'pilots' => [['id' => $this->id]],
+            'event' => 'Восстановлен в школе пилотов' . ($reason ? 'по причине: <p>' . $reason . '</p>' : '')
         ]);
 
         Mailer::send($this->email, 'Вы восстановленны', Yii::app()->controller->renderPartial('//mails/user_reenlist', ['reason' => $reason, 'user' => $this], true));
@@ -584,14 +589,12 @@ class User extends BaseUser
     }
 
 
-
     public function updateOnlineTime()
     {
         $sendDefectorMail = false;
 
         $this->last_online_time = date("Y-m-d H:i:s");
-        if ($this->is_defector)
-        {
+        if ($this->is_defector) {
             $this->is_defector = 0;
             $sendDefectorMail = true;
         }

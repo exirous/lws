@@ -197,3 +197,21 @@ if (typeof Notification != 'undefined' && Notification.requestPermission)
     Notification.requestPermission(function (state) {
         NotificationsAllowed = (state == 'granted')
     });
+
+
+$(function(){
+    var navBarDetached = false;
+    function checkScroll() {
+        if (!navBarDetached && document.body.scrollTop > 309) {
+            navBarDetached = true;
+            $('.main_menu_cover').addClass('detached');
+        } else if(navBarDetached && document.body.scrollTop < 310){
+            navBarDetached = false;
+            $('.main_menu_cover').removeClass('detached');
+        }
+    }
+    $(document).on('scroll', function(){
+        checkScroll();
+    })
+    checkScroll();
+})
