@@ -33,17 +33,17 @@ function mainRouteConfig($stateProvider, $urlRouterProvider)
 {
     //
     // For any unmatched url, redirect to /state1
-    $urlRouterProvider.otherwise("/");
+    $urlRouterProvider.otherwise("/news/");
     //
     // Now set up the states
     $stateProvider
         .state('news', {
-            url: "/",
+            url: "/news/:page",
             templateUrl: 'NewsTmpl',
             controller: "NewsCtrl"
         })
         .state('orders', {
-            url: "/orders",
+            url: "/orders/:page",
             templateUrl: 'OrdersTmpl',
             controller: "OrdersCtrl"
         })

@@ -213,10 +213,17 @@ s=k.ngOptions,x=!1,v,C=u(X.createElement("option")),y=u(X.createElement("optgrou
 l=h.data("$selectController")||h.parent().data("$selectController");l&&l.databound?d.prop("selected",!1):l=c;f?a.$watch(f,function(a,c){e.$set("value",a);a!==c&&l.removeOption(c);l.addOption(a)}):l.addOption(e.value);d.on("$destroy",function(){l.removeOption(e.value)})}}}}],hd=$({restrict:"E",terminal:!0});Q.angular.bootstrap?console.log("WARNING: Tried to load angular more than once."):((Da=Q.jQuery)&&Da.fn.on?(u=Da,B(Da.fn,{scope:La.scope,isolateScope:La.isolateScope,controller:La.controller,injector:La.injector,
 inheritedData:La.inheritedData}),Gb("remove",!0,!0,!1),Gb("empty",!1,!1,!1),Gb("html",!1,!1,!0)):u=S,Ua.element=u,$c(Ua),u(X).ready(function(){Xc(X,fc)}))})(window,document);!window.angular.$$csp()&&window.angular.element(document).find("head").prepend('<style type="text/css">@charset "UTF-8";[ng\\:cloak],[ng-cloak],[data-ng-cloak],[x-ng-cloak],.ng-cloak,.x-ng-cloak,.ng-hide{display:none !important;}ng\\:form{display:block;}.ng-animate-block-transitions{transition:0s all!important;-webkit-transition:0s all!important;}.ng-hide-add-active,.ng-hide-remove{display:block!important;}</style>');
 
-var lwsApp = angular.module('app', ['app.controllers']);
+var lwsApp = angular.module('app',[]);
 
-/*var lwsControllers = angular.module('app.controllers');
-lwsControllers.controller('AppCtrl',
+lwsApp.filter('clearNickname', function ()
+{
+    return function (input)
+    {
+        return input.replace(/\((.*?)\)/, '');
+    };
+});
+
+lwsApp.controller('AppCtrl',
     ['$scope',
         function ($scope) {
             $scope.io_socket = false;
@@ -233,4 +240,4 @@ lwsControllers.controller('AppCtrl',
                         });
                 });
             }
-        }]);*/
+        }]);

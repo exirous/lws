@@ -97,3 +97,29 @@ lwsFilters.filter('simpleTime', function(){
         return year + '-' + month + '-' + day;
     };
 });
+
+lwsFilters.filter('barracksFilter', function() {
+    return function( items, type) {
+        // type: 0 - офицеры
+        // type: 1 - курсанты
+        // type: 2 - выпускники
+        var filtered = [];
+        angular.forEach(items, function(item) {
+            switch (type)
+            {
+                case 0:
+                    if (item.rank > 15 && item.rank < 27)
+                      filtered.push(item);
+                    break;
+                case 1:
+                    if (item.rank >= 7 && item.rank < 13)
+                        filtered.push(item);
+                    break;
+                default :
+                    if (item.rank == 29)
+                        filtered.push(item);
+            }
+        });
+        return filtered;
+    };
+});

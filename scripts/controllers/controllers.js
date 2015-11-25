@@ -306,10 +306,21 @@ lwsControllers.controller('UserLoginCtrl',
         }]);
 
 lwsControllers.controller('NewsCtrl',
-    ['$scope', 'News', '$rootScope',
-        function ($scope, News, $rootScope) {
+    ['$scope', 'News', '$rootScope', '$state', '$stateParams',
+        function ($scope, News, $rootScope, $state, $stateParams) {
+
+            $scope.currentPage = parseInt($stateParams.page) || 1;
+            $scope.itemsPerPage = 4;
+            $scope.news = {count: 99999999999999};
+
+            $scope.$watch('currentPage', function(newPage, oldPage){
+                if (newPage && (newPage != oldPage)) {
+                    $state.go('news', {page: newPage});
+                }
+            });
+
             function reloadNews() {
-                News.last({}, function (res) {
+                News.last({page: $scope.currentPage, perPage: $scope.itemsPerPage}, function (res) {
                     $scope.news = res.data;
                 });
             }
@@ -321,11 +332,25 @@ lwsControllers.controller('NewsCtrl',
         }]);
 
 lwsControllers.controller('OrdersCtrl',
-    ['$scope', 'News',
-        function ($scope, News) {
-            News.orders({}, function (res) {
-                $scope.news = res.data;
+    ['$scope', 'News','$state', '$stateParams',
+        function ($scope, News, $state, $stateParams) {
+            $scope.currentPage = parseInt($stateParams.page) || 1;
+            $scope.itemsPerPage = 4;
+            $scope.news = {count: 99999999999999};
+
+            $scope.$watch('currentPage', function(newPage, oldPage){
+                if (newPage && (newPage != oldPage)) {
+                    $state.go('orders', {page: newPage});
+                }
             });
+
+            function reloadOrders()
+            {
+                News.orders({page: $scope.currentPage, perPage: $scope.itemsPerPage}, function (res) {
+                    $scope.news = res.data;
+                });
+            }
+            reloadOrders();
         }]);
 
 lwsControllers.controller('UserCtrl',
@@ -336,13 +361,39 @@ lwsControllers.controller('UserCtrl',
                     $scope.user = resource.data;
                 });
 
-            $scope.medalDrop = function (element, medal) {
-                medal.top = element[0].offsetTop + 3;
-                medal.left = element[0].offsetLeft;
+            $scope.medalDrop = function (medal) {
+                $scope.dragging = false;
+                medal.top = parseInt(medal.rect.top) + 3;
+                medal.left = parseInt(medal.rect.left);
                 medal.userId = $scope.user.id;
+                if (medal.top > 430) {
+                    medal.hidden = true;
+                    var i = $scope.user.medals.indexOf(medal);
+                    if (i > -1) {
+                        $scope.user.medals.splice(i,1);
+                    }
+                }
                 User.saveMedalPosition(medal, function (res) {
                 });
             };
+
+            $scope.medalPickup = function (medal) {
+                $scope.dragging = true;
+            };
+
+            $scope.getUniformClass = function (rank) {
+                if (rank > 6 && rank < 13)
+                    return 'student_form';
+                if (rank > 15 && rank < 21)
+                    return 'junior_officer_form';
+                if (rank > 20 && rank < 25)
+                    return 'senior_officer_form';
+                if (rank > 24 && rank < 27)
+                    return 'hq_officer_form';
+                if (rank  == 29)
+                    return 'graduate_form';
+            }
+
 
             $scope.addEvent = function (userId) {
                 var event = {date: '', text: '', id: -1, userId: userId, isNew: true}
@@ -482,6 +533,7 @@ lwsControllers.controller('RosterUserCtrl',
             User.getRoster({userId: $stateParams.userId},
                 function (resource) {
                     $scope.pilot = resource.data;
+                    console.log($scope.pilot);
                     angular.extend($scope.tsSelect2Options.data, $scope.pilot.possibleUsers);
                 });
 
@@ -1181,11 +1233,22 @@ lwsControllers.controller('EditTextCtrl',
         }]);
 
 lwsControllers.controller('FloodCtrl',
-    ['$scope', 'Flood',
-        function ($scope, Flood) {
+    ['$scope', 'Flood', '$dialogs',
+        function ($scope, Flood, $dialogs) {
             Flood.query({}, function (res) {
                 $scope.topics = res.data;
             });
+            $scope.deleteTopic = function (topic) {
+                $dialogs.confirm('Подтвердите', 'Удалить эту тему?')
+                    .result.then(function (btn) {
+                        var i = $scope.topics.indexOf(topic);
+                        if (i > -1)
+                            $scope.topics.splice(i, 1);
+                        Flood.deleteTopic({id: topic.id}, function () {
+                        });
+                    }, function (btn) {
+                    });
+            };
         }]);
 
 lwsControllers.controller('TopicCtrl',
@@ -1264,17 +1327,29 @@ lwsControllers.controller("ReportVacationCtrl", ['$scope', 'Vacation', '$state',
 
 
 lwsControllers.controller('MessengerCtrl',
-    ['$scope', 'Messenger',
-        function ($scope, Messenger) {
+    ['$scope', 'Messenger','$dialogs',
+        function ($scope, Messenger,$dialogs) {
             Messenger.query({}, function (res) {
                 $scope.conversations = res.data;
             });
-            $scope.$on('new_message', function (event, data) {
 
+            $scope.deleteConverstion = function (conversation) {
 
-                $scope.conversations.messages.unshift(data);
+                $dialogs.confirm('Подтвердите', 'Удалить эту цепочку сообщений?')
+                    .result.then(function (btn) {
+                        var i = $scope.conversations.indexOf(conversation);
+                        if (i > -1)
+                            $scope.conversations.splice(i, 1);
+                        Messenger.deleteConversation({userId:conversation.sender.id}, function(){
+                        });
+                    }, function (btn) {
+                    });
+            };
+
+            /*$scope.$on('new_message', function (event, data) {
+                $scope.conversation.messages.unshift(data);
                 $scope.$apply();
-            });
+            });*/
 
         }]);
 

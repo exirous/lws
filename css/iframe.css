@@ -50,3 +50,17 @@ body {
 {
     color:#999;
 }
+
+.ts_empty {
+    display: block;
+    position: fixed;
+    top:50%;
+    transform: translateY(-50%);
+    left:0;
+    right:0;
+    text-align: center;
+    -webkit-transform: translateY(-50%);
+    background: #fff;
+    font: 22px/1.2 'Open Sans', arial, tahoma, sans-serif !important;
+    color:#bcbcbb;
+}

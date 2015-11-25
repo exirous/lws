@@ -47,14 +47,15 @@ class News extends BaseNews
     }
 
 
-    public static function getLast()
+    public static function getLast($page, $perPage)
     {
         require_once Yii::app()->basePath . "/vendors/jbbcode/Parser.php";
         $parser = new JBBCode\Parser();
         $parser->addCodeDefinitionSet(new JBBCode\DefaultCodeDefinitionSet());
 
         $lastNews = [];
-        foreach (News::model()->with('issuer')->findAll(['condition'=>(Yii::app()->user->isGuest ? 'only_for_registered=0' : '') ,'order' => 'time desc', 'limit' => 8]) as $news)
+        $from = $perPage * ($page-1);
+        foreach (News::model()->with('issuer')->findAll(['condition'=>(Yii::app()->user->isGuest ? 'only_for_registered=0' : '') ,'order' => 'time desc', 'limit' => $perPage, 'offset' => $from]) as $news)
         {
             $newsAttributes = $news->renderAttributes();
             $parser->parse($newsAttributes['text']);
@@ -62,12 +63,11 @@ class News extends BaseNews
             $lastNews[] = $newsAttributes;
         }
 
-        /*usort($lastNews, function ($a, $b)
-        {
-            return $a['timepar'] > $b['timepar'] ? -1 : 1;
-        });*/
 
-        return $lastNews;
+        $count =  Yii::app()->db->createCommand('SELECT COUNT(*) FROM `news`'.(Yii::app()->user->isGuest ? ' WHERE only_for_registered=0' : ''))->queryScalar();
+
+        $news = ["records"=>$lastNews,'count'=>$count];
+        return $news;
     }
 
     public static function add($title, $text, $onlyForRegistered)

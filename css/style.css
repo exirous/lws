@@ -14,6 +14,14 @@ body
     overflow-y: scroll;
 }
 
+.body-hidden {
+    visibility: hidden;
+}
+
+.body-visible {
+    visibility: visible;
+}
+
 .main_wrapper
 {
     margin: auto;
@@ -983,4 +991,78 @@ div.expelled_tag
 
 a:hover .ts_icon {
     text-decoration: underline;
+}
+
+.barracks-separator {
+    display: block;
+    width: 100%;
+    clear: both;
+    border-bottom: 2px solid #ccc;
+    margin-bottom: 20px;
+    font-size:22px;
+}
+
+.relativeposition {
+    position: relative;
+}
+
+.chat-delete-btn {
+    position: absolute;
+    top: 9px;
+    right: 10px;
+    z-index: 10;
+    border-radius: 50%;
+    font-size: 15px;
+    padding: 6px 9px 3px 9px;
+}
+
+
+.uniform_bos
+{
+    width: 386px;
+    height: 770px;
+    position: relative;
+}
+
+.uniform_bos .uniform_rank
+{
+    width: 350px;
+    height: 510px;
+    position: relative;
+}
+
+.uniform_bos .uniform_rank_senior_officer_form
+{
+    top:234px;
+    left:26px;
+}
+
+.uniform_bos .uniform_rank_student_form {
+    top: 223px;
+    left: 14px;
+}
+
+.uniform_bos .uniform_rank_junior_officer_form {
+    top: 229px;
+    left: 28px;
+}
+
+.uniform_bos .uniform_rank_hq_officer_form {
+    top: 234px;
+    left: 26px;
+}
+
+.uniform_bos .uniform_rank_graduate_form {
+    top: 234px;
+    left: 26px;
+}
+
+.uniform_rank_21 {
+    top: 231px !important;
+    left: 27px !important;
+}
+
+.uniform_rank_26 {
+    top: 233px !important;
+    left: 29px !important;
 }

@@ -12,17 +12,18 @@
     <script src="/scripts/controllers/iframe.js"></script>
     <script src="http://luftwaffeschule.ru:3000/socket.io/socket.io.js"></script>
     <link rel="stylesheet" href="/css/iframe.css" type="text/css">
+    <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Open+Sans:400,700,600italic,600,400italic,300italic,300&subset=latin,cyrillic" type="text/css">
 </head>
 <body ng-app="app">
 <div class="left_content ts_channels">
     <ul ng-controller="AppCtrl">
         <li ng-show="tree.length" ng-repeat="channel in tree" ng-include="'TreeItemTmpl'">
         </li>
-        <li ng-show="!tree.length && !tree.empty">
-            Помойму что-то сломалось :(
+        <li ng-show="!tree.length && !tree.empty" class="ts_empty">
+            TeamSpeak пуст
         </li>
-        <li ng-show="tree.empty">
-            Никого нету :)
+        <li ng-show="tree.empty" class="ts_empty">
+            TeamSpeak пуст
         </li>
     </ul>
 </div>

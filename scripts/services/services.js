@@ -185,6 +185,10 @@ lwsServices.factory('Flood', ['$resource', function ($resource)
         },
         save : {
             method:'POST'
+        },
+        deleteTopic : {
+            method:'POST',
+            url:'/flood/deleteTopic'
         }
     });
 }]);
@@ -221,6 +225,10 @@ lwsServices.factory('Messenger', ['$resource', function ($resource)
         post : {
             method:'POST',
             url:'/messenger/postMessage'
+        },
+        deleteConversation : {
+            method:'POST',
+            url:'/messenger/deleteConversation'
         }
     });
 }]);

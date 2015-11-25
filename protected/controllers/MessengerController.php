@@ -35,6 +35,22 @@ class MessengerController extends Controller
         }
     }
 
+    public function actionDeleteConversation()
+    {
+        $request = Yii::app()->request;
+        switch ($request->method)
+        {
+            case AHttpRequest::METHOD_POST:
+                $userId = $request->getRequiredRawBodyParam('userId', 0);
+                if ($userId == Yii::app()->user->id)
+                    $this->returnError();
+                $this->returnSuccess($this->_deleteConversation($userId));
+                break;
+            default:
+                $this->returnError();
+        }
+    }
+
 
     public function actionConversationPage()
     {
@@ -77,7 +93,8 @@ class MessengerController extends Controller
         $parser = new JBBCode\Parser();
         $parser->addCodeDefinitionSet(new JBBCode\DefaultCodeDefinitionSet());
         $messages = $messages2 = [];
-        $messagesTemp = PrivateMessage::model()->findAll(['condition' => 'sender_id=:senderId', 'params' => ['senderId' => Yii::app()->user->model->id], 'order' => 't.id desc']);
+        $messagesTemp = PrivateMessage::model()->findAll(['condition' => 'sender_id=:senderId AND is_deleted_by_sender IS NULL', 'params' => ['senderId' => Yii::app()->user->model->id], 'order' => 't.id desc']);
+
         foreach ($messagesTemp as $message)
         {
             if (isset($messages[$message->reciever_id]))
@@ -88,7 +105,7 @@ class MessengerController extends Controller
                 'lastMessage'=>$attributes
             ];
         }
-        $messagesTemp = PrivateMessage::model()->findAll(['condition' => 'reciever_id=:recieverId', 'params' => ['recieverId' => Yii::app()->user->model->id], 'order' => 't.id desc']);
+        $messagesTemp = PrivateMessage::model()->findAll(['condition' => 'reciever_id=:recieverId AND is_deleted_by_reciever IS NULL', 'params' => ['recieverId' => Yii::app()->user->model->id], 'order' => 't.id desc']);
         foreach ($messagesTemp as $message)
         {
             if (isset($messages2[$message->sender_id]))
@@ -234,6 +251,26 @@ class MessengerController extends Controller
                 echo $error['message'];
             else
                 $this->render('error', $error);
+        }
+    }
+
+    private function _deleteConversation($userId)
+    {
+        $transaction = Yii::app()->db->beginTransaction();
+        try {
+            $messages = PrivateMessage::model()->findAll('(sender_id = "' . $userId . '" AND reciever_id = "' . Yii::app()->user->model->id . '") OR (sender_id = "' . Yii::app()->user->model->id . '" AND reciever_id = "' . $userId . '")');
+            foreach ($messages as $message) {
+                if ($message->sender_id == $userId)
+                    $message->is_deleted_by_reciever = 1;
+                else
+                    $message->is_deleted_by_sender = 1;
+                $message->save();
+            }
+            $transaction->commit();
+        } catch (Exception $e) {
+            $transaction->rollback();
+            $this->returnError($e->getMessage());
+            return null;
         }
     }
 }

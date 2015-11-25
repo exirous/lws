@@ -49,7 +49,7 @@ class PrivateMessage extends BasePrivateMessage
     public function scopeMeAndHim($id)
     {
         $this->dbCriteria->mergeWith([
-            'condition' => 'sender_id IN (:me,:sender) AND reciever_id IN (:me,:sender)',
+            'condition' => '(sender_id = :me AND reciever_id = :sender AND is_deleted_by_sender IS NULL) OR (sender_id = :sender AND reciever_id = :me AND is_deleted_by_reciever IS NULL)',
             'params' => ['me' => intval(Yii::app()->user->model->id), 'sender' => intval($id)]
         ]);
         return $this;

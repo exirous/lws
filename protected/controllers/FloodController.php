@@ -40,6 +40,20 @@ class FloodController extends Controller
         }
     }
 
+    public function actionDeleteTopic()
+    {
+        $request = Yii::app()->request;
+        switch ($request->method)
+        {
+            case AHttpRequest::METHOD_POST:
+                $topicId = $request->getRequiredRawBodyParam('id', 0);
+                $this->returnSuccess($this->_deleteTopic($topicId));
+                break;
+            default:
+                $this->returnError();
+        }
+    }
+
 
     public function actionTopicPage()
     {
@@ -213,6 +227,36 @@ class FloodController extends Controller
                 echo $error['message'];
             else
                 $this->render('error', $error);
+        }
+    }
+
+    private function _deleteTopic($topicId)
+    {
+        $transaction = Yii::app()->db->beginTransaction();
+        try
+        {
+            if (Yii::app()->user->isGuest || (Yii::app()->user->model->id != 1 && Yii::app()->user->model->id != 14))
+                throw new Exception('You cant delete topics!');
+
+            $topic  = ForumTopic::model()->findByPk($topicId);
+            if (!$topic)
+                throw new Exception('Topic not found!');
+
+            $topic->first_message_id = null;
+            $topic->last_message_id = null;
+            $topic->save();
+
+            foreach ($topic->forumMessages as $message)
+                $message->delete();
+
+            $topic->delete();
+            $transaction->commit();
+            return "OK";
+        } catch (Exception $e)
+        {
+            $transaction->rollback();
+            $this->returnError($e->getMessage());
+            return null;
         }
     }
 }

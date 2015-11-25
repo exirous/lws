@@ -60,18 +60,18 @@ class Order extends BaseOrder
         ];
     }
 
-    public static function getLast()
+    public static function getLast($page, $perPage)
     {
         $lastNews = [];
-        foreach (Order::model()->findAll(['order' => 'time desc', 'limit' => 8]) as $news)
+        $from = $perPage * ($page-1);
+
+        foreach (Order::model()->findAll(['order' => 'time desc', 'limit' => $perPage, 'offset' => $from]) as $news)
             $lastNews[] = $news->renderAttributes();
 
-        /*usort($lastNews, function ($a, $b)
-        {
-            return $a['timepar'] > $b['timepar'] ? -1 : 1;
-        });*/
+        $count =  Yii::app()->db->createCommand('SELECT COUNT(*) FROM `order`')->queryScalar();
 
-        return $lastNews;
+        $news = ["records"=>$lastNews,'count'=>$count];
+        return $news;
     }
 
 
@@ -139,13 +139,29 @@ class Order extends BaseOrder
 
             if (isset($pilotData['instructor']) && $pilot->instructor_id != $pilotData['instructor'])
             {
-                $rank = Rank::model()->findByPk($pilotData['instructor']);
-                if (!$rank)
-                    throw new Exception('Звание не найдено');
-
-                $eventInstructorText = (($eventText || $eventRankText) ? 'присвоена' : 'Присвоена').' должность <a rank="' . $rank->id . '">' . $rank->name . '</a>';
-                $pilot->instructor_id = $rank->id;
-                $needSave = true;
+                if (!$pilotData['instructor'] && $pilot->instructor_id) {
+                    $prevDuty = $pilot->instructor;
+                    $pilot->instructor_id = null;
+                    $eventInstructorText = (($eventText || $eventRankText) ? 'отстранён' : 'Отстранён') . ' от должности <a rank="' . $prevDuty->id . '">' . $prevDuty->name . '</a>';
+                    $userawards = UserAward::model()->findAll('user_id="' . $pilot->id . '" AND award_id IN(74,75,76)');
+                    foreach ($userawards as $award)
+                        $award->delete();
+                }
+                else {
+                    $rank = Rank::model()->findByPk($pilotData['instructor']);
+                    if (!$rank)
+                        throw new Exception('Звание не найдено');
+                    $eventInstructorText = (($eventText || $eventRankText) ? 'присвоена' : 'Присвоена') . ' должность <a rank="' . $rank->id . '">' . $rank->name . '</a>';
+                    $userawards = UserAward::model()->findAll('user_id="' . $pilot->id . '" AND award_id IN(74,75,76)');
+                    foreach ($userawards as $award)
+                        $award->delete();
+                    $instructorMedal = new UserAward();
+                    $instructorMedal->user_id = $pilot->id;
+                    $instructorMedal->award_id = ($rank->id == 9) ? 76 : ($rank->id == 27 ? 75 : 74);
+                    $instructorMedal->save();
+                    $pilot->instructor_id = $rank->id;
+                    $needSave = true;
+                }
             }
 
             if (isset($pilotData['awards']))

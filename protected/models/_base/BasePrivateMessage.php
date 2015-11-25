@@ -12,6 +12,8 @@
  * @property string $id
  * @property string $reciever_id
  * @property string $sender_id
+ * @property integer $is_deleted_by_reciever
+ * @property integer $is_deleted_by_sender
  * @property integer $is_read
  * @property string $text
  * @property string $time
@@ -46,10 +48,10 @@ abstract class BasePrivateMessage extends AActiveRecord
     {
         return array(
             array('reciever_id, sender_id', 'required'),
-            array('is_read', 'numerical', 'integerOnly'=>true),
+            array('is_read, is_deleted_by_sender, is_deleted_by_reciever', 'numerical', 'integerOnly'=>true),
             array('reciever_id, sender_id', 'length', 'max'=>10),
             array('text, time', 'safe'),
-            array('is_read, text, time', 'default', 'setOnEmpty' => true, 'value' => null),
+            array('is_read, is_deleted_by_reciever, is_deleted_by_sender, text, time', 'default', 'setOnEmpty' => true, 'value' => null),
             array('id, reciever_id, sender_id, is_read, text, time', 'safe', 'on' => 'search'),
         );
     }
@@ -75,6 +77,8 @@ abstract class BasePrivateMessage extends AActiveRecord
             'reciever_id' => null,
             'sender_id' => null,
             'is_read' => Yii::t('app', 'Is Read'),
+            'is_deleted_by_sender' => Yii::t('app', 'Is Deleted by sender'),
+            'is_deleted_by_reciever' => Yii::t('app', 'Is Deleted by reciever'),
             'text' => Yii::t('app', 'Text'),
             'time' => Yii::t('app', 'Time'),
             'reciever' => null,
@@ -90,6 +94,8 @@ abstract class BasePrivateMessage extends AActiveRecord
         $criteria->compare('reciever_id', $this->reciever_id);
         $criteria->compare('sender_id', $this->sender_id);
         $criteria->compare('is_read', $this->is_read);
+        $criteria->compare('is_deleted_by_sender', $this->is_read);
+        $criteria->compare('is_deleted_by_reciever', $this->is_read);
         $criteria->compare('text', $this->text, true);
         $criteria->compare('time', $this->time, true);
 

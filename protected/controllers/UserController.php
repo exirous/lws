@@ -843,9 +843,13 @@ class UserController extends Controller
             if (!$userAward)
                 throw new Exception('Cannot find Award');
 
-            $userAward->top = $top;
-            $userAward->left = $left;
-            $userAward->save();
+            if ($top > 430)
+                $userAward->delete();
+            else {
+                $userAward->top = $top;
+                $userAward->left = $left;
+                $userAward->save();
+            }
             $transaction->commit();
 
         } catch (Exception $e) {
@@ -892,12 +896,27 @@ class UserController extends Controller
 
     public function actionTest()
     {
-        $users = User::model()->scopeInactive()->scopeEnabled()->findAll();
+        $users = User::model()->findAll();
         foreach ($users as $user) {
-                $user->is_defector = 1;
-                $user->save();
+              if ($user->instructor_id)
+              {
+                  $instructor_map = [
+                      '9' => '76', '27' => '75', '28' => '74'
+                  ];
+                  $award = UserAward::model()->findByAttributes(['user_id' => $user->id, 'award_id' => $instructor_map[$user->instructor_id]]);
+                  if (!$award)
+                  {
+                      $award = new UserAward();
+                      $award->attributes = ['user_id' => $user->id, 'award_id' => $instructor_map[$user->instructor_id]];
+                      $award->save();
+                      var_dump($award->getErrorsString());
+                  }
+
+              }
             }
+
         die(var_dump("!!"));
+
     }
 
     public function actionWakePc()

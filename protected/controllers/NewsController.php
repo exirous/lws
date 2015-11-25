@@ -45,26 +45,26 @@ class NewsController extends Controller
 
 
 
-    public function actionLast()
+    public function actionLast($page, $perPage)
     {
         $request = Yii::app()->request;
         switch ($request->method)
         {
             case AHttpRequest::METHOD_GET:
-                $this->returnSuccess(News::getLast());
+                $this->returnSuccess(News::getLast($page, $perPage));
                 break;
             default:
                 $this->returnError();
         }
     }
 
-    public function actionLastOrders()
+    public function actionLastOrders($page, $perPage)
     {
         $request = Yii::app()->request;
         switch ($request->method)
         {
             case AHttpRequest::METHOD_GET:
-                $this->returnSuccess(Order::getLast());
+                $this->returnSuccess(Order::getLast($page, $perPage));
                 break;
             default:
                 $this->returnError();

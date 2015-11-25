@@ -8,7 +8,10 @@
 
     <meta charset='utf-8'>
     <title>Школа виртуального пилотирования LuftwaffeSchule</title>
-    <script type="text/javascript">var UserLoginData = <?=json_encode(Yii::app()->user->privateAttributes)?>;</script>
+    <script type="text/javascript">
+        var UserLoginData = <?=json_encode(Yii::app()->user->privateAttributes)?>;
+        var isIL2 = <?=Yii::app()->params['isIL2'] ? 'true' : 'false';?>
+    </script>
     <script src="/scripts.js"></script>
     <script src="http://luftwaffeschule.ru:3000/socket.io/socket.io.js"></script>
     <link rel="stylesheet" href="/style.css" type="text/css">
@@ -20,7 +23,7 @@
 </head>
 <body ng-app="app">
 <div id="main_content">
-    <div class="main_wrapper" ng-controller="AppCtrl">
+    <div class="main_wrapper body-hidden" ng-controller="AppCtrl" ng-class="{'body-visible' : true}">
         <div class="cover_screen" ng-if="game.loading"><div class="spinner-icon"></div></div>
         <div class="notification_bank">
             <div ng-repeat="notification in notifications" class="alert alert-{{notification.type}} alert-notification shadowed" ng-click="closeNotification($index)">
@@ -100,11 +103,11 @@
                     <div class="main_menu">
                         <a ui-sref="news">Сводки<i></i></a>
                         <a ui-sref="texts({id:5})">История<i></i></a>
-                        <a ui-sref="orders" ng-if="!UserIdentity.canMakeOrders && !UserIdentity.isGuest" >Приказы<i></i></a>
+                        <a ui-sref="orders({page:1})" ng-if="!UserIdentity.canMakeOrders && !UserIdentity.isGuest" >Приказы<i></i></a>
                         <span class="dropdown dropdown-hover" ng-if="UserIdentity.canMakeOrders">
                         <a href="">Приказы<i></i></a>
                         <ul class="dropdown-menu" style="top: 45px;left: -7px;">
-                            <li><a ui-sref="orders">Архив</a></li>
+                            <li><a ui-sref="orders({page:1})">Архив</a></li>
                             <li class="divider"></li>
                             <li><a ui-sref="makeorder">Отдать приказ</a></li>
                             <li><a ui-sref="makenews">Добавить новость</a></li>
@@ -164,18 +167,15 @@
 </div>
 <script type="text/ng-template" id="NewsTmpl">
     <h2>Сводки</h2>
-    <div class="big-spinner" ng-if="!news.length">
+    <div class="big-spinner" ng-if="!news.records.length">
         <div class="spinner-icon"></div>
     </div>
-    <div ng-repeat="newsRec in news" class="news-row panel panel-default">
+    <div ng-repeat="newsRec in news.records" class="news-row panel panel-default">
         <div class="panel-heading">{{newsRec.title}}
             <div ng-if="UserIdentity.canMakeOrders" class="pull-right">
                 <button type="button" ng-click="" ui-sref="editnews({id:newsRec.id})" class="btn btn-xs btn-default">
                     <span class="glyphicon glyphicon-pencil"></span>
                 </button>
-                <!--<button type="button" ng-click="deleteNews(newsRec)" class="btn btn-xs btn-danger">
-                    <span class="glyphicon glyphicon-minus"></span>
-                </button>-->
             </div>
         </div>
         <div class="panel-body" ng-bind-html="newsRec.text | to_trusted"></div>
@@ -186,6 +186,8 @@
             <a href="#/user/view/{{newsRec.issuer.id}}">{{newsRec.issuer.nickname}}</a>
         </div>
     </div>
+    <pagination ng-show="news.records.length" total-items="news.count" items-per-page="itemsPerPage" page="currentPage" max-size="7"
+                class="pagination-sm" boundary-links="true" rotate="false"></pagination>
 </script>
 
 <script type="text/ng-template" id="FloodTmpl">
@@ -196,7 +198,8 @@
     <div class="big-spinner" ng-if="!topics.length">
         <div class="spinner-icon"></div>
     </div>
-    <div ng-repeat="topic in topics | orderBy:'lastMessageTime':'true'">
+    <div ng-repeat="topic in topics | orderBy:'lastMessageTime':'true'" class="relativeposition">
+        <div ng-if="(UserIdentity.id == 14) || (UserIdentity.id == 1)" ng-click="deleteTopic(topic)" class="button btn-danger btn-sm pull-right chat-delete-btn"><span class="glyphicon glyphicon-remove"></span></div>
         <div class="forumTopicHeader">
             <img
                 ng-src="/img/users/{{topic.author.img_src ? topic.author.id+'_'+topic.author.img_src+'.jpg' : (topic.author.is_clanner ? 'no_image_clanner.png' : 'no_image.png')}}"
@@ -269,7 +272,8 @@
     <div class="big-spinner" ng-if="!conversations.length">
         <div class="spinner-icon"></div>
     </div>
-    <div ng-repeat="conversation in conversations | orderBy:'lastMessageTime':'true'">
+    <div class="relativeposition" ng-repeat="conversation in conversations | orderBy:'lastMessageTime':'true'">
+        <div ng-click="deleteConverstion(conversation)" class="button btn-danger btn-sm pull-right chat-delete-btn"><span class="glyphicon glyphicon-remove"></span></div>
         <div class="forumTopicHeader">
             <img
                 ng-src="/img/users/{{conversation.sender.img_src ? conversation.sender.id+'_'+conversation.sender.img_src+'.jpg' : (conversation.sender.is_clanner ? 'no_image_clanner.png' : 'no_image.png')}}"
@@ -319,7 +323,7 @@
     <div class="big-spinner" ng-if="!conversation.messages || isLoading">
         <div class="spinner-icon"></div>
     </div>
-    <div ng-repeat="message in conversation.messages | orderBy:'time'" class="media news-row" ng-class="{'alert-success':message.sender.id!=UserIdentity.id && !message.is_read}" style="position: relative">
+    <div ng-repeat="message in conversation.messages | orderBy:'time'" class="media news-row relativeposition" ng-class="{'alert-success':message.sender.id!=UserIdentity.id && !message.is_read}" style="position: relative">
         <a class="pull-left" href="#/user/view/{{message.sender.id}}">
             <img class="media-object"
                  style="width: 64px;height: 64px;border-radius: 50%;"
@@ -428,10 +432,10 @@
 
 <script type="text/ng-template" id="OrdersTmpl">
     <h2>Приказы</h2>
-    <div class="big-spinner" ng-if="!news.length">
+    <div class="big-spinner" ng-if="!news.records.length">
         <div class="spinner-icon"></div>
     </div>
-    <div ng-repeat="newsRec in news" class="news-row panel panel-default">
+    <div ng-repeat="newsRec in news.records" class="news-row panel panel-default">
         <div class="panel-heading">{{newsRec.title}}</div>
         <div class="panel-body" bind-compiled-html="newsRec.text"></div>
         <div class="panel-footer">
@@ -441,6 +445,9 @@
             <a href="#/user/view/{{newsRec.issuer.id}}">{{newsRec.issuer.nickname}}</a>
         </div>
     </div>
+    <pagination ng-show="news.records.length" total-items="news.count" items-per-page="itemsPerPage" page="currentPage" max-size="7"
+                class="pagination-sm" boundary-links="true" rotate="false"></pagination>
+
 </script>
 
 <script type="text/ng-template" id="ReportVacationTmpl">
@@ -554,9 +561,32 @@
                             <th>Почта</th>
                             <td><a href="mailto:{{user.email}}">{{user.email}}</a></td>
                         </tr>
+                        <tr>
+                            <th>Онлайн</th>
+                            <td>{{user.lastOnline | date : 'dd.MM.yyyy HH:mm'}}</td>
+                        </tr>
                         </tbody>
                     </table>
                 </td>
+                <?if (Yii::app()->params['isIL2']) :?>
+                    <td ng-if="user.rank && user.rank.id!=8" style="width: 386px;padding-left: 5px;max-width: 386px;">
+                        <div class="uniform uniform_bos " style="background: url(/img/uniform/bos/{{getUniformClass(user.rank.id)}}.png) no-repeat;">
+                            <div class="uniform_rank uniform_rank_{{getUniformClass(user.rank.id)}} uniform_rank_{{user.rank.id}}"
+                                 style="background: url(/img/uniform/bos/{{user.rank.id}}.png) no-repeat"
+                                 title="{{user.rank.name}}">
+
+                                <img title="{{medal.name}}" ng-repeat="medal in user.medals"
+                                     style="top:{{medal.top}}px;left:{{medal.left}}px;" ng-src="/img/awards/{{medal.id}}.png"
+                                     dnd-rect="medal.rect"
+                                     dnd-draggable="UserIdentity.id == 1 || UserIdentity.id == 14"
+                                     dnd-on-dragend="medalDrop(medal)"
+                                     dnd-on-dragstart="medalPickup(medal)"
+                                     dnd-containment="uniform_rank">
+                            </div>
+                        </div>
+                        <div ng-show="dragging" dnd-container="true" style="position: relative;height:100px;background: #ff0000;margin-top:-100px;opacity:0.5"></div>
+                    </td>
+                <?else:?>
                 <td ng-if="user.rank && user.rank.id!=8" style="width: 380px;padding-left: 5px;max-width: 380px;">
                     <div class="uniform {{user.is_clanner ? 'clanner' : ''}}" dnd-container="true">
                         <div class="unform_rank"
@@ -566,12 +596,12 @@
                         <img title="{{medal.name}}" ng-repeat="medal in user.medals"
                              style="top:{{medal.top}}px;left:{{medal.left}}px;" ng-src="/img/awards/{{medal.id}}.png"
                              dnd-draggable="UserIdentity.id == 1 || UserIdentity.id == 14"
+                             dnd-on-dragstart="medalPickup($element,medal)"
                              dnd-on-dragend="medalDrop($element, medal)">
-                        <img ng-if="user.instructor" title="{{user.instructor.name}}"
-                             class="identifier_{{user.instructor.id}}"
-                             ng-src="/img/identifiers/ident_{{user.instructor.id}}.png">
                     </div>
+                    <div ng-show="dragging" dnd-container="true" style="position: relative;height:100px;background: #ff0000;margin-top:-100px;opacity:0.5"></div>
                 </td>
+                <?endif;?>
             </tr>
             <tr>
                 <td ng-if="user.rank && user.rank.id!=8" colspan="3" style="padding-right:10px">
@@ -624,6 +654,146 @@
     <div class="alert alert-danger" ng-show="userForm.error">{{userForm.error}}</div>
     <ng-form name="rosterForm" role="form">
         <div>
+        <?if (Yii::app()->params['isIL2']) :?>
+            <div class="form-group input-group">
+                <label for="user_birthdate">Дата рождения?</label>
+                <p class="input-group"
+                   ng-class="{true: 'has-error'}[(rosterForm.birthdate.$dirty && rosterForm.birthdate.$invalid)]">
+                    <input type="date" placeholder="Например: 09.05.1945" name="birthdate" class="form-control"
+                           ng-model="user.birthdate" ng-required="true"/>
+                </p>
+            </div>
+            <div class="form-group input-group"
+                 ng-class="{true: 'has-error'}[(rosterForm.firstname.$dirty && rosterForm.firstname.$invalid)]">
+                <label>Ваше имя</label>
+                <input type="text"
+                       name="firstname"
+                       placeholder="" class="form-control long"
+                       ng-model="user.firstname"
+                       required/>
+            </div>
+            <label>Насколько усердно готовы изучать учебный материал? (выберите цифру по пятибальной шкале)</label>
+            <div class="form-group input-group">
+                <p class="btn-group"
+                   ng-class="{true: 'has-error'}[(rosterForm.birthdate.$dirty && rosterForm.birthdate.$invalid)]">
+                    <button type="button" class="btn btn-default" ng-model="user.scale" btn-radio="'1'" required>1
+                    </button>
+                    <button type="button" class="btn btn-default" ng-model="user.scale" btn-radio="'2'">2</button>
+                    <button type="button" class="btn btn-default" ng-model="user.scale" btn-radio="'3'">3</button>
+                    <button type="button" class="btn btn-default" ng-model="user.scale" btn-radio="'4'">4</button>
+                    <button type="button" class="btn btn-default" ng-model="user.scale" btn-radio="'5'">5</button>
+                </p>
+            </div>
+            <div class="form-group input-group"
+                 ng-class="{true: 'has-error'}[(rosterForm.nickname.$dirty && rosterForm.nickname.$invalid)]">
+                <label>Ваш никнейм в игре?</label>
+                <input type="text" name="nickname" class="form-control long" ng-model="user.nickname"
+                       required/>
+            </div>
+            <div class="form-group input-group"
+                 ng-class="{true: 'has-error'}[(rosterForm.nickname.$dirty && rosterForm.nickname.$invalid)]">
+                <label>Часовой пояс от МСК</label>
+                <input type="text" name="nickname" class="form-control long" ng-model="user.timezone"
+                       required/>
+            </div>
+            <label>Откуда узнали о нашей школе? школу?</label>
+            <div class="form-group input-group">
+                <p class="form-group input-group-lng">
+                    <input type="text" placeholder="Например: Друг рассказал, Вычитал в журнале, и.т.д" id="user_reason"
+                           class="form-control long" ng-model="user.reason" required/>
+                </p>
+            </div>
+            <div class="form-group input-group">
+                <label>Название вашего полка:</label>
+                <div>
+                    <p>
+                        <button type="button" class="btn btn-default pull-right" ng-model="user.in_squad" btn-checkbox>
+                            Не состою
+                        </button>
+                        <input type="text" placeholder="Например: Lws, Heer, DerAdler, и.т.д" id="user_squad"
+                               class="form-control pull-left long" ng-model="user.squad" ng-disabled="user.in_squad"/>
+                    </p>
+                </div>
+            </div>
+            <label>Какое направление хотите освоить?</label>
+            <div class="form-group input-group">
+                <p class="btn-group">
+                    <button type="button" class="btn btn-default" ng-model="user.profession" btn-radio="'fighter'"
+                            required>Истребитель
+                    </button>
+                    <button type="button" class="btn btn-default" ng-model="user.profession" btn-radio="'bomber'">
+                        Бомбардировщик
+                    </button>
+                    <button type="button" class="btn btn-default" ng-model="user.profession" btn-radio="'shturmovik'">
+                        Штурмовик
+                    </button>
+                </p>
+            </div>
+            <label>Какие ещё осваивали авиасимуляторы?</label>
+            <div class="form-group input-group">
+                <p class="form-group input-group-lng">
+                    <input type="text" placeholder="" id="user_sim"
+                           class="form-control long" ng-model="user.simulators"/>
+                </p>
+            </div>
+            <label>Есть-ли микрофон, наушники и программа для радиообмена TeamSpeak?</label>
+            <div class="form-group input-group">
+                <p class="btn-group">
+                    <button type="button" class="btn btn-default" ng-model="user.teamspeak" btn-radio="'yes'"
+                            required>Да
+                    </button>
+                    <button type="button" class="btn btn-default" ng-model="user.teamspeak" btn-radio="'no'">
+                        Нет
+                    </button>
+                </p>
+            </div>
+
+            <label>Название вашего джойстика?</label>
+            <div class="form-group input-group">
+                <p class="form-group input-group-lng">
+                    <input type="text" class="form-control long" ng-model="user.joyname"/>
+                </p>
+            </div>
+            <label>Чем ведёте обзор из кабины?</label>
+            <div class="form-group input-group">
+                <p class="form-group input-group-lng">
+                    <input type="text" class="form-control long" ng-model="user.viewmode"/>
+                </p>
+            </div>
+            <label>Есть-ли педали?</label>
+            <div class="form-group input-group">
+                <p class="btn-group">
+                    <button type="button" class="btn btn-default" ng-model="user.pedals" btn-radio="'yes'"
+                            required>Да
+                    </button>
+                    <button type="button" class="btn btn-default" ng-model="user.pedals" btn-radio="'no'">
+                        Нет
+                    </button>
+                </p>
+            </div>
+            <label>Наиболее удобное время вашего онлайна:</label>
+            <div class="form-group input-group">
+                <span>С</span>
+
+                <div ng-model="user.onlineFrom" style="display:inline-block;vertical-align:middle">
+                    <timepicker hour-step="1" minute-step="30" show-meridian="false"></timepicker>
+                </div>
+                <span>По</span>
+
+                <div ng-model="user.onlineTo" style="display:inline-block;vertical-align:middle">
+                    <timepicker hour-step="1" minute-step="30" show-meridian="false"></timepicker>
+                </div>
+            </div>
+            <label>Согласны ли вы выполнять приказы в соответствии с уставом?</label>
+
+            <div class="form-group input-group">
+                <p class="btn-group">
+                    <button type="button" class="btn btn-default" ng-model="user.rules" btn-radio="'yes'" required>Да
+                    </button>
+                    <button type="button" class="btn btn-default" ng-model="user.rules" btn-radio="'no'">Нет</button>
+                </p>
+            </div>
+            <?else:?>
             <div class="form-group input-group">
                 <label for="user_birthdate">Дата рождения?</label>
 
@@ -775,6 +945,7 @@
                        ng-model="user.firstname"
                        required/>
             </div>
+            <?endif?>
             <div class="form-group input-group"
                  ng-class="{true: 'has-error'}[(rosterForm.email.$dirty && rosterForm.email.$invalid)]">
                 <label>Укажите вашу электронную почту (будет использоватся в качестве Логина)</label>
@@ -790,8 +961,7 @@
                 <label>Ваш скайп (если есть)</label>
                 <input type="text"
                        class="form-control long"
-                       ng-model="user.skype"
-                       required>
+                       ng-model="user.skype">
             </div>
             <div class="form-group input-group"
                  ng-class="{true: 'has-error'}[(rosterForm.password.$dirty && rosterForm.password.$invalid)]">
@@ -803,6 +973,7 @@
                        id="password"
                        ng-model="user.private.password"
                        required>
+            </div>
             </div>
     </ng-form>
     <div class="alert alert-danger" ng-show="userForm.error">{{userForm.error}}</div>
@@ -951,7 +1122,9 @@
         <div class="big-spinner" ng-if="isLoading">
             <div class="spinner-icon"></div>
         </div>
-        <div ng-if="(dataSize == 2)" class="" ng-repeat="pilot in pilots">
+        <div ng-if="(dataSize == 2)">
+        <div class="barracks-separator">Офицеры</div>
+        <div class="" ng-repeat="pilot in pilots | barracksFilter:0"">
             <a style="height: 90px;margin-bottom: 10px" class="thumbnail isRelative" ui-sref="user({userId:pilot.id})" title="{{pilot.rank_name}}">
                 <img ng-src="/img/users/{{pilot.img_src ? pilot.id+'_'+pilot.img_src+'.jpg' : (pilot.is_clanner ? 'no_image_clanner.png' : 'no_image.png')}}" alt=""
                      style="width:80px; height:80px; float:left">
@@ -964,7 +1137,70 @@
                 </div>
             </a>
         </div>
-        <div ng-if="(dataSize == 1)" class="col-sm-6 col-md-3 user-cell" ng-repeat="pilot in pilots">
+        <div class="barracks-separator">Курсанты</div>
+        <div class="" ng-repeat="pilot in pilots | barracksFilter:1"">
+            <a style="height: 90px;margin-bottom: 10px" class="thumbnail isRelative" ui-sref="user({userId:pilot.id})" title="{{pilot.rank_name}}">
+                <img ng-src="/img/users/{{pilot.img_src ? pilot.id+'_'+pilot.img_src+'.jpg' : (pilot.is_clanner ? 'no_image_clanner.png' : 'no_image.png')}}" alt=""
+                     style="width:80px; height:80px; float:left">
+                <div class="floating_rank small"><img
+                        ng-src="/img/groups/{{pilot.rank}}{{pilot.is_clanner ? '_clanner' : ''}}.png"></div>
+                <div ng-if="pilot.instructor || pilot.isBomber" class="floating_rank small" style="left:23px"><img
+                        ng-src="/img/groups/{{pilot.instructor ? pilot.instructor : 36}}.png"></div>
+                <div class="caption" style="padding-top: 20px;float: left;">
+                    <b>{{pilot.nickname}}</b><br><span>{{pilot.firstname}}</span>
+                </div>
+            </a>
+        </div>
+    <div class="barracks-separator">Выпускники</div>
+        <div class="" ng-repeat="pilot in pilots | barracksFilter:2"">
+            <a style="height: 90px;margin-bottom: 10px" class="thumbnail isRelative" ui-sref="user({userId:pilot.id})" title="{{pilot.rank_name}}">
+                <img ng-src="/img/users/{{pilot.img_src ? pilot.id+'_'+pilot.img_src+'.jpg' : (pilot.is_clanner ? 'no_image_clanner.png' : 'no_image.png')}}" alt=""
+                     style="width:80px; height:80px; float:left">
+                <div class="floating_rank small"><img
+                        ng-src="/img/groups/{{pilot.rank}}{{pilot.is_clanner ? '_clanner' : ''}}.png"></div>
+                <div ng-if="pilot.instructor || pilot.isBomber" class="floating_rank small" style="left:23px"><img
+                        ng-src="/img/groups/{{pilot.instructor ? pilot.instructor : 36}}.png"></div>
+                <div class="caption" style="padding-top: 20px;float: left;">
+                    <b>{{pilot.nickname}}</b><br><span>{{pilot.firstname}}</span>
+                </div>
+            </a>
+        </div>
+        </div>
+    <div ng-if="(dataSize == 1)">
+        <div class="barracks-separator">Офицеры</div>
+        <div class="col-sm-6 col-md-3 user-cell" ng-repeat="pilot in pilots | barracksFilter:0">
+            <a class="thumbnail isRelative" ui-sref="user({userId:pilot.id})" title="{{pilot.rank_name}}">
+                <img ng-src="/img/users/{{pilot.img_src ? pilot.id+'_'+pilot.img_src+'.jpg' : (pilot.is_clanner ? 'no_image_clanner.png' : 'no_image.png')}}" alt=""
+                     style="width:175px; height:175px">
+                <div ng-if="pilot.activeVacation" class="vacation" title="{{pilot.activeVacation.reason}}, c {{pilot.activeVacation.date_from | date : 'dd.MM.yyyy'}} по {{pilot.activeVacation.date_to | date : 'dd.MM.yyyy'}}">В Отпуске!</div>
+                <div ng-if="pilot.isDefector" class="defector">Дезертир!</div>
+                <div class="floating_rank"><img
+                        ng-src="/img/groups/{{pilot.rank}}{{pilot.is_clanner ? '_clanner' : ''}}.png"></div>
+                <div ng-if="pilot.instructor || pilot.isBomber" class="floating_rank" style="left:40px"><img
+                        ng-src="/img/groups/{{pilot.instructor ? pilot.instructor : 36}}.png"></div>
+                <div class="caption">
+                    <b>{{pilot.nickname}}</b><br><span>{{pilot.firstname}}</span>
+                </div>
+            </a>
+        </div>
+        <div class="barracks-separator">Курсанты</div>
+        <div class="col-sm-6 col-md-3 user-cell" ng-repeat="pilot in pilots | barracksFilter:1">
+            <a class="thumbnail isRelative" ui-sref="user({userId:pilot.id})" title="{{pilot.rank_name}}">
+                <img ng-src="/img/users/{{pilot.img_src ? pilot.id+'_'+pilot.img_src+'.jpg' : (pilot.is_clanner ? 'no_image_clanner.png' : 'no_image.png')}}" alt=""
+                     style="width:175px; height:175px">
+                <div ng-if="pilot.activeVacation" class="vacation" title="{{pilot.activeVacation.reason}}, c {{pilot.activeVacation.date_from | date : 'dd.MM.yyyy'}} по {{pilot.activeVacation.date_to | date : 'dd.MM.yyyy'}}">В Отпуске!</div>
+                <div ng-if="pilot.isDefector" class="defector">Дезертир!</div>
+                <div class="floating_rank"><img
+                        ng-src="/img/groups/{{pilot.rank}}{{pilot.is_clanner ? '_clanner' : ''}}.png"></div>
+                <div ng-if="pilot.instructor || pilot.isBomber" class="floating_rank" style="left:40px"><img
+                        ng-src="/img/groups/{{pilot.instructor ? pilot.instructor : 36}}.png"></div>
+                <div class="caption">
+                    <b>{{pilot.nickname}}</b><br><span>{{pilot.firstname}}</span>
+                </div>
+            </a>
+        </div>
+        <div class="barracks-separator">Выпускники</div>
+        <div class="col-sm-6 col-md-3 user-cell" ng-repeat="pilot in pilots | barracksFilter:2">
             <a class="thumbnail isRelative" ui-sref="user({userId:pilot.id})" title="{{pilot.rank_name}}">
                 <img ng-src="/img/users/{{pilot.img_src ? pilot.id+'_'+pilot.img_src+'.jpg' : (pilot.is_clanner ? 'no_image_clanner.png' : 'no_image.png')}}" alt=""
                      style="width:175px; height:175px">
@@ -980,6 +1216,7 @@
             </a>
         </div>
     </div>
+    </div>
 </script>
 
 <script type="text/ng-template" id="RosterUserTmpl">
@@ -989,6 +1226,51 @@
     <div ng-show="pilot.id">
         <h2>Заявка на вступление от {{pilot.nickname}} ({{pilot.firstname}})</h2>
         <br>
+        <label>Дата регистрации:</label><br>
+        <span>{{pilot.joinDate | date : "dd.MM.yyyy"}}</span><br>
+        <?if (Yii::app()->params['isIL2']) :?>
+            <label>Дата рождения:</label><br>
+            <span>{{pilot.roster.birthdate | date : "dd.MM.yyyy"}}</span>
+            (<span>{{pilot.roster.birthdate | age}}</span> лет)<br>
+            <label>Имя:</label><br>
+            {{pilot.firstname}}<br>
+            <label>Готовность к обучению:</label><br>
+            <span>{{pilot.roster.scale}}</span><br>
+            <label>Часовой пояс от МСК:</label><br>
+            <span>{{pilot.roster.timezone}}</span><br>
+            <label>Откуда узнал о школе:</label><br>
+            <span>{{pilot.roster.reason}}</span><br>
+            <label>Состоит в скваде:</label><br>
+            <span ng-bind="pilot.roster.squad ? pilot.roster.squad : 'Нет'"></span><br>
+            <label>Хочет стать:</label><br>
+            <span ng-show="pilot.roster.profession == 'fighter'">Истребителем</span>
+            <span ng-show="pilot.roster.profession == 'bomber'">Бомбардировщиком</span>
+            <span ng-show="pilot.roster.profession == 'shturmovik'">Штурмовиком</span>
+            <br>
+            <label>Ещё играл/играет в симуляторы:</label><br>
+            <span>{{pilot.roster.simulators}}</span><br>
+
+            <label>Микрофон, наушники, ТС:</label><br>
+            <span ng-show="pilot.roster.teamspeak == 'yes'">Да</span>
+            <span ng-show="pilot.roster.teamspeak == 'no'">Нет</span>
+            <br>
+
+            <label>Джойстик:</label><br>
+            <span>{{pilot.roster.joyname}}</span><br>
+            <label>Обзор:</label><br>
+            <span>{{pilot.roster.viewmode}}</span><br>
+
+            <label>Педали:</label><br>
+            <span ng-show="pilot.roster.pedals == 'yes'">Да</span>
+            <span ng-show="pilot.roster.pedals == 'no'">Нет</span>
+            <br>
+
+            <label>Скайп:</label><br>
+            <span>{{pilot.roster.skype}}</span><br>
+            <br>
+
+
+        <?else:?>
         <a href="http://warthunder.ru/ru/community/userinfo/?nick={{pilot.nickname}}"><img src="http://warthunder.ru/favicon.ico" height="40px">Профиль WT</a><br>
         <label>Дата рождения:</label><br>
         <span>{{pilot.roster.birthdate | date : "dd.MM.yyyy"}}</span>
@@ -1026,7 +1308,7 @@
 
         <label>Полезное хобби:</label><br>
         <span>{{pilot.roster.hobby}}</span><br>
-
+        <?endif;?>
         <label>Время онлайна:</label><br>
         <span>C </span><span>{{pilot.roster.onlineFrom | date : "HH:mm"}}</span><span> По </span><span>{{pilot.roster.onlineTo | date : "HH:mm"}}</span>
         <br><br>

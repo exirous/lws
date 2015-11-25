@@ -154,6 +154,8 @@ class User extends BaseUser
         foreach ($this->userEvents as $event)
             $events[] = $event->publicAttributes;
 
+        $events = array_reverse($events);
+
         $qualifications = str_replace(['fighter', 'bomber', ','], ['Истребитель', 'Бомбардировщик', ', '], $this->qualifications);
 
         return [
@@ -204,6 +206,7 @@ class User extends BaseUser
             'firstname' => $this->firstname,
             'id' => $this->id,
             'rank' => $this->rank_id,
+            'joinDate' => strtotime($this->join_date) . '000',
             'roster' => $roster,
             'ip' => $this->ip,
             'email' => Yii::app()->user->canViewUserEmailAddress($this->id) ? $this->email : ''
@@ -407,7 +410,7 @@ class User extends BaseUser
         $newUser->ip = $user['ip'];
         $newUser->rank_id = 8;
         $newUser->is_clanner = (isset($user['squad']) && $user['squad']) ? 1 : 0;
-        $newUser->qualifications = ($user['profession'] == 'bomber' ? 'bomber' : 'fighter');
+        $newUser->qualifications = ($user['profession'] == 'bomber' ? 'bomber' : ($user['profession'] == 'fighter' ? 'fighter' : 'shturmovik'));
         $newUser->roster = json_encode($user);
         $newUser->broadcast_token = md5($newUser->email . $newUser->password);
 
