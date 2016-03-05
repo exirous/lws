@@ -10836,6 +10836,10 @@ lwsServices.factory('User', ['$resource', function ($resource)
         recoverPassword:{
             url: '/user/recoverPassword',
             method: 'post'
+        },
+        clearUpdate:{
+            url: '/user/clearUpdate',
+            method: 'post'
         }
 
     });
@@ -11212,8 +11216,34 @@ lwsControllers.controller('AppCtrl',
         function ($scope, $dialogs, $stateParams, User, $rootScope, $state, $filter) {
             $scope.UserIdentity = UserLoginData;
 
-
             $scope.notifications = [];
+            $scope.updates = (UserLoginData && UserLoginData.updates) ? UserLoginData.updates : [];
+
+            $scope.sectionIsUpdated = function (sections) {
+                var isUpdated = false;
+                $scope.updates.forEach(function (update) {
+                    if (sections.indexOf(update.section) > -1)
+                        isUpdated = true;
+                });
+                return isUpdated;
+            };
+            $scope.sectionCategoryIsUpdated = function (section) {
+                var isUpdated = false;
+                $scope.updates.forEach(function (update) {
+                    if (update.section.indexOf(section) > -1)
+                        isUpdated = true;
+                });
+                return isUpdated;
+            };
+
+            $scope.clearUpdate = function(section) {
+                $scope.updates.forEach(function (update) {
+                    if (update.section ==  section) {
+                        $scope.updates.splice($scope.updates.indexOf(update), 1);
+                    }
+                });
+                User.clearUpdate({section:section});
+            }
 
             var full = window.location.host;
             var parts = full.split('.');
@@ -11327,6 +11357,10 @@ lwsControllers.controller('AppCtrl',
                         else
                             $scope.$broadcast('new_message', data);
                     });
+                    $scope.io_socket.on('section_update', function (data) {
+                        $scope.updates.push(data);
+                    })
+
                     $scope.io_socket.emit('register', {
                         token: $scope.UserIdentity.broadcast_token,
                         uid: $scope.UserIdentity.uid
@@ -11523,6 +11557,9 @@ lwsControllers.controller('NewsCtrl',
             }
 
             reloadNews();
+
+            $scope.clearUpdate('news');
+
             $rootScope.$on('refreshUserLogin', function () {
                 reloadNews();
             });
@@ -12349,18 +12386,29 @@ lwsControllers.controller('RejectDialogCtrl',
 
 
 lwsControllers.controller('SchoolCtrl',
-    ['$scope', 'School', '$location', '$anchorScroll', '$stateParams',
-        function ($scope, School, $location, $anchorScroll, $stateParams) {
+    ['$scope', 'School', '$location', '$anchorScroll', '$stateParams','$dialogs','Material',
+        function ($scope, School, $location, $anchorScroll, $stateParams, $dialogs, Material) {
             $scope.scrollTo = function (id) {
                 $location.hash(id);
                 $anchorScroll();
             };
 
             $scope.sceditor = {text: ''};
+            $scope.clearUpdate($stateParams.slug);
             School.materials({slug: $stateParams.slug}, function (res) {
                 $scope.subject = res.data;
                 setTimeout($anchorScroll, 500);
             });
+
+            $scope.deleteMaterial = function(material)
+            {
+                $dialogs.confirm('Подтвердите', 'Удалить материал "' + material.title + '"?')
+                    .result.then(function (btn) {
+                    Material.delete({id: material.id}, function (resource) {
+                        $scope.subject.materials.splice($scope.subject.materials.indexOf(material),1);
+                    });
+                });
+            }
         }]);
 
 
@@ -12396,6 +12444,7 @@ lwsControllers.controller('EditMaterialCtrl',
 lwsControllers.controller('TextCtrl',
     ['$scope', 'Text', '$location', '$stateParams',
         function ($scope, Text, $location, $stateParams) {
+            $scope.clearUpdate('text_' + $stateParams.id);
             Text.get({id: $stateParams.id}, function (res) {
                 $scope.text = res.data;
             });
@@ -12454,6 +12503,7 @@ lwsControllers.controller('TopicCtrl',
             $scope.topic = {currentPage: 1};
             var lastNewId = 1;
             $scope.sceditor = {text: ''};
+            $scope.clearUpdate('topic_' + $stateParams.topicId);
             Topic.get({topicId: $stateParams.topicId}, function (res) {
                 angular.extend($scope.topic, res.data);
             });

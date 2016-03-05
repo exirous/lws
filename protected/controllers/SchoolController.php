@@ -46,19 +46,17 @@ class SchoolController extends Controller
                 $slug = $request->getRequiredRawBodyParam('slug');
                 $this->returnSuccess($this->_saveMaterial($id, $title, $text, $slug));
                 break;
+            case AHttpRequest::METHOD_DELETE:
+                $id = $request->getRequiredParam('id');
+                Material::model()->deleteByPk($id);
+                $this->returnSuccess([]);
+                break;
 
             default:
                 $this->returnError();
         }
     }
 
-
-    public function actionTest()
-    {
-
-
-        //print $parser->getAsHtml();
-    }
 
     public function _getMaterial($id)
     {

@@ -73,4 +73,10 @@ class ForumMessage extends BaseForumMessage
         ];
     }
 
+    public function afterSave()
+    {
+        parent::afterSave();
+        Update::setUpdates('topic_' . $this->topic_id, Yii::app()->user->id);
+    }
+
 }

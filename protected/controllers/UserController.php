@@ -364,6 +364,13 @@ class UserController extends Controller
         }
     }
 
+    public function actionClearUpdate()
+    {
+        $request = Yii::app()->request;
+        Update::model()->deleteAll('user_id=:user_id AND section=:section', ['user_id' => Yii::app()->user->id, 'section' => $request->getRequiredRawBodyParam('section')]);
+        $this->returnSuccess(['result' => 'success']);
+    }
+
 
     private function _updateEvent($id, $date, $text, $userId)
     {

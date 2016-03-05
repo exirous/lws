@@ -134,4 +134,9 @@ class News extends BaseNews
         } while ($nicknameInUse && ($i < 20));
     }
 
+    public function afterSave()
+    {
+        parent::afterSave();
+        Update::setUpdates('news', Yii::app()->user->id);
+    }
 }

@@ -145,6 +145,10 @@ lwsServices.factory('User', ['$resource', function ($resource)
         recoverPassword:{
             url: '/user/recoverPassword',
             method: 'post'
+        },
+        clearUpdate:{
+            url: '/user/clearUpdate',
+            method: 'post'
         }
 
     });

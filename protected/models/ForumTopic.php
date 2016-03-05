@@ -58,4 +58,10 @@ class ForumTopic extends BaseForumTopic
             'lastMessageTime'=>strtotime($this->last_message_id ? $this->lastMessage->time : $this->time),
         ];
     }
+
+    public function afterSave()
+    {
+        parent::afterSave();
+        Update::setUpdates('topic_' . $this->id, Yii::app()->user->id);
+    }
 }

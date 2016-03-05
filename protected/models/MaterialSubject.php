@@ -56,4 +56,10 @@ class MaterialSubject extends BaseMaterialSubject
         ];
     }
 
+    public function afterSave()
+    {
+        parent::afterSave();
+        Update::setUpdates($this->slug, Yii::app()->user->id);
+    }
+
 }

@@ -44,4 +44,10 @@ class Text extends BaseText
         ];
     }
 
+    public function afterSave()
+    {
+        parent::afterSave();
+        Update::setUpdates('text_' . $this->id, Yii::app()->user->id);
+    }
+
 }

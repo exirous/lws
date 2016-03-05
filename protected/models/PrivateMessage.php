@@ -75,7 +75,7 @@ class PrivateMessage extends BasePrivateMessage
         $parser->parse($data['text']);
         $data['text'] = nl2br($parser->getAsHTML());
         $data['summary'] = "У вас новое сообщение от [b]" . $this->sender->nickname . "[/b]\n [url]http://luftwaffeschule.ru/#/conversation/" . $this->sender_id . "/page-1[/url]";
-        $this->reciever->sendNotification('new_message',$data);
+        $this->reciever->sendNotification('new_message',$data, true);
     }
 
 }

@@ -329,7 +329,7 @@ class Image {
 		$dir = str_replace('\\', '/', realpath($dir)).'/';
 
 		if ( ! is_writable($dir))
-			throw new CException('image directory unwritable');
+			throw new CException('image directory unwritable (' . $dir . ')');
 
 		if ($status = $this->driver->process($this->image, $this->actions, $dir, $file))
 		{

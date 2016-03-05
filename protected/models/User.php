@@ -321,6 +321,11 @@ class User extends BaseUser
     {
         if (Yii::app()->user->id != $this->id)
             return [];
+
+        $updates = [];
+        foreach ($this->updates as $update)
+            $updates[] = $update->getAttributes(['id', 'section', 'date']);
+
         return [
             'nickname' => $this->nickname,
             'firstname' => $this->firstname,
@@ -334,7 +339,8 @@ class User extends BaseUser
             'disableReason' => $this->disable_reason,
             'uid' => $this->ts_id,
             'id' => $this->id,
-            'email' => Yii::app()->user->canViewUserEmailAddress($this->id) ? $this->email : ''
+            'email' => Yii::app()->user->canViewUserEmailAddress($this->id) ? $this->email : '',
+            'updates' => $updates
         ];
     }
 
@@ -540,11 +546,10 @@ class User extends BaseUser
         Order::issueOrder($data);
     }
 
-    public function sendNotification($event, $data)
+    public function sendNotification($event, $data, $sendToTs = false)
     {
-
         NodeServerSync::sendMessage($event, $data, $this->broadcast_token);
-        if ($this->ts_id)
+        if ($sendToTs && $this->ts_id)
             NodeServerSync::sendInternalMessage('NOTIFY_USER', ['reciever' => $this->ts_id, 'msg' => $data['summary']]);
     }
 

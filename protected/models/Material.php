@@ -42,4 +42,10 @@ class Material extends BaseMaterial
             'title'=>$this->title
         ];
     }
+
+    public function afterSave()
+    {
+        parent::afterSave();
+        Update::setUpdates($this->subject->slug, Yii::app()->user->id);
+    }
 }

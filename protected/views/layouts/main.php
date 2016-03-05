@@ -83,7 +83,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="panel_menu"><a href="ts3server://luftwaffeschule.ru/?nickname={{UserIdentity.fullname}}"><span class="ts_icon">Подключится</span></a>
+                    <div class="panel_menu"><a href="ts3server://luftwaffeschule.ru/?nickname={{UserIdentity.fullname}}"><span class="ts_icon">Подключиться</span></a>
                     </div>
                     <div class="left_content ts_channels">
                         <ul ng-controller="TSViewCtrl" style="padding:15px">
@@ -101,8 +101,8 @@
                 <td class="mm center_panel">
                     <div class="main_menu_cover">
                     <div class="main_menu">
-                        <a ui-sref="news">Сводки<i></i></a>
-                        <a ui-sref="texts({id:5})">История<i></i></a>
+                        <a ui-sref="news" ng-class="{'update':sectionIsUpdated(['news'])}">Сводки<i></i></a>
+                        <a ui-sref="texts({id:5})" ng-class="{'update':sectionIsUpdated(['text_5'])}">История<i></i></a>
                         <a ui-sref="orders({page:1})" ng-if="!UserIdentity.canMakeOrders && !UserIdentity.isGuest" >Приказы<i></i></a>
                         <span class="dropdown dropdown-hover" ng-if="UserIdentity.canMakeOrders">
                         <a href="">Приказы<i></i></a>
@@ -114,33 +114,43 @@
                         </ul>
                         </span>
                         <span class="dropdown dropdown-hover">
-                        <a href="">Документы<i></i></a>
+                        <a href="" ng-class="{'update':sectionIsUpdated(['text_1','text_2','instructor_training'])}">Документы<i></i></a>
                         <ul class="dropdown-menu" style="top: 45px;left: -7px;">
-                            <li><a ui-sref="texts({id:1})">Устав</a></li>
-                            <li><a ui-sref="texts({id:2})">Приложения к уставу</a></li>
+                            <li><a ui-sref="texts({id:1})"  ng-class="{'update':sectionIsUpdated(['text_1'])}">Устав</a></li>
+                            <li><a ui-sref="texts({id:2})" ng-class="{'update':sectionIsUpdated(['text_2'])}">Приложения к уставу</a></li>
                             <li role="presentation" ng-if="UserIdentity.isInstructor" class="divider"></li>
-                            <li><a ui-sref="materials({slug:'instructor_training'})" ng-if="UserIdentity.isInstructor">Настваление инструктору</a></li>
+                            <li><a ui-sref="materials({slug:'instructor_training'})" ng-class="{'update':sectionIsUpdated(['instructor_training'])}" ng-if="UserIdentity.isInstructor">Наставление инструктору</a></li>
                         </ul>
                         </span>
                         <a ui-sref="roster" ng-if="UserIdentity.isGuest">Вступить<i></i></a>
                         <span class="dropdown dropdown-hover" ng-if="!UserIdentity.isGuest">
-                        <a href="">Класс<i></i></a>
+                        <a href="" ng-class="{'update':sectionIsUpdated(['flight_basics','fighter_course','bomber_basics','sturm_course','bomber_course','war_basics'])}">Класс<i></i></a>
                         <ul class="dropdown-menu" style="top: 45px;left: -7px;">
                             <li><a>Расписание занятий</a></li>
                             <li role="presentation" class="divider"></li>
-                            <li><a ui-sref="materials({slug:'flight_basics'})">Наставление по лётной подготовке истребителей</a></li>
-                            <li><a ui-sref="materials({slug:'fighter_course'})">Программа обучения истребителей</a></li>
+                            <li><a ui-sref="materials({slug:'flight_basics'})" ng-class="{'update':sectionIsUpdated(['flight_basics'])}">Наставление по лётной подготовке истребителей</a></li>
+                            <li><a ui-sref="materials({slug:'fighter_course'})" ng-class="{'update':sectionIsUpdated(['fighter_course'])}">Программа обучения истребителей</a></li>
                             <li role="presentation" class="divider"></li>
-                            <li><a ui-sref="materials({slug:'bomber_basics'})">Наставление по лётной подготовке бомбардировщиков</a></li>
-                            <li><a ui-sref="materials({slug:'bomber_course'})">Программа обучения бомбардировщиков</a></li>
+                            <li><a ui-sref="materials({slug:'bomber_basics'})" ng-class="{'update':sectionIsUpdated(['bomber_basics'])}">Наставление по лётной подготовке бомбардировщиков</a></li>
+                            <li><a ui-sref="materials({slug:'sturm_course'})" ng-class="{'update':sectionIsUpdated(['sturm_course'])}">Программа обучения штурмовиков</a></li>
+                            <li><a ui-sref="materials({slug:'bomber_course'})" ng-class="{'update':sectionIsUpdated(['bomber_course'])}">Программа обучения бомбардировщиков</a></li>
                             <li role="presentation" class="divider"></li>
-                            <li><a ui-sref="materials({slug:'war_basics'})">Боевой устав</a></li>
+                            <li><a ui-sref="materials({slug:'war_basics'})" ng-class="{'update':sectionIsUpdated(['war_basics'])}">Боевой устав</a></li>
                             <!--<li role="presentation" class="divider"></li>
                             <li><a ui-sref="texts({id:'6'})">Техническая эксплуатационная часть</a></li>-->
                         </ul>
                         </span>
                         <a ui-sref="pilots">Казарма<i></i></a>
-                        <a ui-sref="flood" ng-if="!UserIdentity.isGuest">Курилка<i></i></a>
+                        <a ui-sref="flood" ng-if="!UserIdentity.isGuest" ng-class="{'update':sectionCategoryIsUpdated(['topic_'])}">Курилка<i></i></a>
+
+                        <span class="dropdown dropdown-hover" ng-if="!UserIdentity.isGuest">
+                            <a href="" ng-class="{'update':sectionIsUpdated(['tech_doc','topic_6'])}">ТЭЧ<i></i></a>
+                                <ul class="dropdown-menu" style="top: 45px;left: -7px;">
+                                    <li><a ui-sref="materials({slug:'tech_doc'})" ng-class="{'update':sectionIsUpdated(['tech_doc'])}">Техническая документация</a></li>
+                                    <li><a ui-sref="topic.page({topicId:6,page:1})" ng-class="{'update':sectionIsUpdated(['topic_6'])}">Заявки на настройку оборудования</a></li>
+                            </ul>
+                        </span>
+
                         <a href="" class="profile_btn" style="float:right" ng-click="login()" ng-if="UserIdentity.isGuest">Вход</a>
                         <span ng-if="!UserIdentity.isGuest" class="dropdown dropdown-hover" style="float:right">
                         <a href="" class="profile_btn">{{UserIdentity.nickname}} <span class="glyphicon glyphicon-user"></span></a>
@@ -205,7 +215,7 @@
                 ng-src="/img/users/{{topic.author.img_src ? topic.author.id+'_'+topic.author.img_src+'.jpg' : (topic.author.is_clanner ? 'no_image_clanner.png' : 'no_image.png')}}"
                 style=""><a href="#/user/view/{{topic.author.id}}">{{topic.author.nickname}}</a>
         </div>
-        <div class="news-row panel panel-primary">
+        <div class="news-row panel panel-primary" ng-class="{'update':sectionIsUpdated(['topic_'+ topic.id])}">
             <a ui-sref="topic.page({topicId:topic.id,page:1})" class="panel-body" style="display: block;margin-top: 10px;white-space: nowrap;position: relative;">
                 <b>{{topic.title}}: </b>
                 <span style="color:#aaa">{{topic.firstMessageText}}</span>
@@ -370,10 +380,14 @@
         </div>
     </div>
     <div ng-repeat="material in subject.materials" id="material_{{material.id}}" class="panel panel-primary">
-        <div class="panel-heading">{{material.title}}<a ng-if="UserIdentity.canMakeOrders" title="Редактировать"
-                                                        class="btn btn-xs btn-default pull-right"
-                                                        ui-sref="editmaterial({materialId:material.id, slug:subject.slug})"><span
-                    class="glyphicon glyphicon-pencil"></span></a></div>
+        <div class="panel-heading">{{material.title}}
+            <a ng-if="UserIdentity.canMakeOrders" title="Удалить" class="btn btn-xs btn-danger pull-right" href="" style="margin-left:5px" ng-click="deleteMaterial(material)">
+                <span class="glyphicon glyphicon-minus"></span>
+            </a>
+            <a ng-if="UserIdentity.canMakeOrders" title="Редактировать" class="btn btn-xs btn-default pull-right" ui-sref="editmaterial({materialId:material.id, slug:subject.slug})">
+                <span class="glyphicon glyphicon-pencil"></span>
+            </a>
+        </div>
         <div class="panel-body" bind-compiled-html="material.text"></div>
     </div>
 </script>

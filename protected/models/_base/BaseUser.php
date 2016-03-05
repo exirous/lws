@@ -41,6 +41,7 @@
  * @property Order[] $orders
  * @property PrivateMessage[] $privateMessages
  * @property PrivateMessage[] $privateMessages1
+ * @property Update[] $updates
  * @property Rank $rank
  * @property Rank $instructor
  * @property Award[] $awards
@@ -53,6 +54,7 @@ abstract class BaseUser extends AActiveRecord
 {
     const QUALIFICATIONS_FIGHTER = 'fighter';
     const QUALIFICATIONS_BOMBER = 'bomber';
+    const QUALIFICATIONS_SHTURMOVIK = 'shturmovik';
 
     public function getSetValueText($column, $value = null)
     {
@@ -60,6 +62,7 @@ abstract class BaseUser extends AActiveRecord
             'qualifications' => array(
                 'fighter' => Yii::t('app', 'Fighter'),
                 'bomber' => Yii::t('app', 'Bomber'),
+                'shturmovik' => Yii::t('app', 'Shturmovik'),
             ),
         );
 
@@ -115,6 +118,7 @@ abstract class BaseUser extends AActiveRecord
             'orders' => array(self::MANY_MANY, 'Order', 'order_participant(user_id, order_id)'),
             'privateMessages' => array(self::HAS_MANY, 'PrivateMessage', 'reciever_id'),
             'privateMessages1' => array(self::HAS_MANY, 'PrivateMessage', 'sender_id'),
+            'updates' => array(self::HAS_MANY, 'Update', 'user_id'),
             'rank' => array(self::BELONGS_TO, 'Rank', 'rank_id'),
             'instructor' => array(self::BELONGS_TO, 'Rank', 'instructor_id'),
             'awards' => array(self::MANY_MANY, 'Award', 'user_award(user_id, award_id)'),
@@ -167,6 +171,7 @@ abstract class BaseUser extends AActiveRecord
             'orders' => null,
             'privateMessages' => null,
             'privateMessages1' => null,
+            'updates' => null,
             'rank' => null,
             'instructor' => null,
             'awards' => null,
