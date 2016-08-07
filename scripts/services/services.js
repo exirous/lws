@@ -40,6 +40,37 @@ lwsServices.factory('TeamSpeak', ['$resource', function ($resource)
     });
 }]);
 
+lwsServices.factory('BattleLog', ['$resource', function ($resource)
+{
+    return $resource('/battlelog/list', {}, {
+        query:
+        {
+            url: '/battlelog/list',
+            method: 'get'
+        },
+        get:
+        {
+            url: '/battlelog/get',
+            method: 'get'
+        },
+        add:
+        {
+            url: '/battlelog/add',
+            method: 'post'
+        },
+        save:
+        {
+            url: '/battlelog/save',
+            method: 'post'
+        },
+        delete:
+        {
+            url: '/battlelog/delete',
+            method: 'post'
+        }
+    });
+}]);
+
 lwsServices.factory('User', ['$resource', function ($resource)
 {
     return $resource('/user/item', {}, {

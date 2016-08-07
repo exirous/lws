@@ -33,7 +33,7 @@
         <div class="photostack" id="main_header">
             <img ng-repeat="image in headerImages" class="header-image" ng-src="{{image}}">
         </div>
-        <div class="site_switch" ng-if="game.selection">
+        <!--<div class="site_switch" ng-if="game.selection">
             <select ui-select2="gameSelect2Options"
                     style="width: 210px;"
                     class="form-control"
@@ -41,7 +41,7 @@
                 <option value="wt">War Thunder</option>
                 <option value="bos">Il2: Battle of stalingrad</option>
             </select>
-        </div>
+        </div>-->
         <div class="whiteline"></div>
         <a ui-sref="news" id="logo"></a>
         <table class="contentTable" cellpadding=0 cellspacing=0>
@@ -114,7 +114,7 @@
                         </ul>
                         </span>
                         <span class="dropdown dropdown-hover">
-                        <a href="" ng-class="{'update':sectionIsUpdated(['text_1','text_2','instructor_training'])}">Документы<i></i></a>
+                        <a href="" ng-class="{'update':sectionIsUpdated(['text_1','text_2']) || (UserIdentity.isInstructor && sectionIsUpdated(['instructor_training']))}">Документы<i></i></a>
                         <ul class="dropdown-menu" style="top: 45px;left: -7px;">
                             <li><a ui-sref="texts({id:1})"  ng-class="{'update':sectionIsUpdated(['text_1'])}">Устав</a></li>
                             <li><a ui-sref="texts({id:2})" ng-class="{'update':sectionIsUpdated(['text_2'])}">Приложения к уставу</a></li>
@@ -144,16 +144,17 @@
                         <a ui-sref="flood" ng-if="!UserIdentity.isGuest" ng-class="{'update':sectionCategoryIsUpdated(['topic_'])}">Курилка<i></i></a>
 
                         <span class="dropdown dropdown-hover" ng-if="!UserIdentity.isGuest">
-                            <a href="" ng-class="{'update':sectionIsUpdated(['tech_doc','topic_6'])}">ТЭЧ<i></i></a>
+                            <a href="" ng-class="{'update':sectionIsUpdated(['tech_doc','tech_hardware'])}">ТЭЧ<i></i></a>
                                 <ul class="dropdown-menu" style="top: 45px;left: -7px;">
                                     <li><a ui-sref="materials({slug:'tech_doc'})" ng-class="{'update':sectionIsUpdated(['tech_doc'])}">Техническая документация</a></li>
-                                    <li><a ui-sref="topic.page({topicId:6,page:1})" ng-class="{'update':sectionIsUpdated(['topic_6'])}">Заявки на настройку оборудования</a></li>
+                                    <li><a ui-sref="topic.page({topicId:6,page:1})" ng-class="{'update':sectionIsUpdated(['tech_hardware'])}">Заявки на настройку оборудования</a></li>
                             </ul>
                         </span>
 
                         <a href="" class="profile_btn" style="float:right" ng-click="login()" ng-if="UserIdentity.isGuest">Вход</a>
-                        <span ng-if="!UserIdentity.isGuest" class="dropdown dropdown-hover" style="float:right">
-                        <a href="" class="profile_btn">{{UserIdentity.nickname}} <span class="glyphicon glyphicon-user"></span></a>
+                        <span ng-if="!UserIdentity.isGuest" class="dropdown dropdown-hover">
+                        <a href="" class="profile_btn">
+                            <span class="user_name">{{UserIdentity.nickname}}</span> <span class="glyphicon glyphicon-user"></span></a>
                         <ul class="dropdown-menu" style="top: 40px;left: -10px;">
                             <li><a ui-sref="user({userId:UserIdentity.id})">Посмотреть профиль</a></li>
                             <li><a ui-sref="reportvacation">Рапорт на отпуск</a></li>
@@ -567,6 +568,10 @@
                             <th>Заявка</th>
                             <td><a ui-sref="rosterUser({userId:user.id})">Посмотреть</a></td>
                         </tr>
+                        <tr>
+                            <th>Книжка пилота</th>
+                            <td><a ui-sref="battleLog({userId:user.id})">Посмотреть</a></td>
+                        </tr>
                         <tr ng-if="UserIdentity.isInstructor || UserIdentity.id == user.id">
                             <th>Оценки</th>
                             <td><a ui-sref="userMarks({userId:user.id})">Посмотреть</a></td>
@@ -620,7 +625,7 @@
             <tr>
                 <td ng-if="user.rank && user.rank.id!=8" colspan="3" style="padding-right:10px">
                     <div class="panel panel-default">
-                        <div class="panel-heading"><span>Книжка пилота</span>
+                        <div class="panel-heading"><span>Книга событий</span>
                             <button type="button" ng-if="UserIdentity.canMakeOrders" ng-click="addEvent(user.id)"
                                     class="btn btn-xs btn-success pull-right">
                                 <span class="glyphicon glyphicon-plus"></span>
@@ -1608,6 +1613,159 @@
                     <div ng-if="!pilot.lastWarning" style="margin-top:5px;text-align: center">Ещё не предупреждён</div>
                 </div>
             </div>
+        </div>
+    </div>
+</script>
+
+
+<script type="text/ng-template" id="BattleLogTmpl">
+    <div class="big-spinner" ng-if="loading">
+        <div class="spinner-icon"></div>
+    </div>
+    <div ng-show="!loading">
+        <button style="margin-left:10px" type="button" ui-sref="addBattleLog({userId:user.id})" class="btn btn-sm btn-success pull-right" ng-if="((UserIdentity.id == 14) || (UserIdentity.id == 1))"><span class="glyphicon glyphicon-plus"></span> Добавить</button>
+        <h2>{{user.rank.name}} "{{user.nickname}}" {{user.firstname}}</h2>
+        <br>
+        <table class="table battle-log">
+            <thead>
+            <tr>
+                <th style="vertical-align: middle">Дата</th>
+                <th>Назначение вылета</th>
+                <th>Полётное время (мин)</th>
+                <th>Кол. сбитых</th>
+                <th>Наз. цели</th>
+                <th>Итог вылета</th>
+                <th colspan="2">Штрафные очки</th>
+                <th ng-if="((UserIdentity.id == 14) || (UserIdentity.id == 1))"></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="log in battlelog">
+                <td style="text-align: center">{{log.time | date:'dd.MM.yyyy'}}</td>
+                <td>{{log.mission}}</td>
+                <td style="text-align: center">{{log.flight_time}}</td>
+                <td style="text-align: center">{{log.air_targets}}</td>
+                <td style="text-align: center">{{log.ground_targets}}</td>
+                <td>{{log.result}}</td>
+                <td style="text-align: center">{{log.fine_points}}</td>
+                <td style="text-align: center">{{log.fine_points_times}}</td>
+                <td ng-if="((UserIdentity.id == 14) || (UserIdentity.id == 1))">
+                    <a title="Удалить" class="btn btn-xs btn-danger pull-right" href="" style="margin-left:5px" ng-click="deleteBattleLog(log)">
+                        <span class="glyphicon glyphicon-minus"></span>
+                    </a>
+                    <a title="Редактировать" class="btn btn-xs btn-default pull-right" ui-sref="editBattleLog({userId:user.id, logId:log.id})">
+                        <span class="glyphicon glyphicon-pencil"></span>
+                    </a>
+                </td>
+            </tr>
+            </tbody>
+            <tfoot>
+            <tr>
+                <th>Итог страницы</th>
+                <th></th>
+                <th style="text-align: center;vertical-align: middle">{{result.flight_time}}</th>
+                <th style="text-align: center;vertical-align: middle">{{result.air_targets}}</th>
+                <th style="text-align: center;vertical-align: middle">{{result.ground_targets}}</th>
+                <th></th>
+                <th style="text-align: center;vertical-align: middle">{{result.fine_points}}</th>
+                <th style="text-align: center;vertical-align: middle">{{result.fine_points_times}}</th>
+                <th ng-if="((UserIdentity.id == 14) || (UserIdentity.id == 1))"></th>
+            </tr>
+            </tfoot>
+        </table>
+    </div>
+</script>
+
+<script type="text/ng-template" id="EditBattleLogTmpl">
+    <div class="big-spinner" ng-if="!user || !battle">
+        <div class="spinner-icon"></div>
+    </div>
+    <div ng-show="user">
+        <h2>{{user.rank.name}} "{{user.nickname}}" {{user.firstname}}</h2>
+        <h3 ng-if="!battle.id">Добавить новый вылет</h3>
+        <h3 ng-if="battle.id">Редактировать вылет</h3>
+        <div class="alert alert-danger" ng-show="battleForm.error">{{battleForm.error}}</div>
+        <ng-form name="battleForm" role="form">
+            <div>
+                <div class="form-group input-group">
+                    <label for="battle_time">Дата</label>
+                    <p class="input-group"
+                       ng-class="{true: 'has-error'}[(battleForm.time.$dirty && battleForm.time.$invalid)]">
+                        <input type="date" placeholder="Например: 09.05.1945" name="battle_time" class="form-control"
+                               ng-model="battle.time" ng-required="true"/>
+                    </p>
+                </div>
+                <label>Задание</label>
+                <div class="form-group input-group" style="width:450px"
+                     ng-class="{true: 'has-error'}[(battleForm.mission.$dirty && rosterForm.mission.$invalid)]">
+                    <input type="text"
+                           name="mission"
+                           class="form-control"
+                           ng-model="battle.mission"
+                           required/>
+                </div>
+                <label>Итог вылета</label>
+                <div class="form-group input-group" style="width:450px"
+                     ng-class="{true: 'has-error'}[(battleForm.result.$dirty && battleForm.result.$invalid)]">
+                    <input type="text"
+                           name="result"
+                           style="margin-bottom: 10px"
+                           class="form-control"
+                           ng-model="battle.result"
+                           required/>
+                </div>
+                <label>Время полёта (мин)</label>
+                <div class="form-group input-group"
+                     ng-class="{true: 'has-error'}[(battleForm.flight_time.$dirty && battleForm.flight_time.$invalid)]">
+                    <input type="text"
+                           name="flight_time"
+                           class="form-control"
+                           ng-model="battle.flight_time"
+                           required/>
+                </div>
+                <label>Воздущные победы</label>
+                <div class="form-group input-group"
+                     ng-class="{true: 'has-error'}[(battleForm.air_targets.$dirty && battleForm.air_targets.$invalid)]">
+                    <input type="text"
+                           name="air_targets"
+                           class="form-control"
+                           ng-model="battle.air_targets"
+                           required/>
+                </div>
+                <label>Наземные цели</label>
+                <div class="form-group input-group"
+                     ng-class="{true: 'has-error'}[(battleForm.ground_targets.$dirty && battleForm.ground_targets.$invalid)]">
+                    <input type="text"
+                           name="ground_targets"
+                           class="form-control"
+                           ng-model="battle.ground_targets"
+                           required/>
+                </div>
+                <label>Штрафные очки</label>
+                <div class="form-group input-group"
+                     ng-class="{true: 'has-error'}[(battleForm.fine_points.$dirty && battleForm.fine_points.$invalid)]">
+                    <input type="text"
+                           name="fine_points"
+                           class="form-control"
+                           ng-model="battle.fine_points"
+                           required/>
+                </div>
+                <label>Отрабртанные штрафные очки</label>
+                <div class="form-group input-group"
+                     ng-class="{true: 'has-error'}[(battleForm.fine_points_times.$dirty && battleForm.fine_points_times.$invalid)]">
+                    <input type="text"
+                           name="fine_points_times"
+                           class="form-control"
+                           ng-model="battle.fine_points_times"
+                           required/>
+                </div>
+        </ng-form>
+        <div class="alert alert-danger" ng-show="battleForm.error">{{battleForm.error}}</div>
+        <div>
+            <p class="well">
+                <button type="button" ng-click="save()"
+                        ng-disabled="battleForm.isSubmitting" class="btn btn-primary">Сохранить</button>
+            </p>
         </div>
     </div>
 </script>

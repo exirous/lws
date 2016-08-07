@@ -97,7 +97,7 @@ class FloodController extends Controller
         $parser->addCodeDefinitionSet(new JBBCode\DefaultCodeDefinitionSet());
 
         $topics = [];
-        foreach (ForumTopic::model()->findAll() as $topic)
+        foreach (ForumTopic::model()->scopeNoHardware()->findAll() as $topic)
         {
             $topicAttributes = $topic->getRenderAttributes();
             $parser->parse($topicAttributes['firstMessageText']);

@@ -123,9 +123,11 @@ class OrderController extends Controller
                 'name' => $info['name']->toString()
             ];
             $icon = $group->iconDownload();
+
             if ($icon && !file_exists(dirname(Yii::app()->basePath) . '/img/groups/' . $info['sgid'] . '.png'))
             {
-                @file_put_contents(dirname(Yii::app()->basePath) . '/img/groups/' . $info['sgid'] . '.png', $icon->toString());
+                //var_dump("download!");
+                file_put_contents(dirname(Yii::app()->basePath) . '/img/groups/' . $info['sgid'] . '.png', $icon->toString());
             }
 
         }

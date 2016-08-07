@@ -38,8 +38,8 @@ class Update extends BaseUpdate
     public static function setUpdates($section, $exeptUserId)
     {
         foreach (User::model()->scopeEnabled()->findAll() as $user) {
-            //if ($user->id == $exeptUserId)
-            //    continue;
+            if ($user->id == $exeptUserId)
+                continue;
             $update = Update::model()->find(['condition' => 'user_id=:userId AND section=:section', 'params' => ['userId' => $user->id, 'section' => $section]]);
             if (!$update) {
                 $update = new Update();

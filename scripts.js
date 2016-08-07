@@ -10526,6 +10526,21 @@ function mainRouteConfig($stateProvider, $urlRouterProvider)
             templateUrl: 'UserTmpl',
             controller: "UserCtrl"
         })
+        .state('battleLog', {
+            url: "/user/battlelog/:userId",
+            templateUrl: 'BattleLogTmpl',
+            controller: "BattleLogCtrl"
+        })
+        .state('addBattleLog', {
+            url: "/user/battlelog/:userId/new",
+            templateUrl: 'EditBattleLogTmpl',
+            controller: "NewBattleLogCtrl"
+        })
+        .state('editBattleLog', {
+            url: "/user/battlelog/:userId/:logId",
+            templateUrl: 'EditBattleLogTmpl',
+            controller: "EditBattleLogCtrl"
+        })
         .state('inactiveUsers', {
             url: "/inactive",
             templateUrl: 'InactiveTmpl',
@@ -10727,6 +10742,37 @@ lwsServices.factory('TeamSpeak', ['$resource', function ($resource)
         tree: {
             url: '/teamSpeak/viewTree',
             method: 'get'
+        }
+    });
+}]);
+
+lwsServices.factory('BattleLog', ['$resource', function ($resource)
+{
+    return $resource('/battlelog/list', {}, {
+        query:
+        {
+            url: '/battlelog/list',
+            method: 'get'
+        },
+        get:
+        {
+            url: '/battlelog/get',
+            method: 'get'
+        },
+        add:
+        {
+            url: '/battlelog/add',
+            method: 'post'
+        },
+        save:
+        {
+            url: '/battlelog/save',
+            method: 'post'
+        },
+        delete:
+        {
+            url: '/battlelog/delete',
+            method: 'post'
         }
     });
 }]);
@@ -11318,7 +11364,10 @@ lwsControllers.controller('AppCtrl',
                 'editUser': 'user',
                 'conversation': 'user',
                 'conversation.page': 'user',
-                'messenger': 'user'
+                'messenger': 'user',
+                'battleLog': 'user',
+                'addBattleLog': 'user',
+                'editBattleLog': 'user'
             };
 
             $scope.unRegisterForNotifications = function () {
@@ -11661,6 +11710,115 @@ lwsControllers.controller('UserCtrl',
             $scope.sync = function () {
                 User.sync({id: $scope.user.id}, function () {
 
+                });
+            }
+        }]);
+
+
+lwsControllers.controller('BattleLogCtrl',
+    ['$scope', 'User', 'BattleLog' ,'$stateParams', '$dialogs',
+        function ($scope, User, BattleLog, $stateParams, $dialogs) {
+            User.get({id: $stateParams.userId},
+                function (resource) {
+                    $scope.user = resource.data;
+                });
+
+            function calculateResult()
+            {
+                var result = {
+                    flight_time:0,
+                    air_targets:0,
+                    ground_targets:0,
+                    fine_points:0,
+                    fine_points_times:0
+                };
+                $scope.battlelog.forEach(function (log) {
+                    for (var field in result) {
+                        if (!result.hasOwnProperty(field))
+                            return;
+                        result[field] += log[field] ? parseInt(log[field]) : 0;
+                    }
+                });
+                $scope.result = result;
+            }
+
+            $scope.deleteBattleLog = function(log)
+            {
+                $dialogs.confirm('Подтвердите', 'Удалить эту запись?')
+                    .result.then(function (btn) {
+                    BattleLog.delete({id:log.id});
+                    $scope.battlelog.splice($scope.battlelog.indexOf(log), 1);
+                    calculateResult();
+                });
+            };
+
+            BattleLog.query({userId: $stateParams.userId},
+                function (resource) {
+                    $scope.battlelog = resource.data;
+                    calculateResult();
+                });
+            $scope.loading = $scope.user && $scope.battlelog;
+        }]);
+
+lwsControllers.controller('NewBattleLogCtrl',
+    ['$scope', 'User', 'BattleLog' ,'$stateParams', '$state', '$filter',
+        function ($scope, User, BattleLog, $stateParams, $state, $filter) {
+            $scope.battleForm = {};
+            $scope.battleForm.isSubmitting = true;
+            $scope.battleForm.error = false;
+
+            User.get({id: $stateParams.userId},
+                function (resource) {
+                    $scope.user = resource.data;
+                });
+
+            $scope.battle = {
+                user_id: $stateParams.userId,
+                time: $filter('date')(new Date(), "yyyy-MM-dd"),
+                result: '',
+                mission: '',
+                flight_time: 0,
+                air_targets: 0,
+                ground_targets: 0,
+                fine_points: 0,
+                fine_points_times: 0
+            };
+
+            $scope.save = function()
+            {
+                BattleLog.add($scope.battle, function () {
+                    $state.go('battleLog', {userId: $stateParams.userId});
+                }, function (res) {
+                    $scope.battleForm.isSubmitting = false;
+                    $scope.battleForm.error = res.data.message
+                });
+            }
+        }]);
+
+lwsControllers.controller('EditBattleLogCtrl',
+    ['$scope', 'User', 'BattleLog' ,'$stateParams', '$state', '$filter',
+        function ($scope, User, BattleLog, $stateParams, $state, $filter) {
+            $scope.battleForm = {};
+            $scope.battleForm.isSubmitting = true;
+            $scope.battleForm.error = false;
+
+            User.get({id: $stateParams.userId},
+                function (resource) {
+                    $scope.user = resource.data;
+                });
+            BattleLog.get({id: $stateParams.logId},
+                function (resource) {
+                    $scope.battle = resource.data;
+
+                });
+
+            $scope.save = function()
+            {
+                BattleLog.save($scope.battle, function () {
+                    $state.go('battleLog', {userId: $stateParams.userId});
+                }, function (res) {
+                    $scope.battleForm.isSubmitting = false;
+                    $scope.battleForm.error = res.data.message
                 });
             }
         }]);
@@ -12503,7 +12661,11 @@ lwsControllers.controller('TopicCtrl',
             $scope.topic = {currentPage: 1};
             var lastNewId = 1;
             $scope.sceditor = {text: ''};
-            $scope.clearUpdate('topic_' + $stateParams.topicId);
+            if ($stateParams.topicId == 6)
+                $scope.clearUpdate('tech_hardware');
+            else
+                $scope.clearUpdate('topic_' + $stateParams.topicId);
+
             Topic.get({topicId: $stateParams.topicId}, function (res) {
                 angular.extend($scope.topic, res.data);
             });

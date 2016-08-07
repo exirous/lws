@@ -33,4 +33,20 @@ class BattleEvent extends BaseBattleEvent
     {
         return parent::model($className);
     }
+
+    public static function getForUser($id)
+    {
+        $events = [];
+        foreach(BattleEvent::model()->scopeOrder('time desc')->findAllByAttributes(['user_id'=>$id]) as $battleEvent) {
+            $events[] = $battleEvent->getPublicAttributes();
+        }
+        return $events;
+    }
+
+    public function getPublicAttributes()
+    {
+        $attributes = $this->attributes;
+        $attributes['time'] = strtotime($attributes['time']).'000';
+        return $attributes;
+    }
 }

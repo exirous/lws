@@ -11,10 +11,14 @@
  *
  * @property string $id
  * @property string $user_id
- * @property string $name
+ * @property string $mission
+ * @property integer $flight_time
  * @property string $time
- * @property integer $kills
- * @property string $plane
+ * @property string $air_targets
+ * @property string $ground_targets
+ * @property string $fine_points
+ * @property string $fine_points_times
+ * @property string $result
  *
  * @property User $user
  */
@@ -38,19 +42,19 @@ abstract class BaseBattleEvent extends AActiveRecord
 
     public static function representingColumn()
     {
-        return 'name';
+        return 'mission';
     }
 
     public function rules()
     {
         return array(
             array('user_id', 'required'),
-            array('kills', 'numerical', 'integerOnly'=>true),
+            array('flight_time', 'numerical', 'integerOnly'=>true),
             array('user_id', 'length', 'max'=>10),
-            array('name, plane', 'length', 'max'=>128),
-            array('time', 'safe'),
-            array('name, time, kills, plane', 'default', 'setOnEmpty' => true, 'value' => null),
-            array('id, user_id, name, time, kills, plane', 'safe', 'on' => 'search'),
+            array('air_targets, ground_targets, fine_points, fine_points_times', 'length', 'max'=>3),
+            array('mission, time, result', 'safe'),
+            array('mission, flight_time, time, air_targets, ground_targets, fine_points, fine_points_times, result', 'default', 'setOnEmpty' => true, 'value' => null),
+            array('id, user_id, mission, flight_time, time, air_targets, ground_targets, fine_points, fine_points_times, result', 'safe', 'on' => 'search'),
         );
     }
 
@@ -72,10 +76,14 @@ abstract class BaseBattleEvent extends AActiveRecord
         return array(
             'id' => Yii::t('app', 'ID'),
             'user_id' => null,
-            'name' => Yii::t('app', 'Name'),
+            'mission' => Yii::t('app', 'Mission'),
+            'flight_time' => Yii::t('app', 'Flight Time'),
             'time' => Yii::t('app', 'Time'),
-            'kills' => Yii::t('app', 'Kills'),
-            'plane' => Yii::t('app', 'Plane'),
+            'air_targets' => Yii::t('app', 'Air Targets'),
+            'ground_targets' => Yii::t('app', 'Ground Targets'),
+            'fine_points' => Yii::t('app', 'Fine Points'),
+            'fine_points_times' => Yii::t('app', 'Fine Points Times'),
+            'result' => Yii::t('app', 'Result'),
             'user' => null,
         );
     }
@@ -86,10 +94,14 @@ abstract class BaseBattleEvent extends AActiveRecord
 
         $criteria->compare('id', $this->id, true);
         $criteria->compare('user_id', $this->user_id);
-        $criteria->compare('name', $this->name, true);
+        $criteria->compare('mission', $this->mission, true);
+        $criteria->compare('flight_time', $this->flight_time);
         $criteria->compare('time', $this->time, true);
-        $criteria->compare('kills', $this->kills);
-        $criteria->compare('plane', $this->plane, true);
+        $criteria->compare('air_targets', $this->air_targets, true);
+        $criteria->compare('ground_targets', $this->ground_targets, true);
+        $criteria->compare('fine_points', $this->fine_points, true);
+        $criteria->compare('fine_points_times', $this->fine_points_times, true);
+        $criteria->compare('result', $this->result, true);
 
         return new CActiveDataProvider($this, array(
             'criteria' => $criteria,

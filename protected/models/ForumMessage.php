@@ -76,7 +76,10 @@ class ForumMessage extends BaseForumMessage
     public function afterSave()
     {
         parent::afterSave();
-        Update::setUpdates('topic_' . $this->topic_id, Yii::app()->user->id);
+        if ($this->topic_id == 6)
+            Update::setUpdates('tech_hardware', Yii::app()->user->id);
+        else
+            Update::setUpdates('topic_' . $this->topic_id, Yii::app()->user->id);
     }
 
 }

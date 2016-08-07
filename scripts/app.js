@@ -52,6 +52,21 @@ function mainRouteConfig($stateProvider, $urlRouterProvider)
             templateUrl: 'UserTmpl',
             controller: "UserCtrl"
         })
+        .state('battleLog', {
+            url: "/user/battlelog/:userId",
+            templateUrl: 'BattleLogTmpl',
+            controller: "BattleLogCtrl"
+        })
+        .state('addBattleLog', {
+            url: "/user/battlelog/:userId/new",
+            templateUrl: 'EditBattleLogTmpl',
+            controller: "NewBattleLogCtrl"
+        })
+        .state('editBattleLog', {
+            url: "/user/battlelog/:userId/:logId",
+            templateUrl: 'EditBattleLogTmpl',
+            controller: "EditBattleLogCtrl"
+        })
         .state('inactiveUsers', {
             url: "/inactive",
             templateUrl: 'InactiveTmpl',
