@@ -22,7 +22,7 @@ class NodeServerSync
     private static function _sendMessage($event, $data, $room = "", $isInternal = false)
     {
         // URL on which we have to post data
-        $url = "http://127.0.0.1:3000";
+        $url = "http://127.0.0.1:3010";
         // Any other field you might want to post
         $json_data = json_encode(["room" => $room, "event" => $event, "data" => $data, "isInternal" => $isInternal]);
         // Initialize cURL

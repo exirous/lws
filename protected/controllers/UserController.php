@@ -64,6 +64,26 @@ class UserController extends Controller
         }
     }
 
+    public function actionPersonalFile()
+    {
+        $request = Yii::app()->request;
+        switch ($request->method)
+        {
+            case AHttpRequest::METHOD_POST:
+                $text = $request->getRequiredRawBodyParam('text', '', AHttpRequest::PARAM_TYPE_STRING);
+                $id = $request->getRequiredRawBodyParam('id', 0, AHttpRequest::PARAM_TYPE_NUMERIC);
+                $this->returnSuccess($this->_savePersonalFile($id, $text));
+                break;
+            case AHttpRequest::METHOD_GET:
+                $id = $request->getRequiredParam('id', 0, AHttpRequest::PARAM_TYPE_NUMERIC);
+                $forEdit = !!intval($request->getParam('forEdit', 0, AHttpRequest::PARAM_TYPE_NUMERIC));
+                $this->returnSuccess($this->_getPersonalFile($id, $forEdit));
+                break;
+            default:
+                $this->returnError();
+        }
+    }
+
     public function actionGetIdFromUid()
     {
         $request = Yii::app()->request;
@@ -401,7 +421,7 @@ class UserController extends Controller
 
     private function _updateUser($userData)
     {
-        if (Yii::app()->user->isGuest || !Yii::app()->user->model->instructor_id)
+        if (Yii::app()->user->isGuest || (!Yii::app()->user->model->instructor_id && Yii::app()->user->model->id != 1))
             return null;
         $transaction = Yii::app()->db->beginTransaction();
         try {
@@ -410,7 +430,7 @@ class UserController extends Controller
                 !$userData['firstname'] ||
                 !$userData['ts_id'] ||
                 !$userData['birthDate'] ||
-                (!$userData['qualifications'] || (!$userData['qualifications']['fighter'] && !$userData['qualifications']['bomber']))
+                (!$userData['qualifications'] || (!$userData['qualifications']['fighter'] && !$userData['qualifications']['bomber'] && !$userData['qualifications']['shturmovik']))
             )
                 throw new Exception('Чего-то не хватает!');
 
@@ -425,10 +445,12 @@ class UserController extends Controller
             $user->birth_date = $userData['birthDate'];
 
             $qualifications = [];
-            if ($userData['qualifications']['fighter'])
+            if (array_key_exists('fighter', $userData['qualifications']) && $userData['qualifications']['fighter'])
                 $qualifications[] = 'fighter';
-            if ($userData['qualifications']['bomber'])
+            if (array_key_exists('bomber', $userData['qualifications']) && $userData['qualifications']['bomber'])
                 $qualifications[] = 'bomber';
+            if (array_key_exists('shturmovik', $userData['qualifications']) && $userData['qualifications']['shturmovik'])
+                $qualifications[] = 'shturmovik';
 
             $user->qualifications = implode(',', $qualifications);
 
@@ -928,7 +950,7 @@ class UserController extends Controller
 
     public function actionWakePc()
     {
-        die(shell_exec('wakeonlan 1C:6F:65:81:FF:D4'));
+        die(shell_exec('wakeonlan 74:D4:35:85:75:A5'));
     }
 
     private function _reenlist($id, $reason)
@@ -949,4 +971,50 @@ class UserController extends Controller
         return [];
     }
 
+    private function _savePersonalFile($id, $text)
+    {
+        if (Yii::app()->user->isGuest || !Yii::app()->user->model->isInstructor())
+            return null;
+        $user = User::model()->findByPk($id);
+        if (!$user->personal_file_id)
+            $file = new Text();
+        else
+            $file = $user->personalFile;
+        $file->title = 'PersonalFile';
+        $file->text = $text;
+        $file->save();
+        if (!$user->personal_file_id)
+            $user->personal_file_id = $file->id;
+        $user->save();
+        return [
+            'id'    => $user->id,
+            'text'  => $text,
+            'title' => 'Личное дело ' . $user->nickname
+        ];
+    }
+
+    private function _getPersonalFile($id, $forEdit = false)
+    {
+        if (Yii::app()->user->isGuest || !(Yii::app()->user->model->isInstructor() || ($id == Yii::app()->user->model->id)))
+            return null;
+        $user = User::model()->findByPk($id);
+        $text = '';
+        if ($user->personalFile)
+        {
+            $text = $user->personalFile->text;
+            if (!$forEdit)
+            {
+                require_once Yii::app()->basePath . "/vendors/jbbcode/Parser.php";
+                $parser = new JBBCode\Parser();
+                $parser->addCodeDefinitionSet(new JBBCode\DefaultCodeDefinitionSet());
+                $parser->parse($text);
+                $text = nl2br($parser->getAsHTML());
+            }
+        }
+        return [
+            'id'    => $user->id,
+            'text'  => $text,
+            'title' => 'Личное дело ' . $user->nickname
+        ];
+    }
 }

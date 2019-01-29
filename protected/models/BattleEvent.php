@@ -1,6 +1,7 @@
 <?php
 
 Yii::import('application.models._base.BaseBattleEvent');
+
 /**
  * @method BattleEvent find
  * @method BattleEvent[] findAll
@@ -34,19 +35,21 @@ class BattleEvent extends BaseBattleEvent
         return parent::model($className);
     }
 
-    public static function getForUser($id)
+    public static function getForUser($id, $page, $perPage)
     {
+        $from = $perPage * ($page - 1);
         $events = [];
-        foreach(BattleEvent::model()->scopeOrder('time desc')->findAllByAttributes(['user_id'=>$id]) as $battleEvent) {
+        foreach (BattleEvent::model()->scopeOrder('time desc')->findAll(['condition' => 'user_id=:id', 'params' => ['id' => $id], 'limit' => $perPage, 'offset' => $from]) as $battleEvent) {
             $events[] = $battleEvent->getPublicAttributes();
         }
-        return $events;
+        $count = Yii::app()->db->createCommand('SELECT COUNT(*) FROM `battle_event` WHERE user_id=:id')->queryScalar(['id' => $id]);
+        return ["records" => $events, 'count' => $count];
     }
 
     public function getPublicAttributes()
     {
         $attributes = $this->attributes;
-        $attributes['time'] = strtotime($attributes['time']).'000';
+        $attributes['time'] = strtotime($attributes['time']) . '000';
         return $attributes;
     }
 }

@@ -25,7 +25,7 @@ class TeamSpeakController extends Controller
         if ($user)
             $this->redirect('ts3server://luftwaffeschule.ru/?nickname=' . urlencode($user->nickname . ' (' . $user->firstname . ')'), true);
         else
-            $this->redirect('http://luftwaffeschule.ru', true);
+            $this->redirect('https://luftwaffeschule.ru', true);
     }
 
     public function actionIFrame()

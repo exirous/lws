@@ -147,7 +147,13 @@ class TeamSpeak extends CApplicationComponent
         $from = 0;
         $users = [];
         do {
-            $db = $this->ts3Server->clientListDb($from, 200);
+            try {
+                $db = $this->ts3Server->clientListDb($from, 200);
+            }
+            catch (\Exception $exception)
+            {
+                $db = [];
+            }
             foreach ($db as $client) {
                 $name = (isset($client['client_nickname']) && method_exists($client['client_nickname'], "toString")) ? $client['client_nickname']->toString() : '';
                 $lastIp = (isset($client['client_lastip']) && method_exists($client['client_lastip'], "toString")) ? $client['client_lastip']->toString() : '';

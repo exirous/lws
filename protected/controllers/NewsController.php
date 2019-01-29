@@ -4,7 +4,6 @@ class NewsController extends Controller
 {
     public function actions()
     {
-        Yii::t('forms', 'cate');
         return array(
             // captcha action renders the CAPTCHA image displayed on the contact page
             'captcha' => array(

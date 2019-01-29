@@ -190,7 +190,7 @@ class User extends BaseUser
             'id' => $this->id,
             'is_clanner' => intval($this->is_clanner),
             'ts_id' => $this->ts_id,
-            'qualifications' => ['fighter' => strpos($this->qualifications, 'fighter') !== false, 'bomber' => strpos($this->qualifications, 'bomber') !== false],
+            'qualifications' => ['fighter' => strpos($this->qualifications, 'fighter') !== false, 'bomber' => strpos($this->qualifications, 'bomber') !== false, 'shturmovik'=> strpos($this->qualifications, 'shturmovik') !== false],
             'possibleUsers' => Yii::app()->ts->findUsersLike($this->nickname, $this->ip),
             'email' => Yii::app()->user->canViewUserEmailAddress($this->id) ? $this->email : ''
         ];
@@ -433,7 +433,15 @@ class User extends BaseUser
 
     public function syncWithTeamSpeak()
     {
-        $dbId = Yii::app()->ts->ts3Server->clientFindDb($this->ts_id, true);
+        $dbId = [];
+        try
+        {
+            $dbId = Yii::app()->ts->ts3Server->clientFindDb($this->ts_id, true);
+        }
+        catch (\Exception $e)
+        {
+
+        }
         if (count($dbId)) {
             $dbId = $dbId[0];
             $groups = Yii::app()->ts->ts3Server->clientGetServerGroupsByDbid($dbId);
@@ -480,8 +488,6 @@ class User extends BaseUser
 
             if (!$ignoreBomberQualification && $needsBomberBadge)
                 Yii::app()->ts->ts3Server->serverGroupClientAdd("36", $dbId);
-        } else {
-            throw new Exception('Пользователь не прикреплён к TeamSpeak');
         }
         NodeServerSync::sendInternalMessage("RELOAD_USER_LIST");
     }

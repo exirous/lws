@@ -180,8 +180,15 @@ lwsServices.factory('User', ['$resource', function ($resource)
         clearUpdate:{
             url: '/user/clearUpdate',
             method: 'post'
+        },
+        getPersonalFile:{
+            url: '/user/personalFile',
+            method: 'get'
+        },
+        savePersonalFile:{
+            url: '/user/personalFile',
+            method: 'post'
         }
-
     });
 }]);
 
@@ -273,8 +280,26 @@ lwsServices.factory('Vacation', ['$resource', function ($resource)
     return $resource('/user/vacation', {}, {});
 }]);
 
+lwsServices.factory('Awards', ['$resource', function ($resource)
+{
+    return $resource('/awards/list', {}, {
+        query : {
+            method:'GET'
+        },
+        get : {
+            method:'GET',
+            url:'/awards/get'
+        },
+        save: {
+            method:'POST',
+            url:'/awards/save'
+        },
+    });
+}]);
+
+
 lwsServices.factory('socket', function ($rootScope) {
-    var socket = io.connect('http://luftwaffeschule.ru:3000');
+    var socket = io.connect('/socket.io');
     return {
         on: function (eventName, callback) {
             socket.on(eventName, function () {

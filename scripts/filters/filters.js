@@ -123,3 +123,14 @@ lwsFilters.filter('barracksFilter', function() {
         return filtered;
     };
 });
+
+
+lwsFilters.filter('niceMinutes', function () {
+    return function (minutes) {
+        if (minutes < 60)
+            return minutes + 'м';
+        else {
+            return Math.floor(minutes / 60) + 'ч ' + (minutes % 60) + 'м';
+        }
+    };
+});

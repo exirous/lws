@@ -2,13 +2,13 @@
 
 class BattlelogController extends Controller
 {
-    public function actionList()
+    public function actionList($page = 1, $perPage = 7)
     {
         $request = Yii::app()->request;
         switch ($request->method) {
             case AHttpRequest::METHOD_GET:
                 $id = $request->getRequiredParam('userId', 0);
-                $this->returnSuccess($this->_getList($id));
+                $this->returnSuccess($this->_getList($id, $page, $perPage));
                 break;
             default:
                 $this->returnError();
@@ -57,7 +57,7 @@ class BattlelogController extends Controller
                 $groundTargets = $request->getRawBodyParam('ground_targets', 0);
                 $finePoints = $request->getRawBodyParam('fine_points', 0);
                 $finePointsTimes = $request->getRawBodyParam('fine_points_times', 0);
-                if (Yii::app()->user->isGuest || (Yii::app()->user->id != 14 && Yii::app()->user->id != 1))
+                if (Yii::app()->user->isGuest || (!Yii::app()->user->model->isInstructor() && Yii::app()->user->id != 1))
                     return $this->returnError('Нет доступа!');
                 $battleEvent = new BattleEvent();
                 $battleEvent->user_id = $userId;
@@ -92,7 +92,7 @@ class BattlelogController extends Controller
                 $groundTargets = $request->getRawBodyParam('ground_targets', 0);
                 $finePoints = $request->getRawBodyParam('fine_points', 0);
                 $finePointsTimes = $request->getRawBodyParam('fine_points_times', 0);
-                if (Yii::app()->user->isGuest || (Yii::app()->user->id != 14 && Yii::app()->user->id != 1))
+                if (Yii::app()->user->isGuest || (!Yii::app()->user->model->isInstructor() && Yii::app()->user->id != 1))
                     return $this->returnError('Нет доступа!');
                 $battleEvent = BattleEvent::model()->findByPk(intval($id));
                 if (!$battleEvent)
@@ -114,8 +114,8 @@ class BattlelogController extends Controller
         }
     }
 
-    private function _getList($userId)
+    private function _getList($userId, $page, $perPage)
     {
-        return BattleEvent::getForUser($userId);
+        return BattleEvent::getForUser($userId, $page, $perPage);
     }
 }

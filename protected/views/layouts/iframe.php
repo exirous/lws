@@ -10,7 +10,7 @@
     <!--<script src="/iframe_scripts.js"></script>-->
     <script src="/scripts/lib/angular.min.js"></script>
     <script src="/scripts/controllers/iframe.js"></script>
-    <script src="http://luftwaffeschule.ru:3000/socket.io/socket.io.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
     <link rel="stylesheet" href="/css/iframe.css" type="text/css">
     <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Open+Sans:400,700,600italic,600,400italic,300italic,300&subset=latin,cyrillic" type="text/css">
 </head>

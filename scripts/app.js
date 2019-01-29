@@ -67,6 +67,16 @@ function mainRouteConfig($stateProvider, $urlRouterProvider)
             templateUrl: 'EditBattleLogTmpl',
             controller: "EditBattleLogCtrl"
         })
+        .state('personalFile', {
+            url: "/user/personalfile/:id",
+            templateUrl: 'PersonalFileTmpl',
+            controller: "PersonalFileCtrl"
+        })
+        .state('editpersonalFile', {
+            url: "/user/editpersonalfile/:id",
+            templateUrl: 'EditPersonalFileTmpl',
+            controller: "EditPersonalFileCtrl"
+        })
         .state('inactiveUsers', {
             url: "/inactive",
             templateUrl: 'InactiveTmpl',
@@ -146,6 +156,16 @@ function mainRouteConfig($stateProvider, $urlRouterProvider)
             url: "/pilots",
             templateUrl: 'BarracksTmpl',
             controller: "BarracksCtrl"
+        })
+        .state('awards', {
+            url: "/awards",
+            templateUrl: 'AwardsTmpl',
+            controller: "AwardsCtrl"
+        })
+        .state('editaward', {
+            url: "/editaward/:awardId",
+            templateUrl: 'AwardTmpl',
+            controller: "AwardCtrl"
         })
         .state('flood', {
             url: "/flood",

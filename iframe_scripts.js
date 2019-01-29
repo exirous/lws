@@ -228,7 +228,7 @@ lwsApp.controller('AppCtrl',
         function ($scope) {
             $scope.io_socket = false;
             if (typeof io != 'undefined') {
-                $scope.io_socket = io.connect('http://luftwaffeschule.ru:3000');
+                $scope.io_socket = io.connect('/socket.io');
                 $scope.io_socket.on('connect', function (data) {
                     $scope.tree = [];
                     if ($scope.io_socket)

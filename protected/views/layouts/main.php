@@ -10,10 +10,10 @@
     <title>Школа виртуального пилотирования LuftwaffeSchule</title>
     <script type="text/javascript">
         var UserLoginData = <?=json_encode(Yii::app()->user->privateAttributes)?>;
-        var isIL2 = <?=Yii::app()->params['isIL2'] ? 'true' : 'false';?>
+        var isIL2 = true;
     </script>
     <script src="/scripts.js"></script>
-    <script src="http://luftwaffeschule.ru:3000/socket.io/socket.io.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
     <link rel="stylesheet" href="/style.css" type="text/css">
     <!--[if lt IE 8]>
     <script type="text/javascript">
@@ -83,7 +83,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="panel_menu"><a href="ts3server://luftwaffeschule.ru/?nickname={{UserIdentity.fullname}}"><span class="ts_icon">Подключиться</span></a>
+                    <div class="panel_menu"><a href="ts3server://luftwaffeschule.ru/?nickname={{UserIdentity.canMakeOrders ? '=LwS=' : ''}}{{UserIdentity.fullname}}"><span class="ts_icon">Подключиться</span></a>
                     </div>
                     <div class="left_content ts_channels">
                         <ul ng-controller="TSViewCtrl" style="padding:15px">
@@ -111,6 +111,8 @@
                             <li class="divider"></li>
                             <li><a ui-sref="makeorder">Отдать приказ</a></li>
                             <li><a ui-sref="makenews">Добавить новость</a></li>
+                            <li ng-if="(UserIdentity.id == 14) || (UserIdentity.id == 1)" class="divider"></li>
+                            <li ng-if="(UserIdentity.id == 14) || (UserIdentity.id == 1)"><a ui-sref="awards">Награды</a></li>
                         </ul>
                         </span>
                         <span class="dropdown dropdown-hover">
@@ -361,6 +363,16 @@
     <div ng-bind-html="text.text"></div>
 </script>
 
+<script type="text/ng-template" id="PersonalFileTmpl">
+    <div class="big-spinner" ng-if="!text">
+        <div class="spinner-icon"></div>
+    </div>
+    <h2><span>{{text.title}}</span><a ng-if="UserIdentity.canMakeOrders" title="Редактировать"
+                                      class="btn btn-xs btn-default pull-right" ui-sref="editpersonalFile(text)"><span
+                class="glyphicon glyphicon-pencil"></span></a></h2>
+    <div ng-bind-html="text.text | to_trusted"></div>
+</script>
+
 
 <script type="text/ng-template" id="SchoolTmpl">
     <h2>{{subject.name}}</h2>
@@ -432,6 +444,24 @@
             <input type="text" placeholder="Пустой заголовок"
                    class="form-control" ng-model="material.title"/>
         </p>
+    </div>
+    <label>Содержание</label>
+    <textarea sceditor="1" style="width: 100%;resize: none;" rows="20"></textarea>
+    <div style="margin-top:5px;">
+        <p class="well">
+            <button type="button" ng-click="save()"
+                    ng-disabled="!material.isLoaded"
+                    class="btn btn-primary">Сохранить
+            </button>
+        </p>
+    </div>
+</script>
+
+
+<script type="text/ng-template" id="EditPersonalFileTmpl">
+    <h2>Редактирование: {{material.title}}</h2>
+    <div class="big-spinner" ng-if="!material.isLoaded">
+        <div class="spinner-icon"></div>
     </div>
     <label>Содержание</label>
     <textarea sceditor="1" style="width: 100%;resize: none;" rows="20"></textarea>
@@ -575,6 +605,10 @@
                         <tr ng-if="UserIdentity.isInstructor || UserIdentity.id == user.id">
                             <th>Оценки</th>
                             <td><a ui-sref="userMarks({userId:user.id})">Посмотреть</a></td>
+                        </tr>
+                        <tr ng-if="UserIdentity.isInstructor || UserIdentity.id == user.id">
+                            <th>Личное дело</th>
+                            <td><a ui-sref="personalFile({id:user.id})">Посмотреть</a></td>
                         </tr>
                         <tr ng-if="UserIdentity.isInstructor || UserIdentity.id == user.id">
                             <th>Почта</th>
@@ -1065,6 +1099,8 @@
                             </button>
                             <button type="button" class="btn btn-default" ng-model="user.qualifications.bomber" btn-checkbox>Бомбардировщик
                             </button>
+                            <button type="button" class="btn btn-default" ng-model="user.qualifications.shturmovik" btn-checkbox>Штурмовик
+                            </button>
                         </p>
                     </div>
                 </div>
@@ -1080,7 +1116,7 @@
         <div>
             <p class="well">
                 <button type="button" ng-click="save()"
-                        ng-disabled="userForm.isSubmitting || (!user.qualifications.bomber && !user.qualifications.fighter)" class="btn btn-primary">Сохранить</button>
+                        ng-disabled="userForm.isSubmitting || (!user.qualifications.bomber && !user.qualifications.fighter && !user.qualifications.shturmovik)" class="btn btn-primary">Сохранить</button>
             </p>
         </div>
     </div>
@@ -1623,7 +1659,7 @@
         <div class="spinner-icon"></div>
     </div>
     <div ng-show="!loading">
-        <button style="margin-left:10px" type="button" ui-sref="addBattleLog({userId:user.id})" class="btn btn-sm btn-success pull-right" ng-if="((UserIdentity.id == 14) || (UserIdentity.id == 1))"><span class="glyphicon glyphicon-plus"></span> Добавить</button>
+        <button style="margin-left:10px" type="button" ui-sref="addBattleLog({userId:user.id})" class="btn btn-sm btn-success pull-right" ng-if="((UserIdentity.isInstructor) || (UserIdentity.id == 1))"><span class="glyphicon glyphicon-plus"></span> Добавить</button>
         <h2>{{user.rank.name}} "{{user.nickname}}" {{user.firstname}}</h2>
         <br>
         <table class="table battle-log">
@@ -1631,25 +1667,25 @@
             <tr>
                 <th style="vertical-align: middle">Дата</th>
                 <th>Назначение вылета</th>
-                <th>Полётное время (мин)</th>
+                <th>Полётное время</th>
                 <th>Кол. сбитых</th>
                 <th>Наз. цели</th>
                 <th>Итог вылета</th>
                 <th colspan="2">Штрафные очки</th>
-                <th ng-if="((UserIdentity.id == 14) || (UserIdentity.id == 1))"></th>
+                <th ng-if="((UserIdentity.isInstructor) || (UserIdentity.id == 1))"></th>
             </tr>
             </thead>
             <tbody>
-            <tr ng-repeat="log in battlelog">
+            <tr ng-repeat="log in battlelog.records">
                 <td style="text-align: center">{{log.time | date:'dd.MM.yyyy'}}</td>
                 <td>{{log.mission}}</td>
-                <td style="text-align: center">{{log.flight_time}}</td>
+                <td style="text-align: center">{{log.flight_time | niceMinutes}}</td>
                 <td style="text-align: center">{{log.air_targets}}</td>
                 <td style="text-align: center">{{log.ground_targets}}</td>
                 <td>{{log.result}}</td>
                 <td style="text-align: center">{{log.fine_points}}</td>
                 <td style="text-align: center">{{log.fine_points_times}}</td>
-                <td ng-if="((UserIdentity.id == 14) || (UserIdentity.id == 1))">
+                <td ng-if="((UserIdentity.isInstructor) || (UserIdentity.id == 1))">
                     <a title="Удалить" class="btn btn-xs btn-danger pull-right" href="" style="margin-left:5px" ng-click="deleteBattleLog(log)">
                         <span class="glyphicon glyphicon-minus"></span>
                     </a>
@@ -1663,7 +1699,7 @@
             <tr>
                 <th>Итог страницы</th>
                 <th></th>
-                <th style="text-align: center;vertical-align: middle">{{result.flight_time}}</th>
+                <th style="text-align: center;vertical-align: middle">{{result.flight_time | niceMinutes}}</th>
                 <th style="text-align: center;vertical-align: middle">{{result.air_targets}}</th>
                 <th style="text-align: center;vertical-align: middle">{{result.ground_targets}}</th>
                 <th></th>
@@ -1673,6 +1709,8 @@
             </tr>
             </tfoot>
         </table>
+        <pagination ng-show="battlelog.count > 7" total-items="battlelog.count" items-per-page="itemsPerPage" page="currentPage" max-size="7"
+                    class="pagination-sm" boundary-links="true" rotate="false"></pagination>
     </div>
 </script>
 
@@ -1779,6 +1817,7 @@
         <ul class="nav nav-tabs" role="tablist">
             <li ng-class="{'active':(tabs.activeTab=='fighter')}" ng-if="user.programs.fighter"><a href="" ng-click="tabs.activeTab='fighter'">Истребитель</a></li>
             <li ng-class="{'active':(tabs.activeTab=='bomber')}" ng-if="user.programs.bomber"><a href="" ng-click="tabs.activeTab='bomber'">Бомбардировщик</a></li>
+            <li ng-class="{'active':(tabs.activeTab=='shturmovik')}" ng-if="user.programs.shturmovik"><a href="" ng-click="tabs.activeTab='shturmovik'">Штурмовик</a></li>
         </ul>
         <div ng-repeat="program in user.programs"  ng-if="tabs.activeTab==program.id">
             <div class="panel panel-{{course.complete ? 'success' : 'primary'}}" ng-repeat="course in program.courses">
@@ -1807,6 +1846,122 @@
         </div>
     </div>
 </script>
+
+
+<script type="text/ng-template" id="AwardsTmpl">
+    <h2>Награды</h2>
+    <div style="min-height: 550px">
+        <div class="big-spinner" ng-if="isLoading">
+            <div class="spinner-icon"></div>
+        </div>
+        <div class="well">
+            <a class="btn btn-success" ui-sref="editaward({awardId:award.id})">Добавить награду</a>
+        </div>
+        <div class="" ng-repeat="award in awards" style="width: 45%;float:left;margin-left:10px;margin-right:10px">
+            <a style="height: 90px;margin-bottom: 10px" class="thumbnail isRelative" ui-sref="editaward({awardId:award.id})"
+               title="{{award.name}}">
+                <img style="width:80px; height:80px; float:left;background: url('/img/awards/{{award.id}}.png') center center no-repeat"/>
+                <div class="caption" style="padding-top: 20px;padding-left:95px">{{award.name}}</div>
+            </a>
+        </div>
+    </div>
+</script>
+
+
+<script type="text/ng-template" id="AwardTmpl">
+    <div class="big-spinner" ng-if="!award">
+        <div class="spinner-icon"></div>
+    </div>
+    <div ng-show="award">
+        <h2>{{award.id ? 'Редактировать' : 'Добавить'}} награду</h2>
+        <br>
+        <div class="alert alert-danger" ng-show="awardForm.error">{{awardForm.error}}</div>
+
+        <div style="margin-right:10px;position: relative;float:right">
+            <div style="width: 200px;height:100px;display:block;background:url('{{award.temp_image ? '/img/temp/' + award.temp_image : ('/img/awards/'+award.id + '.png')}}') center center no-repeat"></div>
+            <div award-upload-box></div>
+        </div>
+
+        <ng-form name="awardForm" role="form">
+            <div class="form-group input-group"
+                 ng-class="{true: 'has-error'}[(awardForm.name.$dirty && awardForm.name.$invalid)]">
+                <label>Название</label>
+                <input type="text"
+                       style="margin-bottom: 10px" name="name" class="form-control" ng-model="award.name"
+                       required/>
+            </div>
+            <div class="form-group input-group"
+                 ng-class="{true: 'has-error'}[(awardForm.sub_name.$dirty && awardForm.sub_name.$invalid)]">
+                <label>Название в творительном падеже</label>
+                <input type="text"
+                       style="margin-bottom: 10px" name="sub_name" class="form-control" ng-model="award.sub_name"
+                       required/>
+            </div>
+            <label>Можно иметь только одну</label>
+            <div class="form-group input-group">
+                <p class="btn-group">
+                    <button type="button" class="btn btn-default" ng-model="award.only_one_allowed" btn-radio="'1'"
+                            required>
+                        Да
+                    </button>
+                    <button type="button" class="btn btn-default" ng-model="award.only_one_allowed" btn-radio="'0'">
+                        Нет
+                    </button>
+                </p>
+            </div>
+            <div class="form-group input-group">
+                <label>Расположение на форме по умолчанию</label>
+                <div style="width: 100px;"> Сверху:
+                    <input type="text"
+                           style="margin-bottom: 10px;" name="top" class="form-control" ng-model="award.top"
+                           required/>
+                </div>
+                <div style="width: 100px;">
+                    Слева:
+                    <input type="text"
+                           style="margin-bottom: 10px;" name="left" class="form-control" ng-model="award.left"
+                           required/>
+                </div>
+            </div>
+            <div class="form-group input-group">
+                <label>Замещает собой:</label>
+                <div>
+                <select data-placeholder="Выберите Награду"
+                        ui-select2="awardSelect2Options"
+                        class="form-control"
+                        style="width: 512px;vertical-align: top;"
+                        ng-model="award.award_replace_id">
+                    <option ng-repeat="award in awards" value="{{award.id}}">{{award.name}}</option>
+                </select>
+                </div>
+            </div>
+        </ng-form>
+
+        <div class="alert alert-danger" ng-show="awardForm.error">{{awardForm.error}}</div>
+        <div>
+            <p class="well">
+                <button type="button" ng-click="save()"
+                        ng-disabled="awardForm.isSubmitting" class="btn btn-primary">Сохранить</button>
+            </p>
+        </div>
+    </div>
+</script>
+
+<script type="text/ng-template" id="awardUploadBoxTemplate">
+    <div ng-if="!uploadItem.isUploading" style="max-width: 200px;overflow: hidden">
+        <input type="file" ng-file-select style="height: 22px;max-height: 22px">
+
+        <div>
+            <a href="" class="btn btn-xs btn-default" style="width: 100%;margin-top: -45px;pointer-events:none">Поменять
+                изображение</a>
+        </div>
+    </div>
+    <div class="big-spinner" ng-if="uploadItem.isUploading">
+        <div class="spinner-icon"></div>
+        <div class="text">{{uploadItem.progress}}%</div>
+    </div>
+</script>
+
 
 
 <script type="text/ng-template" id="markDialogTmpl">

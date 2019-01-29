@@ -76,12 +76,12 @@ class OrderController extends Controller
             foreach ($ranks as $rank)
                 $data['instructors'][$rank->id] = $rank->shortAttributes;
 
-            $awards = Award::model()->findAll();
+            $awards = Award::model()->scopeOrder('name')->findAll();
             if (!$awards)
                 throw new Exception("Some error?");
 
             foreach ($awards as $award)
-                $data['awards'][$award->id] = $award->shortAttributes;
+                $data['awards'][] = $award->shortAttributes;
 
 
             return $data;

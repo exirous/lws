@@ -115,3 +115,42 @@ lwsDirectives.directive("bindCompiledHtml", ['$compile',function($compile) {
         }
     };
 }]);
+
+
+lwsDirectives.directive('awardUploadBox', ['$fileUploader', function ($fileUploader)
+{
+    return {
+        restrict: 'A',
+        replace: false,
+        templateUrl: 'awardUploadBoxTemplate',
+        link: function ($scope, element, attrs)
+        {
+            var uploader = $fileUploader.create({
+                scope: $scope,
+                autoUpload: true,
+                url: '/awards/upload/',
+                removeAfterUpload: true
+            });
+            $scope.uploadItem = {};
+
+            uploader.bind('progress', function (event, item, progress)
+            {
+                $scope.uploadItem.progress = progress;
+            });
+            uploader.bind('beforeupload', function (event, item)
+            {
+                $scope.uploadItem.progress = 0;
+                $scope.uploadItem.isUploading = true;
+                $scope.uploadItem.isError = false;
+            });
+            uploader.bind('complete', function (event, xhr, item, response)
+            {
+                if (item.isError)
+                    alert("Ошибка при загрузке файла: " +  response.message);
+                $scope.uploadItem.isUploading = false;
+                $scope.award.temp_image = response.data;
+                $scope.$apply();
+            });
+        }
+    }
+}]);

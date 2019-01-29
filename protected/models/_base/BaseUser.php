@@ -32,6 +32,7 @@
  * @property string $disable_reason
  * @property string $last_warning_time
  * @property integer $is_defector
+ * @property string $personal_file_id
  *
  * @property BattleEvent[] $battleEvents
  * @property ForumMessage[] $forumMessages
@@ -42,8 +43,9 @@
  * @property PrivateMessage[] $privateMessages
  * @property PrivateMessage[] $privateMessages1
  * @property Update[] $updates
- * @property Rank $rank
+ * @property Text $personalFile
  * @property Rank $instructor
+ * @property Rank $rank
  * @property Award[] $awards
  * @property UserEvent[] $userEvents
  * @property UserMark[] $userMarks
@@ -99,11 +101,11 @@ abstract class BaseUser extends AActiveRecord
             array('nickname, password, ip, broadcast_token, recovery_token', 'length', 'max'=>32),
             array('firstname', 'length', 'max'=>128),
             array('email, ts_id', 'length', 'max'=>64),
-            array('rank_id, instructor_id, img_src', 'length', 'max'=>10),
+            array('rank_id, instructor_id, img_src, personal_file_id', 'length', 'max'=>10),
             array('is_clanner, is_technician', 'length', 'max'=>1),
             array('join_date, birth_date, roster, qualifications, last_online_time, disable_reason, last_warning_time', 'safe'),
-            array('nickname, firstname, email, password, ts_id, join_date, birth_date, roster, rank_id, instructor_id, ip, is_clanner, is_technician, img_src, qualifications, last_online_time, broadcast_token, recovery_token, is_disabled, disable_reason, last_warning_time, is_defector', 'default', 'setOnEmpty' => true, 'value' => null),
-            array('id, nickname, firstname, email, password, ts_id, join_date, birth_date, roster, rank_id, instructor_id, ip, is_clanner, is_technician, img_src, qualifications, last_online_time, broadcast_token, recovery_token, is_disabled, disable_reason, last_warning_time, is_defector', 'safe', 'on' => 'search'),
+            array('nickname, firstname, email, password, ts_id, join_date, birth_date, roster, rank_id, instructor_id, ip, is_clanner, is_technician, img_src, qualifications, last_online_time, broadcast_token, recovery_token, is_disabled, disable_reason, last_warning_time, is_defector, personal_file_id', 'default', 'setOnEmpty' => true, 'value' => null),
+            array('id, nickname, firstname, email, password, ts_id, join_date, birth_date, roster, rank_id, instructor_id, ip, is_clanner, is_technician, img_src, qualifications, last_online_time, broadcast_token, recovery_token, is_disabled, disable_reason, last_warning_time, is_defector, personal_file_id', 'safe', 'on' => 'search'),
         );
     }
 
@@ -119,8 +121,9 @@ abstract class BaseUser extends AActiveRecord
             'privateMessages' => array(self::HAS_MANY, 'PrivateMessage', 'reciever_id'),
             'privateMessages1' => array(self::HAS_MANY, 'PrivateMessage', 'sender_id'),
             'updates' => array(self::HAS_MANY, 'Update', 'user_id'),
-            'rank' => array(self::BELONGS_TO, 'Rank', 'rank_id'),
+            'personalFile' => array(self::BELONGS_TO, 'Text', 'personal_file_id'),
             'instructor' => array(self::BELONGS_TO, 'Rank', 'instructor_id'),
+            'rank' => array(self::BELONGS_TO, 'Rank', 'rank_id'),
             'awards' => array(self::MANY_MANY, 'Award', 'user_award(user_id, award_id)'),
             'userEvents' => array(self::HAS_MANY, 'UserEvent', 'user_id'),
             'userMarks' => array(self::HAS_MANY, 'UserMark', 'user_id'),
@@ -163,6 +166,7 @@ abstract class BaseUser extends AActiveRecord
             'disable_reason' => Yii::t('app', 'Disable Reason'),
             'last_warning_time' => Yii::t('app', 'Last Warning Time'),
             'is_defector' => Yii::t('app', 'Is Defector'),
+            'personal_file_id' => null,
             'battleEvents' => null,
             'forumMessages' => null,
             'forumTopics' => null,
@@ -172,8 +176,9 @@ abstract class BaseUser extends AActiveRecord
             'privateMessages' => null,
             'privateMessages1' => null,
             'updates' => null,
-            'rank' => null,
+            'personalFile' => null,
             'instructor' => null,
+            'rank' => null,
             'awards' => null,
             'userEvents' => null,
             'userMarks' => null,
@@ -209,6 +214,7 @@ abstract class BaseUser extends AActiveRecord
         $criteria->compare('disable_reason', $this->disable_reason, true);
         $criteria->compare('last_warning_time', $this->last_warning_time, true);
         $criteria->compare('is_defector', $this->is_defector);
+        $criteria->compare('personal_file_id', $this->personal_file_id);
 
         return new CActiveDataProvider($this, array(
             'criteria' => $criteria,

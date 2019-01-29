@@ -120,7 +120,11 @@ lwsControllers.controller('AppCtrl',
                 'messenger': 'user',
                 'battleLog': 'user',
                 'addBattleLog': 'user',
-                'editBattleLog': 'user'
+                'editBattleLog': 'user',
+                'awards': 'user',
+                'editaward': 'user',
+                'personalFile': 'user',
+                'editpersonalFile': 'user'
             };
 
             $scope.unRegisterForNotifications = function () {
@@ -172,7 +176,7 @@ lwsControllers.controller('AppCtrl',
                     $scope.io_socket.emit('unregister', {token: $scope.UserIdentity.broadcast_token});
                 }
 
-                $scope.io_socket = io.connect('http://luftwaffeschule.ru:3000');
+                $scope.io_socket = io.connect('/socket.io');
                 $scope.io_socket.on('ready', function (data) {
                     if (!$scope.UserIdentity.isGuest)
                         $scope.registerForNotifications();
@@ -471,6 +475,24 @@ lwsControllers.controller('UserCtrl',
 lwsControllers.controller('BattleLogCtrl',
     ['$scope', 'User', 'BattleLog' ,'$stateParams', '$dialogs',
         function ($scope, User, BattleLog, $stateParams, $dialogs) {
+            $scope.currentPage = parseInt($stateParams.page) || 1;
+            $scope.itemsPerPage = 7;
+
+            $scope.$watch('currentPage', function(newPage, oldPage){
+                if (newPage && (newPage != oldPage)) {
+                    loadPage();
+                }
+            });
+
+            function loadPage()
+            {
+                BattleLog.query({userId: $stateParams.userId, page: $scope.currentPage, perPage: $scope.itemsPerPage},
+                    function (resource) {
+                        $scope.battlelog = resource.data;
+                        calculateResult();
+                    });
+            }
+            loadPage();
             User.get({id: $stateParams.userId},
                 function (resource) {
                     $scope.user = resource.data;
@@ -485,7 +507,7 @@ lwsControllers.controller('BattleLogCtrl',
                     fine_points:0,
                     fine_points_times:0
                 };
-                $scope.battlelog.forEach(function (log) {
+                $scope.battlelog.records.forEach(function (log) {
                     for (var field in result) {
                         if (!result.hasOwnProperty(field))
                             return;
@@ -504,13 +526,7 @@ lwsControllers.controller('BattleLogCtrl',
                     calculateResult();
                 });
             };
-
-            BattleLog.query({userId: $stateParams.userId},
-                function (resource) {
-                    $scope.battlelog = resource.data;
-                    calculateResult();
-                });
-            $scope.loading = $scope.user && $scope.battlelog;
+            //$scope.loading = $scope.user && $scope.battlelog;
         }]);
 
 lwsControllers.controller('NewBattleLogCtrl',
@@ -1016,6 +1032,8 @@ lwsControllers.controller('OrderCreatorCtrl',
                     if (pilot.awards.length) {
                         var awards = [];
                         angular.forEach(pilot.awards, function (awardId, key) {
+                            if (!$scope.initialData.awards.hasOwnProperty(awardId))
+                                return;
                             var name = $scope.initialData.awards[awardId].sub_name;
                             //name = name.replace('Медаль','медалью').replace('Крест','крестом').replace('Знак','знаком').replace('Шпанга','шпангой').replace('Лента','лентой');
                             awards.push('<a award="' + awardId + '">' + name);
@@ -1144,6 +1162,8 @@ lwsControllers.controller("UserMarksCtrl",
                 angular.extend($scope.user, resource.data);
                 if (!$scope.user.programs.fighter)
                     $scope.tabs.activeTab = 'bomber';
+                if (!$scope.user.programs.bomber)
+                    $scope.tabs.activeTab = 'shturmovik';
             });
 
             $scope.mark = function (subjectId, courseId) {
@@ -1361,6 +1381,40 @@ lwsControllers.controller('TextCtrl',
             });
         }]);
 
+lwsControllers.controller('PersonalFileCtrl',
+    ['$scope', 'User', '$location', '$stateParams',
+     function ($scope, User, $location, $stateParams) {
+         User.getPersonalFile({id: $stateParams.id}, function (res) {
+             $scope.text = res.data;
+         });
+     }]);
+
+lwsControllers.controller('EditPersonalFileCtrl',
+    ['$scope', 'User', '$stateParams',
+     function ($scope, User, $stateParams) {
+         $scope.sceditor = {text: ''};
+         $scope.material = {};
+         if ($stateParams.id) {
+             User.getPersonalFile({id: $stateParams.id, forEdit:1}, function (res) {
+                 angular.extend($scope.material, res.data);
+                 $scope.sceditor.text = $scope.material.text;
+                 $scope.material.isLoaded = true;
+             });
+         }
+         else {
+             $scope.material.id = -1;
+             $scope.material.isLoaded = true;
+         }
+         $scope.save = function () {
+             $scope.material.text = $scope.sceditor.text;
+             $scope.material.isLoaded = false;
+             User.savePersonalFile($scope.material, function (res) {
+                 angular.extend($scope.material, res.data);
+                 $scope.sceditor.text = $scope.material.text;
+                 $scope.material.isLoaded = true;
+             });
+         }
+     }]);
 
 lwsControllers.controller('EditTextCtrl',
     ['$scope', 'Text', '$stateParams',
@@ -1575,6 +1629,61 @@ lwsControllers.controller('ConversationPageCtrl',
             });
         }]);
 
+
+lwsControllers.controller('AwardsCtrl',
+    ['$scope', 'Awards', '$location', '$stateParams',
+        function ($scope, Awards, $location, $stateParams) {
+            $scope.isLoading = true;
+            Awards.query(function (res) {
+                $scope.isLoading = false;
+                $scope.awards = res.data;
+            });
+        }]);
+
+lwsControllers.controller('AwardCtrl',
+    ['$scope', 'Awards', '$location', '$stateParams', '$state',
+        function ($scope, Awards, $location, $stateParams, $state) {
+
+            $scope.awardSelect2Options = {
+                formatResult: formatAward,
+                formatSelection: formatAward
+            };
+
+            function formatAward(state) {
+                if (!state.id) return state.text; // optgroup
+                return '<img class="micro_award" height="20px" src="/img/awards/'
+                    + state.id
+                    + '.png"> '
+                    + "<span> "
+                    + state.text
+                    + "</span>";
+            }
+
+
+            $scope.award = null;
+            $scope.awards = [];
+            if ($stateParams.awardId && $stateParams.awardId != "0") {
+                console.log($stateParams.awardId);
+                Awards.get({awardId: $stateParams.awardId}, function (res) {
+                    $scope.award = res.data;
+                });
+            } else {
+                $scope.award = {
+                    id:0,
+                    name:"",
+                };
+            }
+            $scope.save = function()
+            {
+                Awards.save($scope.award, function(res){
+                    $state.go('editaward', {awardId: res.data.id});
+                });
+            }
+            Awards.query(function (res) {
+                $scope.awards = res.data;
+                $scope.awards.unshift({});
+            });
+        }]);
 
 lwsControllers.controller("InactiveCountCtrl", ['$scope', '$timeout', 'User', function ($scope, $timeout, User) {
     var inactiveCountTimeout = null;
